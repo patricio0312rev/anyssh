@@ -54,7 +54,7 @@ struct RecentsLiveBatchRunner: RemoteCommandRunner {
 }
 
 enum RecentsLiveHost {
-    static var target: String { "\(setting("ANYSSH_LIVE_USER", "patricio"))@\(host)" }
+    static var target: String { "\(setting("ANYSSH_LIVE_USER", "dev"))@\(host)" }
     static var host: String { setting("ANYSSH_LIVE_HOST", "192.0.2.10") }
 
     static var isReachable: Bool {
