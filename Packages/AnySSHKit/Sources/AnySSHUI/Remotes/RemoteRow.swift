@@ -11,6 +11,7 @@ struct RemoteRow: View {
             subtitle: remote.endpoint,
             subtitleMonospaced: true,
             detail: detail,
+            detailStatus: StatusDot(reachability: reachability, remoteID: remote.id.rawValue),
             accessibilityIdentifier: UIIdentifier.Remote.row(remote.id.rawValue)
         ) {
             RowIconTile(
@@ -18,7 +19,7 @@ struct RemoteRow: View {
                 label: remote.deviceType.label
             )
         } trailing: {
-            ReachabilityBadge(presentation: reachability, remoteID: remote.id.rawValue)
+            RowChevron()
         } footer: {
             EmptyView()
         }
