@@ -1,3 +1,4 @@
+import AnySSHCore
 import Foundation
 import Testing
 
@@ -19,5 +20,13 @@ import Testing
         let command = CapabilityProbeCommand.batch().commands[0]
         #expect(command.arguments.count == 3)
         #expect(command.arguments[2].contains("anyssh-capabilities/1"))
+    }
+
+    @Test func theProbeTravelsThroughOneLoginShell() {
+        let rendered = BatchScriptBuilder().render(CapabilityProbeCommand.batch())
+
+        #expect(rendered.command.hasPrefix("\"${SHELL:-/bin/sh}\" -lc '"))
+        #expect(rendered.command.components(separatedBy: " -lc ").count == 2)
+        #expect(rendered.command.contains("anyssh-capabilities/1"))
     }
 }
