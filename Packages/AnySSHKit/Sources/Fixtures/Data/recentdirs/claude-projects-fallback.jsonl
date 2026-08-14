@@ -1,0 +1,4 @@
+{"leafUuid":"x","sessionId":"y","type":"last-prompt"}
+{"type":"user","message":{"role":"user"}}
+{"type":"assistant"}
+{"type":"attachment","cwd":"/Users/dev/src/anyssh","gitBranch":"HEAD"}
