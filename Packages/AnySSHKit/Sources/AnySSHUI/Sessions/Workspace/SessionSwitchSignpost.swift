@@ -8,7 +8,7 @@ public final class SessionSwitchSignpost {
         let started: ContinuousClock.Instant
     }
 
-    private static let subsystem = "com.patricio.anyssh"
+    private static let subsystem = "com.patricio0312rev.anyssh"
     private static let category = "session-switch"
     private static let measurementLimit = 200
     private static let intervalName: StaticString = "session.switch"
