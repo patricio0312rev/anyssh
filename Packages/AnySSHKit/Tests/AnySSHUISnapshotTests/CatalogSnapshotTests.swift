@@ -1,4 +1,5 @@
 #if canImport(UIKit)
+import AnySSHCore
 import SwiftUI
 import Testing
 
@@ -50,6 +51,30 @@ import Testing
             }
             .padding(Theme.Space.screenMargin),
             named: "catalogRow-decorated",
+            height: 160
+        )
+    }
+
+    @Test func navigatingRowEndsOnAChevronWithStatusBesideItsMetadata() {
+        ComponentSnapshot.assert(
+            SurfaceCard {
+                CatalogRow(
+                    title: "build-box",
+                    subtitle: "deploy@build.internal",
+                    subtitleMonospaced: true,
+                    detail: "Private key • work",
+                    detailStatus: StatusDot(reachability: .reachable, remoteID: "snapshot"),
+                    accessibilityIdentifier: "snapshot.row.status"
+                ) {
+                    RowIconTile(systemImage: "server.rack", label: "Host")
+                } trailing: {
+                    RowChevron()
+                } footer: {
+                    EmptyView()
+                }
+            }
+            .padding(Theme.Space.screenMargin),
+            named: "catalogRow-status",
             height: 160
         )
     }
