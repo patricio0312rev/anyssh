@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.patricio0312rev.anyssh.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>anyssh</string>
+			</array>
+		</dict>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>JetBrainsMonoNerdFont-Regular.ttf</string>
+		<string>JetBrainsMonoNerdFont-Bold.ttf</string>
+		<string>JetBrainsMonoNerdFont-Italic.ttf</string>
+		<string>JetBrainsMonoNerdFont-BoldItalic.ttf</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID unlocks the keys stored on this device. They never leave it and are never sent anywhere.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Dictation turns what you say into text you can read and edit before sending it to a host.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech is recognised on this device so a dictated command never leaves it.</string>
+</dict>
+</plist>
