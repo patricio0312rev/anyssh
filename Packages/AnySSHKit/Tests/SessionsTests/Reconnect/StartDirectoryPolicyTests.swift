@@ -5,8 +5,8 @@ import Testing
 @Suite struct StartDirectoryPolicyTests {
     @Test func aConfiguredPathBeatsARememberedOne() {
         #expect(
-            StartDirectoryPolicy.path(remembered: "/Users/dev", configured: "~/Sites/anyssh")
-                == "~/Sites/anyssh"
+            StartDirectoryPolicy.path(remembered: "/Users/dev", configured: "~/src/anyssh")
+                == "~/src/anyssh"
         )
     }
 
