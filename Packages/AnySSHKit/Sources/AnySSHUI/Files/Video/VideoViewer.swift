@@ -48,8 +48,7 @@ public struct VideoViewer: View {
                     .font(Theme.Text.body)
                     .frame(maxWidth: .infinity, minHeight: Theme.Buttons.height)
             }
-            .buttonStyle(.glassProminent)
-            .tint(Theme.accent)
+            .buttonStyle(.accentCapsule)
             .accessibilityIdentifier(UIIdentifier.File.videoDownload)
         }
         .padding(Theme.Space.step5)
