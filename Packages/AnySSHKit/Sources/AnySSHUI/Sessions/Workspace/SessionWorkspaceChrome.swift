@@ -10,7 +10,8 @@ extension SessionWorkspaceView {
             SessionSwitcherView(
                 model: model,
                 onSwitch: handleSwitch,
-                onDismiss: dismissSwitcher
+                onDismiss: dismissSwitcher,
+                onOpenJobAlerts: model.jobAlerts == nil ? nil : { isJobAlertsPresented = true }
             )
             .transition(.opacity)
             .zIndex(1)
