@@ -45,12 +45,13 @@ extension View {
         let state = refusal.map(ErrorState.secrets)
         return alert(
             state?.copy.title ?? "",
-            isPresented: Binding(get: { state != nil }, set: { if !$0 { dismiss() } })
-        ) {
-            Button(state?.copy.recoveryLabel ?? "Try Again", action: dismiss)
-                .accessibilityIdentifier(state?.accessibilityIdentifier ?? "")
-        } message: {
-            Text(state?.copy.body ?? "")
+            isPresented: Binding(get: { state != nil }, set: { if !$0 { dismiss() } }),
+            presenting: state
+        ) { presented in
+            Button(presented.copy.recoveryLabel, action: dismiss)
+                .accessibilityIdentifier(presented.accessibilityIdentifier)
+        } message: { presented in
+            Text(presented.copy.body)
         }
     }
 }
