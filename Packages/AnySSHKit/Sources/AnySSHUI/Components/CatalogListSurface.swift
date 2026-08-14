@@ -12,14 +12,18 @@ extension View {
 
     public func catalogRowChrome(selected: Bool = false) -> some View {
         let shape = RoundedRectangle(cornerRadius: Theme.Space.cardRadius, style: .continuous)
-        return listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .padding(Theme.Space.cardPadding)
+        return padding(Theme.Space.cardPadding)
             .background(Theme.surface.raised, in: shape)
             .overlay {
                 if selected { shape.stroke(Theme.accent, lineWidth: 1.5) }
             }
             .modifier(ReorderGutter())
+            .catalogRowPlain()
+    }
+
+    public func catalogRowPlain() -> some View {
+        listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
             .listRowInsets(
                 EdgeInsets(
                     top: Theme.Space.step1,
