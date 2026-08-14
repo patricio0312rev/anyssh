@@ -187,7 +187,7 @@ Choose by rule, not by mood:
 | Confirmation dialog | choosing between actions on a just-tapped object |
 | `StatusToast` | passive outcome feedback, never requires a tap |
 
-Every sheet gets a visible drag indicator and a `ScreenHeader`. Mixing patterns for the same job across screens fails review.
+Every sheet gets a visible drag indicator and a `ScreenHeader`, except blocking modals (`interactiveDismissDisabled`): a drag indicator there advertises a dismissal that does not exist, so they show none and present their copy through `ErrorStateView`-style hierarchy. Mixing patterns for the same job across screens fails review.
 
 Forms follow one hierarchy, and the legacy Edit Host form is the reference for it: plain text Cancel/Save in the toolbar, sections introduced by a `SectionLabel`, controls grouped in raised cards, and every explanation as a `caption` in `text.secondary` sitting directly under the card it explains. A description never gets its own box, never sits above its control, and is never larger than the section label; if a text's role (title, label, or description) is not obvious at a glance, the hierarchy is wrong.
 
