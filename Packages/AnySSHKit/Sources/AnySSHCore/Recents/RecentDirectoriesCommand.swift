@@ -76,7 +76,7 @@ public enum RecentDirectoriesCommand {
           done
         elif [ -d "$__claude_dir/projects" ]; then
           find "$__claude_dir/projects" -type f -name '*.jsonl' 2>/dev/null | head -n 40 | while IFS= read -r __file; do
-            __ms=$(stat -f %m "$__file" 2>/dev/null || stat -c %Y "$__file" 2>/dev/null || printf 0)
+            __ms=$(stat -c %Y "$__file" 2>/dev/null || stat -f %m "$__file" 2>/dev/null || printf 0)
             __ms=$((__ms * 1000))
             __cwd=$(sed -n 's/.*"cwd"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/p' "$__file" 2>/dev/null | head -n 1)
             [ -n "$__cwd" ] && __emit "$__cwd" "$__ms" claude
@@ -106,7 +106,7 @@ public enum RecentDirectoriesCommand {
             case "$__name" in
               *var-folders-*|T-*) continue ;;
             esac
-            __ms=$(stat -f %m "$__dir" 2>/dev/null || stat -c %Y "$__dir" 2>/dev/null || printf 0)
+            __ms=$(stat -c %Y "$__dir" 2>/dev/null || stat -f %m "$__dir" 2>/dev/null || printf 0)
             __ms=$((__ms * 1000))
             __path=$(__cursor_dfs "$__name" "")
             [ -n "$__path" ] && __emit "$__path" "$__ms" cursor
