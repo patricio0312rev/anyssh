@@ -1,0 +1,4 @@
+$1	@1	%1	nvim	/Users/dev/src/anyssh	1
+$1	@1	%2	shell	/Users/dev/src/my project's "notes"	0
+$1	@2	%3	zsh	/Users/dev	1
+$2	@3	%4	top	/tmp	1
