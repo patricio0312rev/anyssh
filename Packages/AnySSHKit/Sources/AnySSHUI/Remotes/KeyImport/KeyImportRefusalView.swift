@@ -22,6 +22,6 @@ struct KeyImportRefusalView: View {
             Button(copy.recoveryLabel, action: dismiss)
                 .buttonStyle(.rowAction)
         }
-        .listRowBackground(Theme.surface.raised)
+        .formCardSection()
     }
 }
