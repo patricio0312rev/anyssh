@@ -1,0 +1,73 @@
+{
+  "id": "snap-1",
+  "result": {
+    "type": "session_snapshot",
+    "snapshot": {
+      "version": "0.8.0",
+      "protocol": 19,
+      "focused_workspace_id": "w1",
+      "focused_tab_id": "w1:t1",
+      "focused_pane_id": "w1:p1",
+      "workspaces": [
+        {
+          "workspace_id": "w1",
+          "number": 1,
+          "label": "anyssh",
+          "focused": true,
+          "pane_count": 2,
+          "tab_count": 1,
+          "active_tab_id": "w1:t1",
+          "agent_status": "working",
+          "worktree": {
+            "repo_key": "anyssh",
+            "repo_name": "anyssh",
+            "repo_root": "/Users/dev/src/anyssh",
+            "checkout_path": "/Users/dev/src/anyssh",
+            "is_linked_worktree": false
+          }
+        }
+      ],
+      "tabs": [
+        {
+          "tab_id": "w1:t1",
+          "workspace_id": "w1",
+          "number": 1,
+          "label": "main",
+          "focused": true,
+          "pane_count": 2,
+          "agent_status": "working"
+        }
+      ],
+      "panes": [
+        {
+          "pane_id": "w1:p1",
+          "terminal_id": "term-1",
+          "workspace_id": "w1",
+          "tab_id": "w1:t1",
+          "focused": true,
+          "agent_status": "working",
+          "revision": 12,
+          "cwd": "/Users/dev/src/anyssh",
+          "foreground_cwd": "/Users/dev/src/anyssh/Packages",
+          "title": "opencode",
+          "label": "agent"
+        },
+        {
+          "pane_id": "w1:p2",
+          "terminal_id": "term-2",
+          "workspace_id": "w1",
+          "tab_id": "w1:t1",
+          "focused": false,
+          "agent_status": "idle",
+          "revision": 3,
+          "cwd": "/Users/dev/src/my project's \"notes\"",
+          "foreground_cwd": null,
+          "title": "shell",
+          "label": "shell"
+        }
+      ],
+      "layouts": [],
+      "agents": []
+    }
+  }
+}
