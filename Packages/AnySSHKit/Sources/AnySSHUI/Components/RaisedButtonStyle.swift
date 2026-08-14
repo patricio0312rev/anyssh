@@ -24,8 +24,7 @@ extension ButtonStyle where Self == RaisedButtonStyle {
             Button("Import Key") {}
                 .buttonStyle(.raised)
             Button("Add Host") {}
-                .buttonStyle(.glassProminent)
-                .tint(Theme.accent)
+                .buttonStyle(.accentCapsule)
         }
         .padding(Theme.Space.screenMargin)
     }
