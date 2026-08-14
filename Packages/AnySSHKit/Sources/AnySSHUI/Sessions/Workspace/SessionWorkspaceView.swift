@@ -11,6 +11,7 @@ public struct SessionWorkspaceView: View {
     @State var isSnippetsPresented = false
     @State var isMultiplexerPresented = false
     @State var isJumpToPresented = false
+    @State var isJobAlertsPresented = false
     @State var isImportingFile = false
     @State var dictation = DictationEngine()
     @State var fileImport = FileImportModel()
@@ -45,6 +46,8 @@ public struct SessionWorkspaceView: View {
             presentedBrowser = .changes
         case .files:
             presentedBrowser = .files
+        case .jobAlerts:
+            isJobAlertsPresented = true
         }
     }
 
@@ -53,7 +56,8 @@ public struct SessionWorkspaceView: View {
             .workspaceSheets(
                 model: model,
                 isMultiplexerPresented: $isMultiplexerPresented,
-                isJumpToPresented: $isJumpToPresented
+                isJumpToPresented: $isJumpToPresented,
+                isJobAlertsPresented: $isJobAlertsPresented
             )
             .sheet(isPresented: $isSnippetsPresented) {
                 SnippetsSheet { text in send(text) }
