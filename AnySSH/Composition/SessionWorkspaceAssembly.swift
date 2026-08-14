@@ -33,7 +33,12 @@ enum SessionWorkspaceAssembly {
         )
         seedTranscripts(in: model, records: records, for: scenario)
         attachDisplays(in: model, records: records, for: scenario)
-        return SessionWorkspaceView(model: model, initialSurface: scenario.surface)
+        raiseKeyboard(in: model, records: records, for: scenario)
+        return SessionWorkspaceView(
+            model: model,
+            initialSurface: scenario.surface,
+            pinsAccessoryBar: scenario.forcesAccessoryBar
+        )
     }
 
     private static func attachDisplays(
@@ -51,15 +56,30 @@ enum SessionWorkspaceAssembly {
         }
     }
 
+    private static func raiseKeyboard(
+        in model: SessionWorkspaceModel,
+        records: [SessionRecord],
+        for scenario: WorkspaceScenario
+    ) {
+        guard scenario.forcesAccessoryBar else { return }
+        for record in records {
+            model.surface(for: record.id)?.engine.wantsKeyboard = true
+        }
+        guard let active = model.activeSessionID,
+            let engine = model.surface(for: active)?.engine
+        else { return }
+        Task {
+            try? await Task.sleep(for: .milliseconds(700))
+            _ = engine.surface.becomeFirstResponder()
+        }
+    }
+
     private static func seedTranscripts(
         in model: SessionWorkspaceModel,
         records: [SessionRecord],
         for scenario: WorkspaceScenario
     ) {
-        let transcript =
-            scenario.isMultiplexed
-            ? WorkspaceScenarioTranscript.multiplexed
-            : WorkspaceScenarioTranscript.shell
+        let transcript = scenario.transcript
         for record in records {
             model.surface(for: record.id)?.engine.feed(ArraySlice(transcript.utf8))
         }
