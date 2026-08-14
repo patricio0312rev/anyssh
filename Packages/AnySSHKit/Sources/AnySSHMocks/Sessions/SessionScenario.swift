@@ -32,7 +32,7 @@ public enum SessionScenario {
             id: "session-1",
             remote: RemoteFixtures.workstation.id,
             connection: "workstation.1",
-            title: "dev@workstation: ~/Sites/anyssh",
+            title: "dev@workstation: ~/src/api",
             state: .connected,
             capabilities: ssh,
             age: 1_800,
@@ -48,7 +48,7 @@ public enum SessionScenario {
             capabilities: multiplexed,
             age: 900,
             idle: 61,
-            workspace: WorkspaceLocation(path: "/srv/ci/anyssh", provenance: .multiplexer)
+            workspace: WorkspaceLocation(path: "/srv/ci/api", provenance: .multiplexer)
         ),
         record(
             id: "session-3",
