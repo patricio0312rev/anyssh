@@ -35,17 +35,12 @@ struct SettingsScenarioView: View {
 }
 
 private struct SettingsSheetScenario: View {
-    @State private var isPresented = true
-
     var body: some View {
-        Theme.surface.base
-            .ignoresSafeArea()
-            .sheet(isPresented: $isPresented) {
-                SettingsView(
-                    layoutDirectory: ScenarioStoreLocation.gestures,
-                    snippets: ScenarioStoreLocation.seededSnippets()
-                )
-                .presentationDragIndicator(.visible)
-            }
+        ScenarioSheet { _ in
+            SettingsView(
+                layoutDirectory: ScenarioStoreLocation.gestures,
+                snippets: ScenarioStoreLocation.seededSnippets()
+            )
+        }
     }
 }
