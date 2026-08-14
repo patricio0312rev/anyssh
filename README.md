@@ -83,6 +83,10 @@ Scripts/                build and vendoring automation
 
 The project holds three targets: `AnySSH` (the app), `AnySSHWidgets` (the widget and Live Activity extension, embedded and signed by the app), and `AnySSHUITests` (the XCUITest bundle, run through the `AnySSH` scheme). Every screen is reachable headlessly through `ANYSSH_SCENARIO=<name>`, which is how both the UI tests and the screenshot sweep get to a state without tapping.
 
+### Releasing
+
+Work lands on `dev` and reaches `main` through a pull request, where CI must pass. A release is manual: run the **Release** action on `main` with the marketing version (`0.1.0`). The workflow vendors the SSH stack, archives a signed Release build, uploads it to App Store Connect for TestFlight, and publishes a `vX.Y.Z` GitHub release with generated notes. It needs three repository secrets from an App Store Connect API key: `ASC_KEY_ID`, `ASC_ISSUER_ID`, and `ASC_KEY_CONTENT` (the `.p8` file, base64-encoded).
+
 CI runs `swift-format` and the line budget on every push. The design system, module boundaries, and commit conventions are defined in [AGENTS.md](AGENTS.md) and are binding for every contributor.
 
 ## Security
