@@ -8,6 +8,28 @@ enum ScenarioStoreLocation {
         root.appending(path: "snippets.json")
     }
 
+    static var gestures: URL {
+        directory(named: "gestures")
+    }
+
+    static func emptySnippets() -> SnippetStore {
+        let store = SnippetStore(fileURL: root.appending(path: "snippets-empty.json"))
+        try? store.save(SnippetLibrary(snippets: []))
+        return store
+    }
+
+    static func seededSnippets() -> SnippetStore {
+        let store = SnippetStore(fileURL: root.appending(path: "snippets-seeded.json"))
+        try? store.save(
+            SnippetLibrary(snippets: [
+                Snippet(title: "Tail the log", body: "tail -f /var/log/syslog"),
+                Snippet(title: "", body: "git status --short"),
+                Snippet(title: "Restart the service", body: "sudo systemctl restart anyssh"),
+            ])
+        )
+        return store
+    }
+
     static var panels: URL {
         directory(named: "panels")
     }
