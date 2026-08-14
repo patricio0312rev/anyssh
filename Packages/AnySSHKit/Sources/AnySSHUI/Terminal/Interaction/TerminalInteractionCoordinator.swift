@@ -98,6 +98,11 @@ public final class TerminalInteractionCoordinator: NSObject,
         press.delegate = self
         scrollView.addGestureRecognizer(press)
         longPress = press
+        scrollView.panGestureRecognizer.addTarget(self, action: #selector(handleScrollPan))
+        publishProbeState()
+    }
+
+    @objc private func handleScrollPan(_ gesture: UIPanGestureRecognizer) {
         publishProbeState()
     }
 
