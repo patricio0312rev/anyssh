@@ -40,9 +40,9 @@ public struct GestureSettingsView: View {
     private var reset: some View {
         Section {
             Button("Reset to Defaults", action: model.reset)
-                .buttonStyle(.rowAction)
+                .buttonStyle(.rowAction(tint: Theme.destructive))
                 .accessibilityIdentifier(UIIdentifier.Settings.gesturesReset)
-                .catalogRowChrome()
+                .catalogActionRowChrome()
         } footer: {
             if let failure = model.saveFailure {
                 SectionCaption(failure, tone: Theme.destructive)
