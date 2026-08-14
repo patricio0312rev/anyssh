@@ -31,6 +31,11 @@ public enum FileContentCommand {
         public let byteCount: Int
         public var isTruncated: Bool { byteCount > bytes.count }
         public var isBinary: Bool { bytes.prefix(8000).contains(0) }
+
+        public init(bytes: Data, byteCount: Int) {
+            self.bytes = bytes
+            self.byteCount = byteCount
+        }
     }
 
     public enum Failure: Error, Equatable, Sendable {
