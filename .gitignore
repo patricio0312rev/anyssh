@@ -13,7 +13,8 @@ xcuserdata/
 .swiftpm/
 Packages/AnySSHKit/Vendor/*.xcframework/
 
-docs/
+docs/*
+!docs/error-states.md
 
 .env
 .env.local
