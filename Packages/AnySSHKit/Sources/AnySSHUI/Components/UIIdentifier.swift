@@ -9,6 +9,12 @@ public enum UIIdentifier {
         public static let reconnect = "session.reconnect"
         public static let reconnectCard = "session.reconnectCard"
         public static let reconnectAttempts = "session.reconnectAttempts"
+        public static let reattached = "session.reattached"
+        public static let openFailure = "session.openFailure"
+        public static let switchDurations = "session.switch.durations"
+        public static let workspaceEmpty = "session.workspace.empty"
+        public static let newSession = "session.workspace.newSession"
+        public static let backToRemotes = "session.workspace.backToRemotes"
     }
 
     public enum Terminal {
