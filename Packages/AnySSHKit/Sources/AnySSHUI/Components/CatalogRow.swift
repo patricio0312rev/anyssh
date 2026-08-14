@@ -9,6 +9,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
     private let title: String
     private let subtitle: String?
     private let subtitleMonospaced: Bool
+    private let subtitleLineLimit: Int?
     private let detail: String?
     private let detailAccessibilityIdentifier: String?
     private let titleLineLimit: Int
@@ -22,6 +23,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
         title: String,
         subtitle: String? = nil,
         subtitleMonospaced: Bool = false,
+        subtitleLineLimit: Int? = nil,
         detail: String? = nil,
         detailAccessibilityIdentifier: String? = nil,
         titleLineLimit: Int = 2,
@@ -34,6 +36,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.subtitleMonospaced = subtitleMonospaced
+        self.subtitleLineLimit = subtitleLineLimit
         self.detail = detail
         self.detailAccessibilityIdentifier = detailAccessibilityIdentifier
         self.titleLineLimit = titleLineLimit
@@ -65,7 +68,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
                 Text(subtitle)
                     .font(subtitleMonospaced ? Theme.code() : Theme.Text.caption)
                     .foregroundStyle(Theme.text.secondary)
-                    .lineLimit(layout == .stacked ? 1 : 2)
+                    .lineLimit(subtitleLineLimit ?? (layout == .stacked ? 1 : 2))
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -102,6 +105,7 @@ extension CatalogRow where Leading == EmptyView, Trailing == EmptyView, Footer =
         title: String,
         subtitle: String? = nil,
         subtitleMonospaced: Bool = false,
+        subtitleLineLimit: Int? = nil,
         detail: String? = nil,
         detailAccessibilityIdentifier: String? = nil,
         titleLineLimit: Int = 2,
@@ -112,6 +116,7 @@ extension CatalogRow where Leading == EmptyView, Trailing == EmptyView, Footer =
             title: title,
             subtitle: subtitle,
             subtitleMonospaced: subtitleMonospaced,
+            subtitleLineLimit: subtitleLineLimit,
             detail: detail,
             detailAccessibilityIdentifier: detailAccessibilityIdentifier,
             titleLineLimit: titleLineLimit,
