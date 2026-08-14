@@ -40,13 +40,32 @@ struct SessionsScenarioView: View {
                 onDismiss: {}
             )
         case .jumpTo:
-            JumpToSheet(model: jumpModel(.herdrDefault, layout: .list), onDismiss: {})
+            ScenarioSheet { dismiss in
+                JumpToSheet(model: jumpModel(.herdrDefault, layout: .list), onDismiss: dismiss)
+            }
         case .jumpToGrid:
-            JumpToSheet(model: jumpModel(.herdrDefault, layout: .grid), onDismiss: {})
+            ScenarioSheet { dismiss in
+                JumpToSheet(model: jumpModel(.herdrDefault, layout: .grid), onDismiss: dismiss)
+            }
         case .jumpToTmux:
-            JumpToSheet(model: jumpModel(.tmuxMain, layout: .list), onDismiss: {})
+            ScenarioSheet { dismiss in
+                JumpToSheet(model: jumpModel(.tmuxMain, layout: .list), onDismiss: dismiss)
+            }
+        case .jumpToJumped:
+            ScenarioSheet { dismiss in
+                JumpToSheet(
+                    model: jumpModel(.herdrDefault, layout: .list, writer: MockRemoteConnection()),
+                    onDismiss: dismiss
+                )
+            }
         case .panes:
-            MultiplexerPaneListView(adapter: FixtureMultiplexerAdapter(fixture: .herdrDefault))
+            ScenarioSheet { dismiss in
+                MultiplexerPaneListView(
+                    adapter: FixtureMultiplexerAdapter(fixture: .herdrDefault),
+                    writer: MockRemoteConnection(),
+                    onDismiss: dismiss
+                )
+            }
         case .panels:
             SessionsPanelsScenario()
         case .bindingEditor:
@@ -56,15 +75,21 @@ struct SessionsScenarioView: View {
                 onCancel: {}
             )
         case .snippets:
-            SnippetsSheet(store: SnippetStore(fileURL: ScenarioStoreLocation.snippets)) { _ in }
+            ScenarioSheet { _ in
+                SnippetsSheet(store: SnippetStore(fileURL: ScenarioStoreLocation.snippets)) { _ in }
+            }
         }
     }
 
-    private func jumpModel(_ fixture: MuxFixture, layout: JumpLayout) -> JumpToModel {
+    private func jumpModel(
+        _ fixture: MuxFixture,
+        layout: JumpLayout,
+        writer: (any DisplayWriter)? = nil
+    ) -> JumpToModel {
         JumpToModel(
             adapter: FixtureMultiplexerAdapter(fixture: fixture),
             directory: ScenarioStoreLocation.jumpLayout(layout),
-            writer: nil
+            writer: writer
         )
     }
 }
