@@ -10,7 +10,7 @@ struct RecentDirectoriesParserTests {
         let bytes = try RecentDirectoriesFixtureData.bytes("claude-history.jsonl")
         let sightings = ClaudeHistoryParser().parse(bytes)
         #expect(sightings.count == 3)
-        #expect(sightings[0].path == "/Users/dev/src/anyssh")
+        #expect(sightings[0].path == "/home/dev/src/api")
         #expect(sightings[0].source == .claude)
         #expect(sightings[0].lastUsed.timeIntervalSince1970 == 1_786_544_322.823)
         #expect(sightings[2].path.hasSuffix("fix-login-flow"))
@@ -25,7 +25,7 @@ struct RecentDirectoriesParserTests {
         let bytes = try RecentDirectoriesFixtureData.bytes("claude-projects-fallback.jsonl")
         let stamped = Data("1786540000000\t".utf8) + bytes
         let sightings = ClaudeHistoryParser().parse(stamped)
-        #expect(sightings.contains { $0.path == "/Users/dev/src/anyssh" })
+        #expect(sightings.contains { $0.path == "/home/dev/src/api" })
         #expect(!sightings.isEmpty)
     }
 
@@ -33,7 +33,7 @@ struct RecentDirectoriesParserTests {
         let bytes = try RecentDirectoriesFixtureData.bytes("codex-rollout-good.jsonl")
         let sightings = CodexRolloutParser().parse(bytes)
         #expect(sightings.count == 1)
-        #expect(sightings[0].path == "/Users/dev/src/anyssh")
+        #expect(sightings[0].path == "/home/dev/src/api")
         #expect(sightings[0].source == .codex)
     }
 
@@ -41,25 +41,26 @@ struct RecentDirectoriesParserTests {
         let bytes = try RecentDirectoriesFixtureData.bytes("codex-rollout-malformed.jsonl")
         let sightings = CodexRolloutParser().parse(bytes)
         #expect(sightings.count == 1)
-        #expect(sightings[0].path == "/Users/dev/src/agentkit")
+        #expect(sightings[0].path == "/home/dev/src/docs")
     }
 
     @Test func cursorResolvesHyphenatedDirectoryAndFiltersNoise() throws {
         let existing: Set<String> = [
-            "/Users",
-            "/Users/dev",
-            "/Users/dev/src",
-            "/Users/dev/src/terminal-android",
-            "/Users/dev/src/agentkit",
-            "/Users/dev/src/anyssh",
+            "/home",
+            "/home/dev",
+            "/home/dev/src",
+            "/home/dev/src/web",
+            "/home/dev/src/web-admin",
+            "/home/dev/src/docs",
+            "/home/dev/src/api",
         ]
         let bytes = try RecentDirectoriesFixtureData.bytes("cursor-listing.tsv")
         let sightings = CursorProjectResolver.parseListing(bytes) { existing.contains($0) }
         #expect(
             sightings.map(\.path) == [
-                "/Users/dev/src/terminal-android",
-                "/Users/dev/src/agentkit",
-                "/Users/dev/src/anyssh",
+                "/home/dev/src/web-admin",
+                "/home/dev/src/docs",
+                "/home/dev/src/api",
             ]
         )
         #expect(sightings.allSatisfy { $0.source == .cursor })
@@ -69,28 +70,25 @@ struct RecentDirectoriesParserTests {
         let db = try RecentDirectoriesFixtureData.bytes("opencode-db.tsv")
         let fromDB = OpenCodeProjectParser().parse(db)
         #expect(fromDB.count == 4)
-        #expect(fromDB[0].path == "/Users/dev/src/portfolio")
-        #expect(fromDB[3].path == "/Users/dev/src/anyssh")
+        #expect(fromDB[0].path == "/home/dev/src/web")
+        #expect(fromDB[3].path == "/home/dev/src/api")
         #expect(fromDB[3].lastUsed.timeIntervalSince1970 == 1_786_545_915.143)
 
         let json = try RecentDirectoriesFixtureData.bytes("opencode-project.json")
         let fromJSON = OpenCodeProjectParser().parse(json)
         #expect(fromJSON.count == 1)
-        #expect(fromJSON[0].path == "/Users/dev/src/acme-voice-agent")
+        #expect(fromJSON[0].path == "/home/dev/src/tools")
         #expect(fromJSON[0].lastUsed.timeIntervalSince1970 == 1_769_438_268.121)
     }
 
     @Test func hostScanWireFormatMergesAndRanks() throws {
         let bytes = try RecentDirectoriesFixtureData.bytes("host-scan-merged.txt")
         let list = try RecentDirectoriesParser().parse(bytes, limit: 40)
-        #expect(list.first?.path == "/Users/dev/src/anyssh")
-        #expect(list.first?.sources == [.opencode, .claude, .codex])
-        #expect(list.map(\.path).contains("/Users/dev/src/terminal-android"))
+        #expect(list.first?.path == "/home/dev/src/api")
+        #expect(list.first?.sources == [.opencode, .claude, .codex, .cursor])
+        #expect(list.map(\.path).contains("/home/dev/src/web-admin"))
         #expect(
-            list.contains {
-                $0.path
-                    == "/Users/dev/src/client-project/.claude-worktrees/fix-login-flow"
-            }
+            list.contains { $0.path == "/home/dev/src/api/.worktrees/fix-login-flow" }
         )
     }
 
