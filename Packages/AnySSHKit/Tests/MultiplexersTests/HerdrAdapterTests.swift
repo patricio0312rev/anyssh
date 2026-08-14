@@ -21,13 +21,13 @@ import Testing
         #expect(snapshot.groups[0].isActive)
 
         #expect(snapshot.panes.count == 2)
-        #expect(snapshot.panes[0].workingDirectory == "/Users/dev/src/anyssh/Packages")
+        #expect(snapshot.panes[0].workingDirectory == "/home/dev/src/api/services")
         #expect(snapshot.panes[0].agentStatus == "working")
-        #expect(snapshot.panes[0].repositoryRoot == "/Users/dev/src/anyssh")
+        #expect(snapshot.panes[0].repositoryRoot == "/home/dev/src/api")
         #expect(snapshot.panes[0].isActive)
-        #expect(snapshot.panes[1].workingDirectory == #"/Users/dev/src/my project's "notes""#)
+        #expect(snapshot.panes[1].workingDirectory == #"/home/dev/src/my project's "notes""#)
         #expect(snapshot.panes[1].agentStatus == "idle")
-        #expect(snapshot.panes[1].repositoryRoot == "/Users/dev/src/anyssh")
+        #expect(snapshot.panes[1].repositoryRoot == "/home/dev/src/api")
     }
 
     @Test func nonDefaultNewTabBindingIsDiscoveredFromConfig() throws {
@@ -51,9 +51,9 @@ import Testing
         #expect(bindings.chords["detach"] == "prefix+shift+d")
     }
 
-    @Test func protocolEighteenIsRefusedAsProtocolMismatch() async throws {
+    @Test func protocolSeventeenIsRefusedAsProtocolMismatch() async throws {
         let runner = ScriptedMuxRunner(sections: [
-            HerdrCommands.detectLabel: try MuxFixtureData.bytes("herdr-status-protocol-18.json")
+            HerdrCommands.detectLabel: try MuxFixtureData.bytes("herdr-status-protocol-17.json")
         ])
         let adapter = HerdrAdapter(runner: runner)
         do {
@@ -81,13 +81,13 @@ import Testing
         #expect(info.kind == .herdr)
         #expect(info.version == "0.8.0")
         #expect(info.protocolVersion == 19)
-        #expect(info.binaryPath == "/Users/dev/.local/bin/herdr")
+        #expect(info.binaryPath == "/home/dev/.local/bin/herdr")
 
         let sessions = try await adapter.listSessions()
         #expect(sessions.map(\.name) == ["default", "anyssh-test"])
 
         let snapshot = try await adapter.snapshot(MuxSessionID(rawValue: "default"))
-        #expect(snapshot.panes[0].workingDirectory == "/Users/dev/src/anyssh/Packages")
+        #expect(snapshot.panes[0].workingDirectory == "/home/dev/src/api/services")
 
         let bindings = try await adapter.keyBindings()
         #expect(bindings.chords["new_tab"] == "prefix+t")
@@ -97,7 +97,7 @@ import Testing
 
         #expect(
             adapter.attachCommand(MuxTarget(session: MuxSessionID(rawValue: "anyssh-test")))
-                == "'/Users/dev/.local/bin/herdr' session attach 'anyssh-test'"
+                == "'/home/dev/.local/bin/herdr' session attach 'anyssh-test'"
         )
         #expect(adapter.capabilities.localSessionSurvival == .proven)
         #expect(adapter.capabilities.remoteBootstrapSurvival == .unverified)
