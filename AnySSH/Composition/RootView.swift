@@ -102,6 +102,7 @@ struct RootView: View {
                 .task { await openFirstRemote() }
         } else {
             sessions.scenarioWorkspace(scenario)
+                .task { if scenario.prefersLandscape { ScenarioOrientation.requestLandscape() } }
         }
     }
 
