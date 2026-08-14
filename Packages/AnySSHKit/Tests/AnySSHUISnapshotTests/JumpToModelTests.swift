@@ -177,6 +177,31 @@ import Testing
         #expect(built.first?.groups.first?.paneCount == 1)
     }
 
+    @Test func aStoppedSessionDoesNotHideTheRunningOne() async {
+        let model = JumpToModel(
+            adapter: StoppedSessionMuxAdapter(),
+            directory: nil,
+            writer: nil
+        )
+        await model.load()
+        #expect(model.sessions.map(\.name) == [StoppedSessionMuxAdapter.runningName])
+        #expect(model.sessions.first?.groups.count == 1)
+        #expect(!model.loadFailed)
+        #expect(model.failureState == nil)
+    }
+
+    @Test func everySessionFailingKeepsTheFailure() async {
+        let model = JumpToModel(
+            adapter: EveryStoppedMuxAdapter(),
+            directory: nil,
+            writer: nil
+        )
+        await model.load()
+        #expect(model.sessions.isEmpty)
+        #expect(model.loadFailed)
+        #expect(model.failureState == .command(.failed))
+    }
+
     private func row(_ id: String, _ title: String, status: JumpAgentStatus) -> JumpRow {
         JumpRow(
             group: MuxGroup(
