@@ -21,33 +21,55 @@ public struct AuthPromptSheet: View {
 
     private func form(_ round: AuthPromptRound) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Space.step4) {
-                if !round.instruction.isEmpty {
-                    Text(round.instruction)
-                        .font(Theme.Text.body)
-                        .accessibilityIdentifier(UIIdentifier.Auth.instruction)
-                }
-                ForEach(Array(round.prompts.enumerated()), id: \.offset) { index, prompt in
-                    AuthPromptField(prompt: prompt, index: index, value: binding(index))
+            VStack(alignment: .leading, spacing: Theme.Space.step5) {
+                headline(round)
+                SurfaceCard {
+                    VStack(spacing: Theme.Space.step3) {
+                        ForEach(Array(round.prompts.enumerated()), id: \.offset) { index, prompt in
+                            AuthPromptField(prompt: prompt, index: index, value: binding(index))
+                        }
+                    }
                 }
                 actions
             }
-            .padding()
+            .padding(Theme.Space.step5)
         }
+        .background(Theme.surface.base)
         .accessibilityIdentifier(UIIdentifier.Auth.sheet)
     }
 
-    private var actions: some View {
-        HStack {
-            Button("Cancel", role: .cancel, action: model.cancel)
-                .accessibilityIdentifier(UIIdentifier.Auth.cancel)
-            Spacer()
-            Button("Continue", action: model.submit)
-                .buttonStyle(.glass)
-                .accessibilityIdentifier(UIIdentifier.Auth.submit)
-                .keyboardShortcut(.defaultAction)
+    private func headline(_ round: AuthPromptRound) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Space.step2) {
+            if !round.name.isEmpty {
+                Text(round.name)
+                    .font(Theme.Text.screenTitle)
+                    .foregroundStyle(Theme.text.primary)
+            }
+            if !round.instruction.isEmpty {
+                Text(round.instruction)
+                    .font(Theme.Text.body)
+                    .foregroundStyle(Theme.text.secondary)
+                    .accessibilityIdentifier(UIIdentifier.Auth.instruction)
+            }
         }
-        .controlSize(.large)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var actions: some View {
+        VStack(spacing: Theme.Space.step2) {
+            SheetActionButton(
+                "Continue",
+                emphasis: .primary,
+                accessibilityIdentifier: UIIdentifier.Auth.submit,
+                action: model.submit
+            )
+            .keyboardShortcut(.defaultAction)
+            SheetActionButton(
+                "Cancel",
+                accessibilityIdentifier: UIIdentifier.Auth.cancel,
+                action: model.cancel
+            )
+        }
     }
 
     private func binding(_ index: Int) -> Binding<String> {
