@@ -3,6 +3,8 @@
 </p>
 
 <p align="center">
+  <a href="https://www.getanyssh.com">Website</a> &nbsp;&middot;&nbsp;
+  <a href="https://apps.apple.com/app/anyssh">Download</a> &nbsp;&middot;&nbsp;
   <a href="#features">Features</a> &nbsp;&middot;&nbsp;
   <a href="#getting-started">Getting started</a> &nbsp;&middot;&nbsp;
   <a href="#development">Development</a> &nbsp;&middot;&nbsp;
