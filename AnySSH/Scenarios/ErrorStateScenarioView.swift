@@ -9,7 +9,7 @@ struct ErrorStateScenarioView: View {
     @State private var resolved: ErrorState?
 
     var body: some View {
-        ErrorStateView(state: resolved ?? state)
+        ErrorStateView(state: resolved ?? state, recover: {}, dismiss: {})
             .task { await unlock() }
     }
 
