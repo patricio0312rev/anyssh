@@ -7,10 +7,12 @@ struct KeyImportRefusalView: View {
 
     var body: some View {
         let copy = refusal.copy
-        return VStack(alignment: .leading, spacing: Theme.Space.step4) {
+        return Section {
             VStack(alignment: .leading, spacing: Theme.Space.step2) {
-                Text(copy.title)
-                    .font(Theme.Text.screenTitle)
+                ScreenMarker(identifier: refusal.accessibilityIdentifier)
+                Label(copy.title, systemImage: "exclamationmark.triangle.fill")
+                    .font(Theme.Text.sectionHeader)
+                    .foregroundStyle(Theme.status.attention)
                 Text(copy.body)
                     .font(Theme.Text.body)
                     .foregroundStyle(Theme.text.secondary)
@@ -18,11 +20,8 @@ struct KeyImportRefusalView: View {
             .accessibilityElement(children: .combine)
 
             Button(copy.recoveryLabel, action: dismiss)
-                .buttonStyle(.glass)
-                .controlSize(.large)
-                .controlSize(.large)
+                .buttonStyle(.rowAction)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityIdentifier(refusal.accessibilityIdentifier)
+        .listRowBackground(Theme.surface.raised)
     }
 }
