@@ -6,11 +6,9 @@ struct SessionWorkspaceToolbar: ToolbarContent {
     let title: String
     let transportState: TransportState
     let keyboardEngine: (any TerminalSurfaceEngine)?
-    let workspacePath: String?
     let showsBack: Bool
     let onBack: () -> Void
     let onToggleSwitcher: () -> Void
-    let onOpenBrowser: () -> Void
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
@@ -40,15 +38,6 @@ struct SessionWorkspaceToolbar: ToolbarContent {
             .buttonStyle(.plain)
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            if let workspacePath {
-                IconButton(
-                    systemImage: "folder",
-                    label: "Browse \(workspacePath)",
-                    surface: .toolbar,
-                    accessibilityIdentifier: UIIdentifier.Workspace.open,
-                    action: onOpenBrowser
-                )
-            }
             if let keyboardEngine {
                 TerminalKeyboardToggle(engine: keyboardEngine)
             }
