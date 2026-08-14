@@ -8,11 +8,7 @@ public struct SnippetStore: Sendable {
     }
 
     public static func applicationSupport() -> SnippetStore {
-        SnippetStore(
-            fileURL: URL.applicationSupportDirectory
-                .appending(path: "AnySSH")
-                .appending(path: "snippets.json")
-        )
+        SnippetStore(fileURL: AppDirectories.support.appending(path: "snippets.json"))
     }
 
     public func load() -> SnippetLibrary {
