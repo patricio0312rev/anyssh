@@ -71,6 +71,7 @@ commentable=$(find . -name '*.swift' \
     -not -path './.git/*' \
     -not -path '*/.build/*' \
     -not -path '*/Icons/*' \
+    -not -path '*/Fixtures/Data/*' \
     -not -name '*.generated.swift')
 
 CHECKER="$(mktemp)"
