@@ -5,6 +5,7 @@ public enum GitDiffFixtures {
         guard !file.isBinary else {
             return FileDiff(file: file, hunks: [], isBinary: true, truncated: false, lossyDecode: false)
         }
+        guard file.change != .added else { return added(file) }
         return FileDiff(
             file: file,
             hunks: [header, body],
@@ -15,7 +16,11 @@ public enum GitDiffFixtures {
     }
 
     public static func untracked(_ path: String) -> FileDiff {
-        let file = ChangedFile(
+        added(newFile(at: path))
+    }
+
+    public static func newFile(at path: String) -> ChangedFile {
+        ChangedFile(
             oldPath: nil,
             newPath: path,
             change: .added,
@@ -23,7 +28,10 @@ public enum GitDiffFixtures {
             additions: additions.count,
             deletions: 0
         )
-        return FileDiff(
+    }
+
+    private static func added(_ file: ChangedFile) -> FileDiff {
+        FileDiff(
             file: file,
             hunks: [
                 DiffHunk(
@@ -81,6 +89,10 @@ public enum GitDiffFixtures {
         "# Git surfaces",
         "",
         "Changes, history and the diff renderer.",
+        "",
+        "## Rendering",
+        "",
+        "Every hunk keeps the numbers it has and reserves nothing for the ones it lacks.",
     ]
 
     private static func line(_ kind: DiffLineKind, _ text: String) -> DiffLine {
