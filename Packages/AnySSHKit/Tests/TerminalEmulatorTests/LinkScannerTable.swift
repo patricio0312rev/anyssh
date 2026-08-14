@@ -48,8 +48,8 @@ enum LinkScannerTable {
         ),
         .init(
             "file path",
-            text: "file:///Users/dev/src/anyssh",
-            expected: [.init("file:///Users/dev/src/anyssh", columns: 0..<35)]
+            text: "file:///home/dev/src/anyssh",
+            expected: [.init("file:///home/dev/src/anyssh", columns: 0..<27)]
         ),
         .init(
             "balanced paren inside path",
