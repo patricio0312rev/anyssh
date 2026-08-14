@@ -68,7 +68,7 @@ public struct ClipboardScenarioView: View {
     }
 
     private var copyBody: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Theme.Space.screenMargin) {
             SelectionCopyButton(text: selectionText) { text in
                 controller.engine.markRemoteClipboardActive()
                 controller.copySelection(text)
@@ -76,7 +76,7 @@ public struct ClipboardScenarioView: View {
                 localPasteboard = SystemClipboardPasteboard().read() ?? ""
             }
             Text(outboundEncoded)
-                .font(.system(.caption2, design: .monospaced))
+                .font(Theme.code())
                 .foregroundStyle(Theme.text.tertiary)
                 .accessibilityIdentifier("terminal.clipboard.outbound")
                 .accessibilityValue(outboundEncoded)
