@@ -20,7 +20,7 @@ public struct RemoteFormView: View {
     public var body: some View {
         Form {
             connection
-            device
+            RemoteFormDeviceSection(model: model)
             authentication
             startup
             if model.hostKeysAvailable {
@@ -37,12 +37,14 @@ public struct RemoteFormView: View {
                     .accessibilityIdentifier(UIIdentifier.RemoteForm.cancel)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
+                Button {
                     Task {
                         guard let remote = model.remote() else { return }
                         guard await model.savePasswordIfNeeded() else { return }
                         await save(remote)
                     }
+                } label: {
+                    Text("Save").foregroundStyle(Theme.accent)
                 }
                 .accessibilityIdentifier(UIIdentifier.RemoteForm.save)
             }
@@ -74,7 +76,7 @@ public struct RemoteFormView: View {
     }
 
     private var connection: some View {
-        Section("Connection") {
+        Section {
             RemoteFormField(
                 title: "Host",
                 identifier: UIIdentifier.RemoteForm.host,
@@ -105,17 +107,20 @@ public struct RemoteFormView: View {
                 message: nil,
                 placeholder: "Optional, defaults to the host"
             )
+        } header: {
+            SectionLabel("Connection")
         }
         .listRowBackground(Theme.surface.raised)
     }
 
     private var authentication: some View {
-        Section("Authentication") {
+        Section {
             Picker("Method", selection: $model.authMethod) {
                 ForEach(AuthMethod.allCases, id: \.self) { method in
                     Text(method.label).tag(method)
                 }
             }
+            .tint(Theme.text.secondary)
             .accessibilityIdentifier(UIIdentifier.RemoteForm.authMethod)
 
             if model.needsKey {
@@ -142,29 +147,14 @@ public struct RemoteFormView: View {
                     keyboard: .password
                 )
             }
-        }
-        .listRowBackground(Theme.surface.raised)
-    }
-
-    private var device: some View {
-        Section("Device") {
-            Picker("Type", selection: $model.deviceTypeSelection) {
-                ForEach(RemoteDeviceType.allCases, id: \.self) { type in
-                    Label(type.label, systemImage: type.systemImageName).tag(type)
-                }
-            }
-            .accessibilityIdentifier("remote.form.deviceType")
-            if let detected = model.detectedDeviceType {
-                Text("Detected as \(detected.label)")
-                    .font(Theme.Text.caption)
-                    .foregroundStyle(Theme.text.secondary)
-            }
+        } header: {
+            SectionLabel("Authentication")
         }
         .listRowBackground(Theme.surface.raised)
     }
 
     private var startup: some View {
-        Section("Startup") {
+        Section {
             RemoteFormField(
                 title: "Directory",
                 identifier: UIIdentifier.RemoteForm.startPath,
@@ -186,8 +176,9 @@ public struct RemoteFormView: View {
                 message: nil,
                 placeholder: "work"
             )
+        } header: {
+            SectionLabel("Startup")
         }
         .listRowBackground(Theme.surface.raised)
     }
-
 }
