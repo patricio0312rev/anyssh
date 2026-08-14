@@ -12,7 +12,7 @@ struct RemoteFormTestSection: View {
                 if model.isTesting {
                     LoadingView(.inline)
                 } else {
-                    Text("Test Connection")
+                    Label("Test Connection", systemImage: "bolt.horizontal")
                 }
             }
             .buttonStyle(.rowAction)
