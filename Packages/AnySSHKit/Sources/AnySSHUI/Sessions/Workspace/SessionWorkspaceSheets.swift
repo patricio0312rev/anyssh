@@ -5,9 +5,14 @@ extension View {
     func workspaceSheets(
         model: SessionWorkspaceModel,
         isMultiplexerPresented: Binding<Bool>,
-        isJumpToPresented: Binding<Bool>
+        isJumpToPresented: Binding<Bool>,
+        isJobAlertsPresented: Binding<Bool>
     ) -> some View {
         self
+            .sheet(isPresented: isJobAlertsPresented) {
+                JobAlertSettingsView(settings: model.jobAlertSettings)
+                    .presentationDragIndicator(.visible)
+            }
             .sheet(isPresented: authPresented(model)) {
                 if let bridge = model.activeAuthBridge {
                     AuthPromptSheet(model: bridge.auth)
