@@ -1,5 +1,6 @@
 import AnySSHCore
 import AnySSHUI
+import Highlighting
 import SwiftUI
 
 struct RootView: View {
@@ -12,6 +13,7 @@ struct RootView: View {
             screen
         }
         .environment(\.fileIconImageProvider, BundleFileIconImageProvider())
+        .environment(\.syntaxHighlighter, TreeSitterHighlighter())
         .onOpenURL { url in
             guard environment.isMock else { return }
             routed = DeepLinkRouter.scenario(for: url) ?? routed
@@ -41,6 +43,8 @@ struct RootView: View {
                 TerminalScenarioView(scenario: scenario)
             case .git(let scenario):
                 GitScenarioView(scenario: scenario)
+            case .files(let scenario):
+                FilesScenarioView(scenario: scenario)
             }
         } else {
             remotes
