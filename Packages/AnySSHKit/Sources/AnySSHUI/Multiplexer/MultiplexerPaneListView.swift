@@ -3,6 +3,7 @@ import SwiftUI
 
 public struct MultiplexerPaneListView: View {
     @State private var model: MultiplexerPaneListModel
+    @Environment(\.statusToasts) private var statusToasts
     private let writer: (any DisplayWriter)?
     private let onDismiss: (() -> Void)?
 
@@ -81,6 +82,12 @@ public struct MultiplexerPaneListView: View {
     private func attach(_ session: MuxSessionID) {
         let command = model.attachCommand(for: session)
         guard !command.isEmpty, let writer else { return }
-        Task { try? await writer.send(Array((command + "\r").utf8)[...]) }
+        Task {
+            do {
+                try await writer.send(Array((command + "\r").utf8)[...])
+            } catch {
+                statusToasts.present(state: .mux(.attachTargetVanished))
+            }
+        }
     }
 }
