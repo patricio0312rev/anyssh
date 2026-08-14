@@ -11,7 +11,7 @@ struct LiveHost: Sendable {
     static let development = LiveHost(
         host: setting("ANYSSH_LIVE_HOST", "192.0.2.10"),
         port: Int32(setting("ANYSSH_LIVE_PORT", "22")) ?? 22,
-        username: setting("ANYSSH_LIVE_USER", "patricio"),
+        username: setting("ANYSSH_LIVE_USER", "dev"),
         privateKeyPath: setting(
             "ANYSSH_LIVE_KEY",
             NSHomeDirectory() + "/.ssh/anyssh_dev_ed25519"
