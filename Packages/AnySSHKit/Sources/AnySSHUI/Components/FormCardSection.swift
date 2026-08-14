@@ -12,8 +12,4 @@ extension View {
                 )
             )
     }
-
-    public func formSectionMargin() -> some View {
-        listRowInsets(EdgeInsets())
-    }
 }
