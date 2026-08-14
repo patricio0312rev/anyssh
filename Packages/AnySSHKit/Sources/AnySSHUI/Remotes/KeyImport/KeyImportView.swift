@@ -39,16 +39,15 @@ public struct KeyImportView: View {
                 .buttonStyle(.rowAction)
                 .accessibilityIdentifier(UIIdentifier.KeyImport.file)
         } header: {
-            SectionLabel("Source")
+            SectionLabel("Source").formSectionMargin()
         } footer: {
-            Text(
+            SectionCaption(
                 "Paste a private key, or pick the file it lives in. The key is stored on this "
                     + "device and never leaves it."
             )
-            .font(Theme.Text.caption)
-            .foregroundStyle(Theme.text.secondary)
+            .formSectionMargin()
         }
-        .listRowBackground(Theme.surface.raised)
+        .formCardSection()
     }
 
     @ViewBuilder
@@ -75,13 +74,12 @@ public struct KeyImportView: View {
                 .textContentType(.password)
                 .accessibilityIdentifier(UIIdentifier.KeyImport.passphrase)
         } header: {
-            SectionLabel("Passphrase")
+            SectionLabel("Passphrase").formSectionMargin()
         } footer: {
-            Text("This key is encrypted. Its passphrase is stored beside it.")
-                .font(Theme.Text.caption)
-                .foregroundStyle(Theme.text.secondary)
+            SectionCaption("This key is encrypted. Its passphrase is stored beside it.")
+                .formSectionMargin()
         }
-        .listRowBackground(Theme.surface.raised)
+        .formCardSection()
     }
 
     private var actions: some View {
@@ -94,6 +92,6 @@ public struct KeyImportView: View {
                 .buttonStyle(.rowAction(tint: Theme.destructive))
                 .accessibilityIdentifier(UIIdentifier.KeyImport.discard)
         }
-        .listRowBackground(Theme.surface.raised)
+        .formCardSection()
     }
 }
