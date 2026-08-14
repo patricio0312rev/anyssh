@@ -21,6 +21,13 @@ extension View {
             .catalogRowPlain()
     }
 
+    public func catalogActionRowChrome() -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.Space.cardRadius, style: .continuous)
+        return background(Theme.surface.raised, in: shape)
+            .environment(\.rowActionInset, Theme.Space.cardPadding)
+            .catalogRowPlain()
+    }
+
     public func catalogRowPlain() -> some View {
         listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
@@ -32,6 +39,17 @@ extension View {
                     trailing: 0
                 )
             )
+    }
+}
+
+private enum RowActionInsetKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var rowActionInset: CGFloat {
+        get { self[RowActionInsetKey.self] }
+        set { self[RowActionInsetKey.self] = newValue }
     }
 }
 
@@ -81,6 +99,9 @@ private struct ReorderGutter: ViewModifier {
                 accessibilityIdentifier: "preview.list.row3"
             )
             .catalogRowChrome()
+            Button("Reset to Defaults") {}
+                .buttonStyle(.rowAction(tint: Theme.destructive))
+                .catalogActionRowChrome()
         }
         .catalogListSurface()
     }
