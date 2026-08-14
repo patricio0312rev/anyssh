@@ -5,14 +5,14 @@ enum RemoteFormDestination: Hashable {
     case keyImport
 }
 
-struct RemoteSheet: View {
+public struct RemoteSheet: View {
     @State private var model: RemoteFormModel
     @State private var path: [RemoteFormDestination]
 
     private let save: (Remote) async -> Void
     private let dismiss: () -> Void
 
-    init(
+    public init(
         route: RemoteRoute,
         secrets: any SecretStore,
         hostKeys: (any HostKeyStore)? = nil,
@@ -31,7 +31,7 @@ struct RemoteSheet: View {
         self.dismiss = dismiss
     }
 
-    var body: some View {
+    public var body: some View {
         NavigationStack(path: $path) {
             ZStack {
                 Theme.surface.base.ignoresSafeArea()
