@@ -18,11 +18,12 @@ struct StatusToastCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: shape)
         .overlay { shape.stroke(toast.severity.color.opacity(0.45), lineWidth: 1) }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(
-            toast.accessibilityIdentifier ?? UIIdentifier.StatusToast.card(toast.id.uuidString)
-        )
-        .accessibilityAddTraits(.updatesFrequently)
+        .overlay(alignment: .topLeading) {
+            ScreenMarker(
+                identifier: toast.accessibilityIdentifier
+                    ?? UIIdentifier.StatusToast.card(toast.id.uuidString)
+            )
+        }
     }
 
     private var content: some View {
