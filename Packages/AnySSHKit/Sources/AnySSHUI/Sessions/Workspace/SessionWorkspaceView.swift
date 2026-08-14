@@ -107,7 +107,7 @@ public struct SessionWorkspaceView: View {
                     workspacePath: model.activeRecord?.workspace?.path,
                     showsBack: onClose != nil,
                     onBack: dismissToRemotes,
-                    onOpenSwitcher: presentSwitcher,
+                    onToggleSwitcher: toggleSwitcher,
                     onOpenBrowser: { presentedBrowser = .changes }
                 )
             }
