@@ -42,16 +42,14 @@ extension SessionWorkspaceView {
                     Button("New Session") {
                         Task { await model.open(remote: remote) }
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(Theme.accent)
+                    .buttonStyle(.accentCapsule)
                     .accessibilityIdentifier(UIIdentifier.Session.newSession)
                     Button("Back to Remotes", action: dismissToRemotes)
                         .buttonStyle(.raised)
                         .accessibilityIdentifier(UIIdentifier.Session.backToRemotes)
                 } else {
                     Button("Back to Remotes", action: dismissToRemotes)
-                        .buttonStyle(.glassProminent)
-                        .tint(Theme.accent)
+                        .buttonStyle(.accentCapsule)
                         .accessibilityIdentifier(UIIdentifier.Session.backToRemotes)
                 }
             }
