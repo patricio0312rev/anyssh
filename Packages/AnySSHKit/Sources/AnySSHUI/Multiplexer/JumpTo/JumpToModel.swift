@@ -11,6 +11,8 @@ public final class JumpToModel {
     public private(set) var failureState: ErrorState?
     public private(set) var layout: JumpLayout
     public private(set) var expandedSessionIDs = Set<MuxSessionID>()
+    public private(set) var jumpingRowID: MuxGroupID?
+    public private(set) var jumpFailure: ErrorState?
     public private(set) var lastBytes = [UInt8]()
     public let kind: MultiplexerKind
 
@@ -51,6 +53,8 @@ public final class JumpToModel {
 
     public var showsStatus: Bool { kind == .herdr }
 
+    public var isJumping: Bool { jumpingRowID != nil }
+
     public var renderedLastBytes: String {
         lastBytes.isEmpty
             ? "[]"
@@ -90,7 +94,14 @@ public final class JumpToModel {
     }
 
     public func jump(to row: JumpRow) async -> Bool {
-        guard let adapter, let writer else { return false }
+        guard jumpingRowID == nil else { return false }
+        jumpingRowID = row.id
+        jumpFailure = nil
+        defer { jumpingRowID = nil }
+        guard let adapter, let writer else {
+            jumpFailure = .mux(.attachTargetVanished)
+            return false
+        }
         let target = MuxTarget(session: row.sessionID, group: row.group.id)
         let bytes = Array((adapter.attachCommand(target) + "\r").utf8)
         lastBytes = bytes
@@ -98,6 +109,7 @@ public final class JumpToModel {
             try await writer.send(bytes[...])
             return true
         } catch {
+            jumpFailure = (error as? ErrorState) ?? .mux(.attachTargetVanished)
             return false
         }
     }
