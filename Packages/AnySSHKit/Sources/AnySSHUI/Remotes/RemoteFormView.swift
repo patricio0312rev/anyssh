@@ -90,7 +90,7 @@ public struct RemoteFormView: View {
                 identifier: UIIdentifier.RemoteForm.username,
                 text: $model.username,
                 message: model.usernameMessage,
-                placeholder: "patricio"
+                placeholder: "admin"
             )
             RemoteFormField(
                 title: "Port",
@@ -160,7 +160,7 @@ public struct RemoteFormView: View {
                 identifier: UIIdentifier.RemoteForm.startPath,
                 text: $model.startPath,
                 message: nil,
-                placeholder: "~/Sites"
+                placeholder: "~/projects"
             )
             RemoteFormField(
                 title: "Command",
