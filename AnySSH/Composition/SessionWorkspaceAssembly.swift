@@ -81,7 +81,7 @@ enum SessionWorkspaceAssembly {
     ) {
         let transcript = scenario.transcript
         for record in records {
-            model.surface(for: record.id)?.engine.feed(ArraySlice(transcript.utf8))
+            model.surface(for: record.id)?.engine.feed(ArraySlice(transcript))
         }
     }
 
