@@ -16,7 +16,7 @@ public actor FileHostKeyStore: HostKeyStore {
     }
 
     public static func applicationSupport() -> FileHostKeyStore {
-        FileHostKeyStore(directory: URL.applicationSupportDirectory.appending(path: "AnySSH"))
+        FileHostKeyStore(directory: AppDirectories.support)
     }
 
     public var location: URL {
