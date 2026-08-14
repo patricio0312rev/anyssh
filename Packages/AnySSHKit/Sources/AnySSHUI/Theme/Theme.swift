@@ -5,8 +5,11 @@ public enum Theme {
     public static let text = TextPalette()
     public static let status = StatusPalette()
 
-    public static let accent = Color.srgb(0xab9df2)
-    public static let accentPressed = Color.srgb(0x8f7fe0)
+    public static let accentHex: UInt32 = 0xab9df2
+    public static let accentPressedHex: UInt32 = 0x8f7fe0
+
+    public static let accent = Color.srgb(accentHex)
+    public static let accentPressed = Color.srgb(accentPressedHex)
 
     #if canImport(UIKit)
     public static let separator = Color(uiColor: .separator)
