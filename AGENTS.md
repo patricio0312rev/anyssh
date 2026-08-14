@@ -168,7 +168,7 @@ One hierarchy, applied everywhere:
 - **Toolbar buttons**: plain content only, always monochrome. The toolbar draws its own glass; adding `.glass` inside it nests capsules, and the accent never tints a toolbar glyph.
 - **Inside forms, lists, and cards**: no glass. Confirm/cancel pairs are plain text toolbar buttons without icons; a row-level action (test connection, import) is a bordered or plain row button that belongs to the form's surface. Glass is for controls floating over content, not for controls sitting in it.
 - **Inline text actions** inside lists and sheets: `.buttonStyle(.plain)` with `accent` foreground.
-- **Destructive** (remove, delete, disconnect-and-lose-state): same shape as its context with the `destructive` red role, always behind a confirmation.
+- **Destructive** (remove, delete, reset to defaults, disconnect-and-lose-state): same shape as its context with the `destructive` red role, always behind a confirmation.
 - **Over a scrim or dark overlay** (reconnect, error covers, full-screen states): plain `.glass` disappears against the darkness. Every button there is `.glassProminent`, accent for the single continue action and monochrome for the rest. If a screenshot cannot distinguish a control from its background, the style is wrong regardless of what this table says.
 
 All buttons of the same role share the same size: `IconButton` defines the icon hit target, `Theme.Buttons` defines heights. A button visually smaller, darker, or shinier than its siblings is a bug.
