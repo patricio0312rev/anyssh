@@ -26,6 +26,7 @@ extension SessionWorkspaceView {
                     onRetry: { Task { await model.retryActiveSession() } }
                 )
                 axByteCounter(surface.bytesReceived)
+                axNotificationProbe()
             }
             .frame(maxWidth: .infinity, alignment: .top)
         }
