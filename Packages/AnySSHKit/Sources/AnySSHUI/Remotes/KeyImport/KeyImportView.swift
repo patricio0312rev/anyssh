@@ -15,13 +15,12 @@ public struct KeyImportView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.step5) {
-            sources
+        Form {
+            source
             content
-            Spacer(minLength: 0)
         }
-        .padding(Theme.Space.step5)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .scrollContentBackground(.hidden)
+        .background { Theme.surface.base.ignoresSafeArea() }
         .navigationTitle("Import Key")
         .overlay(alignment: .topLeading) { ScreenMarker(identifier: UIIdentifier.KeyImport.screen) }
         .fileImporter(
@@ -31,27 +30,25 @@ public struct KeyImportView: View {
         )
     }
 
-    private var sources: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.step3) {
+    private var source: some View {
+        Section {
+            Button("Paste Key", action: model.importPastedKey)
+                .buttonStyle(.rowAction)
+                .accessibilityIdentifier(UIIdentifier.KeyImport.paste)
+            Button("Choose File") { isPickingFile = true }
+                .buttonStyle(.rowAction)
+                .accessibilityIdentifier(UIIdentifier.KeyImport.file)
+        } header: {
+            SectionLabel("Source")
+        } footer: {
             Text(
                 "Paste a private key, or pick the file it lives in. The key is stored on this "
                     + "device and never leaves it."
             )
-            .font(Theme.Text.body)
+            .font(Theme.Text.caption)
             .foregroundStyle(Theme.text.secondary)
-
-            HStack(spacing: Theme.Space.step3) {
-                Button("Paste Key", action: model.importPastedKey)
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
-                    .accessibilityIdentifier(UIIdentifier.KeyImport.paste)
-                Button("Choose File") { isPickingFile = true }
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
-                    .accessibilityIdentifier(UIIdentifier.KeyImport.file)
-            }
-            .controlSize(.large)
         }
+        .listRowBackground(Theme.surface.raised)
     }
 
     @ViewBuilder
@@ -60,7 +57,11 @@ public struct KeyImportView: View {
         case .idle:
             EmptyView()
         case .inspected(let key):
-            inspection(of: key)
+            KeyImportSummary(key: key, isSaved: false)
+            if model.needsPassphrase {
+                passphrase
+            }
+            actions
         case .saved(let key):
             KeyImportSummary(key: key, isSaved: true)
         case .refused(let refusal):
@@ -68,33 +69,31 @@ public struct KeyImportView: View {
         }
     }
 
-    private func inspection(of key: KeyMaterial) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Space.step5) {
-            KeyImportSummary(key: key, isSaved: false)
-
-            if model.needsPassphrase {
-                VStack(alignment: .leading, spacing: Theme.Space.step2) {
-                    Text("This key is encrypted. Its passphrase is stored beside it.")
-                        .font(Theme.Text.caption)
-                        .foregroundStyle(Theme.text.secondary)
-                    SecureField("Passphrase", text: $model.passphrase)
-                        .textContentType(.password)
-                        .accessibilityIdentifier(UIIdentifier.KeyImport.passphrase)
-                }
-            }
-
-            HStack(spacing: Theme.Space.step3) {
-                Button("Save Key") { Task { await model.save() } }
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
-                    .disabled(!model.canSave)
-                    .accessibilityIdentifier(UIIdentifier.KeyImport.save)
-                Button("Discard", role: .destructive, action: model.discard)
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
-                    .accessibilityIdentifier(UIIdentifier.KeyImport.discard)
-            }
-            .controlSize(.large)
+    private var passphrase: some View {
+        Section {
+            SecureField("Passphrase", text: $model.passphrase)
+                .textContentType(.password)
+                .accessibilityIdentifier(UIIdentifier.KeyImport.passphrase)
+        } header: {
+            SectionLabel("Passphrase")
+        } footer: {
+            Text("This key is encrypted. Its passphrase is stored beside it.")
+                .font(Theme.Text.caption)
+                .foregroundStyle(Theme.text.secondary)
         }
+        .listRowBackground(Theme.surface.raised)
+    }
+
+    private var actions: some View {
+        Section {
+            Button("Save Key") { Task { await model.save() } }
+                .buttonStyle(.rowAction)
+                .disabled(!model.canSave)
+                .accessibilityIdentifier(UIIdentifier.KeyImport.save)
+            Button("Discard", role: .destructive, action: model.discard)
+                .buttonStyle(.rowAction(tint: Theme.destructive))
+                .accessibilityIdentifier(UIIdentifier.KeyImport.discard)
+        }
+        .listRowBackground(Theme.surface.raised)
     }
 }
