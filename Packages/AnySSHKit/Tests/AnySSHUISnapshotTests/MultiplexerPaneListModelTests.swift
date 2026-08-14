@@ -28,6 +28,22 @@ import Testing
         #expect(await writer.writes.count == 1)
     }
 
+    @Test func aStoppedSessionDoesNotHideTheRunningOne() async throws {
+        let model = MultiplexerPaneListModel(adapter: StoppedSessionMuxAdapter())
+        await model.load()
+        #expect(model.sessions.map(\.name) == [StoppedSessionMuxAdapter.runningName])
+        let session = try #require(model.sessions.first)
+        #expect(model.snapshot(for: session.id)?.panes.count == 1)
+        #expect(model.failureState == nil)
+    }
+
+    @Test func everySessionFailingKeepsTheFailure() async {
+        let model = MultiplexerPaneListModel(adapter: EveryStoppedMuxAdapter())
+        await model.load()
+        #expect(model.sessions.isEmpty)
+        #expect(model.failureState == .command(.failed))
+    }
+
     @Test func attachKeepsTheFailureForTheListToShow() async throws {
         let model = MultiplexerPaneListModel(
             adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain)
