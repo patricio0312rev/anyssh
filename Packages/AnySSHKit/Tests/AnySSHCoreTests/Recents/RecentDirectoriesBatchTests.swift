@@ -15,7 +15,7 @@ struct RecentDirectoriesBatchTests {
         #expect(runner.batches[0].commands.count == 1)
         #expect(runner.batches[0].commands[0].label == RecentDirectoriesCommand.label)
         #expect(runner.batches[0].commands[0].arguments[0] == "sh")
-        #expect(list.first?.path == "/Users/dev/src/anyssh")
+        #expect(list.first?.path == "/home/dev/src/api")
     }
 
     @Test func commandIsOneShellScriptWithoutNestedLoginShell() {
