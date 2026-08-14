@@ -1,6 +1,7 @@
 import AnySSHCore
 import Foundation
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -21,6 +22,7 @@ public final class StatusToastCenter {
         }
         items.append(toast)
         scheduleDismiss(for: toast)
+        AccessibilityNotification.Announcement(toast.announcement).post()
         return toast.id
     }
 
