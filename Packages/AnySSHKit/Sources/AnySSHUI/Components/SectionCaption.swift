@@ -14,6 +14,7 @@ public struct SectionCaption: View {
             .font(Theme.Text.caption)
             .foregroundStyle(tone)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, Theme.Space.step2)
             .listRowSeparator(.hidden)
             .listSectionSeparator(.hidden)
     }
