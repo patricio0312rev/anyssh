@@ -9,7 +9,7 @@ struct SessionWorkspaceToolbar: ToolbarContent {
     let workspacePath: String?
     let showsBack: Bool
     let onBack: () -> Void
-    let onOpenSwitcher: () -> Void
+    let onToggleSwitcher: () -> Void
     let onOpenBrowser: () -> Void
 
     var body: some ToolbarContent {
@@ -25,7 +25,7 @@ struct SessionWorkspaceToolbar: ToolbarContent {
             }
         }
         ToolbarItem(placement: .principal) {
-            Button(action: onOpenSwitcher) {
+            Button(action: onToggleSwitcher) {
                 VStack(spacing: Theme.Space.step1) {
                     Text(title)
                         .font(Theme.Text.sectionHeader)
