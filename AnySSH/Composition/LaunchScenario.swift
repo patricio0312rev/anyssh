@@ -10,6 +10,7 @@ enum LaunchScenario: Equatable {
     case errorState(ErrorState)
     case terminal(TerminalScenario)
     case git(GitScenario)
+    case files(FilesScenario)
 
     static let fallback = LaunchScenario.remotes("default")
 
@@ -35,6 +36,8 @@ enum LaunchScenario: Equatable {
             self = .terminal(terminal)
         } else if let git = GitScenario(rawValue: name) {
             self = .git(git)
+        } else if let files = FilesScenario(rawValue: name) {
+            self = .files(files)
         } else if let state = ErrorState(stateID: Self.stateID(from: name)) {
             self = .errorState(state)
         } else {
@@ -49,7 +52,8 @@ enum LaunchScenario: Equatable {
     var remotesFixture: String {
         switch self {
         case .remotes(let name): name
-        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState, .terminal, .git: "single"
+        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState, .terminal, .git, .files:
+            "single"
         }
     }
 
