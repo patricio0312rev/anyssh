@@ -1,0 +1,10 @@
+# A recorded sample exercising every scope the golden table asserts.
+name: origin
+attempts: 0
+enabled: true
+tags:
+  - alpha
+  - beta
+nested:
+  delay: 0.5
+  label: "retrying"
