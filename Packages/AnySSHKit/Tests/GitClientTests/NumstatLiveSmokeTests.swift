@@ -1,3 +1,4 @@
+#if os(macOS)
 import AnySSHCore
 import Foundation
 import Testing
@@ -93,3 +94,4 @@ import Testing
         #expect(diff.hunks.flatMap(\.lines).filter { $0.kind == .addition }.count == 4)
     }
 }
+#endif
