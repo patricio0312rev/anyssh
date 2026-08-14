@@ -9,7 +9,7 @@ ADAPTERS=(SSHTransport TerminalEmulator Highlighting GitClient FileTransfer Sess
 LINKABLE=(AnySSHMocks AnySSHUI CSSH Fixtures SwiftTerm "${ADAPTERS[@]}")
 
 TREES=()
-for tree in AnySSH AnySSHUITests "$SOURCES" Packages/AnySSHKit/Tests; do
+for tree in AnySSH AnySSHWidgets AnySSHUITests "$SOURCES" Packages/AnySSHKit/Tests; do
     [ -d "$tree" ] && TREES+=("$tree")
 done
 
