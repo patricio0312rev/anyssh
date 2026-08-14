@@ -49,7 +49,10 @@ struct SessionsScenarioView: View {
             }
         case .jumpToTmux:
             ScenarioSheet { dismiss in
-                JumpToSheet(model: jumpModel(.tmuxMain, layout: .list), onDismiss: dismiss)
+                JumpToSheet(
+                    model: jumpModel(.tmuxMain, layout: .list, writer: MockRemoteConnection()),
+                    onDismiss: dismiss
+                )
             }
         case .jumpToJumped:
             ScenarioSheet { dismiss in
