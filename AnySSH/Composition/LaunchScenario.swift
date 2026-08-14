@@ -13,6 +13,7 @@ enum LaunchScenario: Equatable {
     case git(GitScenario)
     case files(FilesScenario)
     case sessions(SessionsScenario)
+    case settings(SettingsScenario)
     case workspace(WorkspaceScenario)
 
     static let fallback = LaunchScenario.remotes("default")
@@ -48,6 +49,8 @@ enum LaunchScenario: Equatable {
             self = .files(files)
         } else if let sessions = SessionsScenario(rawValue: name) {
             self = .sessions(sessions)
+        } else if let settings = SettingsScenario(rawValue: name) {
+            self = .settings(settings)
         } else if let state = ErrorState(stateID: Self.stateID(from: name)) {
             self = .errorState(state)
         } else {
@@ -64,7 +67,7 @@ enum LaunchScenario: Equatable {
         case .remotes(let name): name
         case .workspace: "mixed"
         case .remoteForm, .hostKeyTrust, .authPrompt, .savePassword, .errorState, .terminal, .git,
-            .files, .sessions:
+            .files, .sessions, .settings:
             "single"
         }
     }
