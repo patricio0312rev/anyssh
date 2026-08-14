@@ -14,19 +14,13 @@ public struct SnippetsSheet: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.surface.base.ignoresSafeArea()
-                list
-            }
-            .navigationTitle("Snippets")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    CloseButton(accessibilityIdentifier: SnippetIdentifier.close) { dismiss() }
-                }
-            }
+        SheetScaffold(
+            "Snippets",
+            closeIdentifier: SnippetIdentifier.close,
+            onClose: { dismiss() }
+        ) {
+            list
         }
-        .tint(Theme.accent)
         .accessibilityIdentifier(SnippetIdentifier.sheet)
     }
 
