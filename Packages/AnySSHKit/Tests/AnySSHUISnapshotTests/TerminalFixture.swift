@@ -3,8 +3,8 @@ import AnySSHCore
 @testable import AnySSHUI
 
 enum TerminalFixture {
-    static let title = "dev@build-box: ~/Sites/anyssh"
-    static let workingDirectory = "/Users/dev/src/anyssh"
+    static let title = "dev@build-box: ~/src/anyssh"
+    static let workingDirectory = "/home/dev/src/anyssh"
     static let clipboardPayload = "git status --short"
 
     static var frame: [UInt8] {
