@@ -18,6 +18,7 @@ This repository is a ground-up rebuild of a working legacy codebase. Functionali
 - **Name what repeats.** A literal that appears more than twice (string, number, duration, key, layout value) becomes a named constant owned by one module: UI values in `Theme.Space`/`Theme.Motion`, accessibility ids in `UIIdentifier`, everything else in a constants enum next to its owner. Two files declaring the same magic value is a bug.
 - **Match the codebase.** Follow existing naming, structure, and idiom before introducing new ones.
 - **Preserve behavior.** Gestures, toolbar wiring, and the keyboard accessory are fragile and were paid for in bugs. Port their logic exactly; restyle only their appearance.
+- **One view at a time.** UI work lands view by view: build the view, screenshot it, review it against this file, then start the next. Parallel work is fine inside a single view (model, subviews, tests) or while the previous view sits in review, never as a broad sweep across many screens at once.
 
 ## Repository Layout
 
