@@ -32,20 +32,25 @@ public struct KeyImportView: View {
 
     private var source: some View {
         Section {
-            Button("Paste Key", action: model.importPastedKey)
-                .buttonStyle(.rowAction)
-                .accessibilityIdentifier(UIIdentifier.KeyImport.paste)
-            Button("Choose File") { isPickingFile = true }
-                .buttonStyle(.rowAction)
-                .accessibilityIdentifier(UIIdentifier.KeyImport.file)
+            Button(action: model.importPastedKey) {
+                Label("Paste Key", systemImage: "key")
+            }
+            .buttonStyle(.rowAction)
+            .accessibilityIdentifier(UIIdentifier.KeyImport.paste)
+            Button {
+                isPickingFile = true
+            } label: {
+                Label("Choose File", systemImage: "folder")
+            }
+            .buttonStyle(.rowAction)
+            .accessibilityIdentifier(UIIdentifier.KeyImport.file)
         } header: {
-            SectionLabel("Source").formSectionMargin()
+            SectionLabel("Source")
         } footer: {
             SectionCaption(
                 "Paste a private key, or pick the file it lives in. The key is stored on this "
                     + "device and never leaves it."
             )
-            .formSectionMargin()
         }
         .formCardSection()
     }
@@ -74,10 +79,9 @@ public struct KeyImportView: View {
                 .textContentType(.password)
                 .accessibilityIdentifier(UIIdentifier.KeyImport.passphrase)
         } header: {
-            SectionLabel("Passphrase").formSectionMargin()
+            SectionLabel("Passphrase")
         } footer: {
             SectionCaption("This key is encrypted. Its passphrase is stored beside it.")
-                .formSectionMargin()
         }
         .formCardSection()
     }
@@ -85,7 +89,7 @@ public struct KeyImportView: View {
     private var actions: some View {
         Section {
             Button("Save Key") { Task { await model.save() } }
-                .buttonStyle(.rowAction)
+                .buttonStyle(.rowAction(tint: Theme.accent))
                 .disabled(!model.canSave)
                 .accessibilityIdentifier(UIIdentifier.KeyImport.save)
             Button("Discard", role: .destructive, action: model.discard)
