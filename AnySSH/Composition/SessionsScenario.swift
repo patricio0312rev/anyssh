@@ -1,0 +1,16 @@
+enum SessionsScenario: String, Equatable, CaseIterable {
+    case switcherList = "sessions.switcher"
+    case switcherGrid = "sessions.switcher.grid"
+    case switcherEmpty = "sessions.switcher.empty"
+    case reconnect = "sessions.reconnect"
+    case reconnectFailure = "sessions.reconnect.failure"
+    case palette = "sessions.palette"
+    case paletteEmpty = "sessions.palette.empty"
+    case jumpTo = "sessions.jumpTo"
+    case jumpToGrid = "sessions.jumpTo.grid"
+    case jumpToTmux = "sessions.jumpTo.tmux"
+    case panes = "sessions.panes"
+    case panels = "sessions.panels"
+    case bindingEditor = "sessions.binding"
+    case snippets = "sessions.snippets"
+}
