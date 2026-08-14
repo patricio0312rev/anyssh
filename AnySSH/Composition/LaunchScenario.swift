@@ -1,8 +1,10 @@
 import AnySSHCore
 import AnySSHMocks
+import AnySSHUI
 
 enum LaunchScenario: Equatable {
     case remotes(String)
+    case remoteForm(RemoteRoute)
     case hostKeyTrust(String)
     case authPrompt
     case errorState(ErrorState)
@@ -12,9 +14,17 @@ enum LaunchScenario: Equatable {
     static let remoteFixtures = ["default", "empty", "single", "many", "mixed"]
     static let authPromptName = "auth.keyboardInteractive"
 
+    static let formRoutes: [String: RemoteRoute] = [
+        "remote.form.add": .add,
+        "remote.form.edit": .edit(RemoteFixtures.workstation),
+        "remote.form.keyImport": .importKey,
+    ]
+
     init(_ name: String) {
         if name.isEmpty || Self.remoteFixtures.contains(name) {
             self = .remotes(name.isEmpty ? "default" : name)
+        } else if let route = Self.formRoutes[name] {
+            self = .remoteForm(route)
         } else if HostKeyFixtures.scenarios[name] != nil {
             self = .hostKeyTrust(name)
         } else if name == Self.authPromptName {
@@ -33,7 +43,7 @@ enum LaunchScenario: Equatable {
     var remotesFixture: String {
         switch self {
         case .remotes(let name): name
-        case .hostKeyTrust, .authPrompt, .errorState: "single"
+        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState: "single"
         }
     }
 
