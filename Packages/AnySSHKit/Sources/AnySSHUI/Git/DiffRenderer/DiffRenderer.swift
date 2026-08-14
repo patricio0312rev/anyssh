@@ -4,11 +4,14 @@ import SwiftUI
 
 public struct DiffRenderer: View {
     private let model: DiffRowModel
+    private let gutter: DiffGutter
     @State private var wrap = LineWrapPreference.shared
     @State private var fontSize = DiffFontScale.defaultSize
 
     public init(diff: FileDiff) {
-        model = DiffRowModel(diff: diff, expandAll: true)
+        let model = DiffRowModel(diff: diff, expandAll: true)
+        self.model = model
+        gutter = DiffGutter(rows: model.rows)
     }
 
     public var body: some View {
@@ -43,7 +46,7 @@ public struct DiffRenderer: View {
 
     private var contentWidth: CGFloat {
         let widest = model.rows.reduce(0) { max($0, $1.text.count) }
-        return CGFloat(widest) * CodeFont.characterWidth(size: fontSize) + DiffMetrics.gutterWidth
+        return CGFloat(widest) * CodeFont.characterWidth(size: fontSize) + gutter.width
     }
 
     @ViewBuilder
@@ -57,7 +60,7 @@ public struct DiffRenderer: View {
                 .padding(.vertical, Theme.Space.step1)
                 .background(Theme.Code.Diff.hunkHeaderBackground)
         } else {
-            DiffCodeRow(row: row, softWrap: wrap.wrapsLines, fontSize: fontSize)
+            DiffCodeRow(row: row, gutter: gutter, softWrap: wrap.wrapsLines, fontSize: fontSize)
         }
     }
 }
