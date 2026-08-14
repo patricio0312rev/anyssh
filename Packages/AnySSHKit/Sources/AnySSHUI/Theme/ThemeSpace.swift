@@ -18,5 +18,6 @@ extension Theme {
 
         public static let iconTile: CGFloat = 40
         public static let iconGlyph: CGFloat = 20
+        public static let statusDot: CGFloat = 8
     }
 }
