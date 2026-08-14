@@ -6,33 +6,38 @@ struct KeyImportSummary: View {
     let isSaved: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.step3) {
-            HStack(spacing: Theme.Space.step2) {
-                Image(systemName: isSaved ? "checkmark.seal.fill" : "key.fill")
-                Text(isSaved ? "Key saved to this device" : "Key read")
-                    .font(Theme.Text.sectionHeader)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier(
-                isSaved ? UIIdentifier.KeyImport.saved : UIIdentifier.KeyImport.headline
-            )
+        Section {
+            Label(headline, systemImage: isSaved ? "checkmark.seal.fill" : "key.fill")
+                .font(Theme.Text.body)
+                .foregroundStyle(isSaved ? Theme.status.online : Theme.text.primary)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier(
+                    isSaved ? UIIdentifier.KeyImport.saved : UIIdentifier.KeyImport.headline
+                )
 
             VStack(alignment: .leading, spacing: Theme.Space.step1) {
                 Text("Type")
                     .font(Theme.Text.caption)
-                    .foregroundStyle(Theme.text.secondary)
+                    .foregroundStyle(Theme.text.tertiary)
                 Text(description)
                     .font(Theme.Text.body)
+                    .foregroundStyle(Theme.text.primary)
                     .accessibilityIdentifier(UIIdentifier.KeyImport.algorithm)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             if let fingerprint = key.fingerprint {
-                HostKeyFingerprintRow(
+                CopyableRow(
                     label: "Fingerprint",
-                    fingerprint: fingerprint,
-                    identifier: UIIdentifier.KeyImport.fingerprint
+                    value: fingerprint,
+                    monospaced: true,
+                    accessibilityIdentifier: UIIdentifier.KeyImport.fingerprint
                 )
-            } else {
+            }
+        } header: {
+            SectionLabel("Key")
+        } footer: {
+            if key.fingerprint == nil {
                 Text(
                     "This format keeps its public half encrypted, so there is no fingerprint to "
                         + "show until the passphrase is entered."
@@ -42,7 +47,11 @@ struct KeyImportSummary: View {
                 .accessibilityIdentifier(UIIdentifier.KeyImport.fingerprint)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .listRowBackground(Theme.surface.raised)
+    }
+
+    private var headline: String {
+        isSaved ? "Key saved to this device" : "Key read"
     }
 
     private var description: String {
