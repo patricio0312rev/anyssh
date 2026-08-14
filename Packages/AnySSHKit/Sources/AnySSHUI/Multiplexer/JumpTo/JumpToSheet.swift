@@ -12,36 +12,32 @@ public struct JumpToSheet: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            header
-            layoutSwitcher
-            if model.kind == .tmux {
-                explanation
+        SheetScaffold("Jump to", closeIdentifier: JumpToIdentifier.close, onClose: onDismiss) {
+            VStack(spacing: 0) {
+                layoutSwitcher
+                if model.kind == .tmux {
+                    explanation
+                }
+                failure
+                content
+                bytesProbe
             }
-            content
-            bytesProbe
         }
-        .background { Theme.surface.base.ignoresSafeArea() }
         .task { await model.load() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(JumpToIdentifier.sheet)
     }
 
-    private var header: some View {
-        ScreenHeader("Jump to") {
-            if model.showsStatus {
-                Text("\(model.waitingCount) waiting")
-                    .font(Theme.Text.caption)
-                    .foregroundStyle(
-                        model.waitingCount > 0 ? Theme.status.busy : Theme.text.tertiary
-                    )
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityValue(String(model.waitingCount))
-                    .accessibilityIdentifier(JumpToIdentifier.waiting)
-            }
-            CloseButton(accessibilityIdentifier: JumpToIdentifier.close, action: onDismiss)
+    @ViewBuilder
+    private var waiting: some View {
+        if model.showsStatus {
+            Text("\(model.waitingCount) waiting")
+                .font(Theme.Text.caption)
+                .foregroundStyle(model.waitingCount > 0 ? Theme.status.busy : Theme.text.tertiary)
+                .accessibilityElement(children: .ignore)
+                .accessibilityValue(String(model.waitingCount))
+                .accessibilityIdentifier(JumpToIdentifier.waiting)
         }
-        .accessibilityIdentifier(JumpToIdentifier.title)
     }
 
     private var explanation: some View {
@@ -54,16 +50,29 @@ public struct JumpToSheet: View {
             .accessibilityIdentifier(JumpToIdentifier.explanation)
     }
 
+    @ViewBuilder
+    private var failure: some View {
+        if let state = model.jumpFailure {
+            SectionCaption(state.copy.title, tone: Theme.status.attention)
+                .padding(.horizontal, Theme.Space.screenMargin)
+                .padding(.bottom, Theme.Space.step2)
+                .accessibilityIdentifier(JumpToIdentifier.failure)
+        }
+    }
+
     private var layoutSwitcher: some View {
-        SegmentedPicker(
-            options: JumpLayout.allCases.map {
-                SegmentedPicker.Option(id: $0.rawValue, label: $0.label, value: $0)
-            },
-            selection: model.layout,
-            accessibilityIdentifier: { $0.value.identifier },
-            select: { model.selectLayout($0) }
-        )
-        .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(spacing: Theme.Space.step3) {
+            SegmentedPicker(
+                options: JumpLayout.allCases.map {
+                    SegmentedPicker.Option(id: $0.rawValue, label: $0.label, value: $0)
+                },
+                selection: model.layout,
+                accessibilityIdentifier: { $0.value.identifier },
+                select: { model.selectLayout($0) }
+            )
+            Spacer(minLength: Theme.Space.step2)
+            waiting
+        }
         .padding(.horizontal, Theme.Space.screenMargin)
         .padding(.bottom, Theme.Space.step3)
     }
@@ -96,12 +105,11 @@ public struct JumpToSheet: View {
     }
 
     private func jump(_ row: JumpRow) {
+        guard !model.isJumping else { return }
         Task {
-            if await model.jump(to: row) {
-                statusToasts.present(severity: .success, title: "Jumped to \(row.title)")
-            } else {
-                statusToasts.present(state: .mux(.attachTargetVanished))
-            }
+            guard await model.jump(to: row) else { return }
+            onDismiss()
+            statusToasts.present(severity: .success, title: "Jumped to \(row.title)")
         }
     }
 }
