@@ -2,7 +2,7 @@ import AnySSHCore
 import Foundation
 
 public enum GitFixtures {
-    public static let root = "/Users/dev/src/anyssh"
+    public static let root = "/home/dev/src/api"
 
     public static let location = WorkspaceLocation(path: root, provenance: .shellIntegration)
 
@@ -14,16 +14,16 @@ public enum GitFixtures {
 
     public static let staged: [ChangedFile] = [
         ChangedFile(
-            oldPath: "Sources/AnySSHUI/Git/Changes/ChangesListView.swift",
-            newPath: "Sources/AnySSHUI/Git/Changes/ChangesListView.swift",
+            oldPath: "Sources/API/Routes/SessionRoutes.swift",
+            newPath: "Sources/API/Routes/SessionRoutes.swift",
             change: .modified,
             isBinary: false,
             additions: 34,
             deletions: 12
         ),
         ChangedFile(
-            oldPath: "Sources/AnySSHUI/Git/DiffRenderer/DiffRow.swift",
-            newPath: "Sources/AnySSHUI/Git/DiffRenderer/DiffRowModel.swift",
+            oldPath: "Sources/API/Models/UserRow.swift",
+            newPath: "Sources/API/Models/AccountRow.swift",
             change: .renamed(similarity: 92),
             isBinary: false,
             additions: 8,
@@ -48,11 +48,11 @@ public enum GitFixtures {
         ),
     ]
 
-    public static let untracked = ["docs/plan-git-surfaces.md", "Scripts/screenshot-git.sh"]
+    public static let untracked = ["docs/plan-session-routes.md", "Scripts/seed-db.sh"]
 
     public static let dirtyStatus = RepositoryStatus(
-        head: .branch("feat/git_surfaces"),
-        upstream: UpstreamTracking(name: "origin/feat/git_surfaces", ahead: 2, behind: 1),
+        head: .branch("feat/session_routes"),
+        upstream: UpstreamTracking(name: "origin/feat/session_routes", ahead: 2, behind: 1),
         staged: staged,
         unstaged: unstaged,
         untracked: untracked,
@@ -60,9 +60,9 @@ public enum GitFixtures {
     )
 
     public static let newFileStatus = RepositoryStatus(
-        head: .branch("feat/git_surfaces"),
-        upstream: UpstreamTracking(name: "origin/feat/git_surfaces", ahead: 2, behind: 1),
-        staged: [GitDiffFixtures.newFile(at: "docs/plan-git-surfaces.md")],
+        head: .branch("feat/session_routes"),
+        upstream: UpstreamTracking(name: "origin/feat/session_routes", ahead: 2, behind: 1),
+        staged: [GitDiffFixtures.newFile(at: "docs/plan-session-routes.md")],
         unstaged: [],
         untracked: [],
         unmerged: []
@@ -86,7 +86,7 @@ public enum GitFixtures {
             authoredAt: Date(timeIntervalSinceNow: -Double(index + 1) * 9_000),
             subject: entry.0,
             body: entry.1,
-            references: index == 0 ? ["HEAD -> feat/git_surfaces", "origin/main"] : []
+            references: index == 0 ? ["HEAD -> feat/session_routes", "origin/main"] : []
         )
     }
 
@@ -104,16 +104,19 @@ public enum GitFixtures {
         CommitID(rawValue: "b62d0f48e15a7c93d2b6f8a04c7e1935bdf24680"),
     ]
 
-    private static let authors = ["Patricio Marroquin", "Ada Lovelace", "Grace Hopper"]
+    private static let authors = ["Ada Lovelace", "Grace Hopper", "Alan Turing"]
 
-    private static let emails = ["patricio@anyssh.app", "ada@anyssh.app", "grace@anyssh.app"]
+    private static let emails = ["ada@example.com", "grace@example.com", "alan@example.com"]
 
     private static let subjects: [(String, String)] = [
-        ("feat: render diffs on the Monokai canvas", "The diff surface now takes its tints from Theme.Code."),
-        ("fix: keep the changes header off the card", ""),
-        ("Merge branch 'main' into feat/git_surfaces", "Resolves the DiffRenderer conflict."),
-        ("refactor: fold three disclosures into one", "Untracked, unstaged and commit files share a row."),
-        ("test: cover collapsed hunks", ""),
-        ("chore: bump the pinned libssh2 slice", ""),
+        ("feat: paginate the session routes", "Cursor pagination replaces the offset scan."),
+        ("fix: return 404 instead of an empty body", ""),
+        ("Merge branch 'main' into feat/session_routes", "Resolves the AccountRow conflict."),
+        (
+            "refactor: fold three handlers into one router",
+            "Session, account and token routes share a builder."
+        ),
+        ("test: cover the expired token path", ""),
+        ("chore: bump the pinned postgres driver", ""),
     ]
 }
