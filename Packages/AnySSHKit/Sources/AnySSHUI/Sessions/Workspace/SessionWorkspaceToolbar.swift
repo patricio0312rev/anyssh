@@ -1,0 +1,58 @@
+#if canImport(UIKit)
+import AnySSHCore
+import SwiftUI
+
+struct SessionWorkspaceToolbar: ToolbarContent {
+    let title: String
+    let transportState: TransportState
+    let keyboardEngine: (any TerminalSurfaceEngine)?
+    let workspacePath: String?
+    let showsBack: Bool
+    let onBack: () -> Void
+    let onOpenSwitcher: () -> Void
+    let onOpenBrowser: () -> Void
+
+    var body: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            if showsBack {
+                IconButton(
+                    systemImage: "chevron.backward",
+                    label: "Back to remotes",
+                    surface: .toolbar,
+                    accessibilityIdentifier: SessionSwitcherIdentifier.close,
+                    action: onBack
+                )
+            }
+        }
+        ToolbarItem(placement: .principal) {
+            Button(action: onOpenSwitcher) {
+                VStack(spacing: Theme.Space.step1) {
+                    Text(title)
+                        .font(Theme.Text.sectionHeader)
+                        .foregroundStyle(Theme.text.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    SessionConnectionStatusLabel(state: transportState)
+                }
+            }
+            .accessibilityLabel("Switch session, \(title)")
+            .accessibilityIdentifier(SessionSwitcherIdentifier.title)
+            .buttonStyle(.plain)
+        }
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            if let workspacePath {
+                IconButton(
+                    systemImage: "folder",
+                    label: "Browse \(workspacePath)",
+                    surface: .toolbar,
+                    accessibilityIdentifier: UIIdentifier.Workspace.open,
+                    action: onOpenBrowser
+                )
+            }
+            if let keyboardEngine {
+                TerminalKeyboardToggle(engine: keyboardEngine)
+            }
+        }
+    }
+}
+#endif
