@@ -31,8 +31,7 @@ struct RemotesEmptyState: View {
 
             VStack(spacing: Theme.Space.step3) {
                 Button(state.copy.recoveryLabel, action: addHost)
-                    .buttonStyle(.glassProminent)
-                    .tint(Theme.accent)
+                    .buttonStyle(.accentCapsule)
                     .accessibilityIdentifier(UIIdentifier.Remote.emptyAddHost)
                 Button("Import Key", action: importKey)
                     .buttonStyle(.raised)
