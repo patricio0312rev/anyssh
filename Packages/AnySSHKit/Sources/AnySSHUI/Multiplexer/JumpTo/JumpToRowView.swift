@@ -3,6 +3,7 @@ import SwiftUI
 
 struct JumpToRowView: View {
     let row: JumpRow
+    let isJumping: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -14,7 +15,7 @@ struct JumpToRowView: View {
                     subtitleMonospaced: true,
                     accessibilityIdentifier: JumpToIdentifier.row(row.id.rawValue),
                     leading: { EmptyView() },
-                    trailing: { activeBadge },
+                    trailing: { accessory },
                     footer: { EmptyView() }
                 )
             }
@@ -24,8 +25,11 @@ struct JumpToRowView: View {
     }
 
     @ViewBuilder
-    private var activeBadge: some View {
-        if row.isActive {
+    private var accessory: some View {
+        if isJumping {
+            LoadingView(.inline)
+                .accessibilityIdentifier(JumpToIdentifier.jumping(row.id.rawValue))
+        } else if row.isActive {
             Text("Active")
                 .font(Theme.Text.caption)
                 .foregroundStyle(Theme.text.secondary)
