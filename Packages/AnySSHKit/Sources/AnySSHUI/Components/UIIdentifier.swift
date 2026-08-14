@@ -15,6 +15,7 @@ public enum UIIdentifier {
         public static let workspaceEmpty = "session.workspace.empty"
         public static let newSession = "session.workspace.newSession"
         public static let backToRemotes = "session.workspace.backToRemotes"
+        public static let privacyCover = "session.privacyCover"
     }
 
     public enum Terminal {
