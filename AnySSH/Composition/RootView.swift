@@ -31,6 +31,7 @@ struct RootView: View {
         }
         .environment(\.fileIconImageProvider, BundleFileIconImageProvider())
         .environment(\.syntaxHighlighter, TreeSitterHighlighter())
+        .environment(\.noticeTextProvider, BundleNoticeTextProvider())
         .onOpenURL { url in
             guard environment.isMock else { return }
             routed = DeepLinkRouter.scenario(for: url) ?? routed
@@ -87,6 +88,8 @@ struct RootView: View {
             FilesScenarioView(scenario: scenario)
         case .sessions(let scenario):
             SessionsScenarioView(scenario: scenario)
+        case .settings(let scenario):
+            SettingsScenarioView(scenario: scenario)
         case .workspace(let scenario):
             workspaceScenario(scenario)
         }
