@@ -10,6 +10,7 @@
 		AA00000000000000000000A0 /* AnySSHCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000055 /* AnySSHCore */; };
 		AA00000000000000000000A1 /* AnySSHUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000051 /* AnySSHUI */; };
 		AA00000000000000000000A3 /* AnySSHMocks in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000053 /* AnySSHMocks */; };
+		AA00000000000000000000A5 /* Highlighting in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000057 /* Highlighting */; };
 		AA00000000000000000000A5 /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* LiveActivityAttributes.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 				AA00000000000000000000A0 /* AnySSHCore in Frameworks */,
 				AA00000000000000000000A1 /* AnySSHUI in Frameworks */,
 				AA00000000000000000000A3 /* AnySSHMocks in Frameworks */,
+				AA00000000000000000000A5 /* Highlighting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,6 +102,7 @@
 				AA0000000000000000000055 /* AnySSHCore */,
 				AA0000000000000000000051 /* AnySSHUI */,
 				AA0000000000000000000053 /* AnySSHMocks */,
+				AA0000000000000000000057 /* Highlighting */,
 			);
 			productName = AnySSH;
 			productReference = AA0000000000000000000002 /* AnySSH.app */;
@@ -317,6 +320,10 @@
 		AA0000000000000000000055 /* AnySSHCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnySSHCore;
+		};
+		AA0000000000000000000057 /* Highlighting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Highlighting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
