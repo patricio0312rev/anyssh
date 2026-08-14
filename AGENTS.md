@@ -164,14 +164,16 @@ A third typeface, or a raw `.font(.system(size:))` outside `Theme`, fails review
 One hierarchy, applied everywhere:
 
 - **Primary action** (at most one per screen): `.buttonStyle(.glassProminent)` tinted with `accent`.
-- **Standard chrome buttons** (toolbars excluded): `.buttonStyle(.glass)`, untinted, one glass depth for the whole app. Glass only where the control floats over content it can refract: a scrolling list, terminal output, an image. A button resting on an empty stretch of `surface.base` has nothing to refract and disappears; it uses a raised capsule on `surface.raised` instead, or `.glassProminent` if it is the screen's primary action. One glass depth per view: when a screen earns `.glassProminent`, that is the only glass on it, so nothing sits half-shiny next to it.
-- **Toolbar buttons**: plain content only. The toolbar draws its own glass; adding `.glass` inside it nests capsules.
+- **Standard chrome buttons** (toolbars excluded): `.buttonStyle(.glass)`, untinted, one glass depth for the whole app. Glass only where the control floats over content it can refract: a scrolling list, terminal output, an image. A button resting on an empty stretch of `surface.base` has nothing to refract and disappears; it uses a raised capsule on `surface.raised` instead, or a solid accent capsule (opaque fill, white label, no glass) if it is the screen's primary action — `.glassProminent` over pure black reads washed out, so it belongs only over scrims and dimmed content. One glass depth per view: when a screen earns `.glassProminent`, that is the only glass on it, so nothing sits half-shiny next to it.
+- **Toolbar buttons**: plain content only, always monochrome. The toolbar draws its own glass; adding `.glass` inside it nests capsules, and the accent never tints a toolbar glyph.
 - **Inside forms, lists, and cards**: no glass. Confirm/cancel pairs are plain text toolbar buttons without icons; a row-level action (test connection, import) is a bordered or plain row button that belongs to the form's surface. Glass is for controls floating over content, not for controls sitting in it.
 - **Inline text actions** inside lists and sheets: `.buttonStyle(.plain)` with `accent` foreground.
 - **Destructive** (remove, delete, disconnect-and-lose-state): same shape as its context with the `destructive` red role, always behind a confirmation.
 - **Over a scrim or dark overlay** (reconnect, error covers, full-screen states): plain `.glass` disappears against the darkness. Every button there is `.glassProminent`, accent for the single continue action and monochrome for the rest. If a screenshot cannot distinguish a control from its background, the style is wrong regardless of what this table says.
 
 All buttons of the same role share the same size: `IconButton` defines the icon hit target, `Theme.Buttons` defines heights. A button visually smaller, darker, or shinier than its siblings is a bug.
+
+A row that navigates ends in a chevron. Status is a `StatusDot` beside the row's metadata, never the trailing accessory pretending to be navigation.
 
 ### Presentation
 
