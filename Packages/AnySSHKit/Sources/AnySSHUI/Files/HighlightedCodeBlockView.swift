@@ -23,8 +23,8 @@ struct HighlightedCodeBlockView: View {
             ScrollView(.horizontal) {
                 Text(renderedCode)
                     .textSelection(.enabled)
+                    .fixedSize(horizontal: true, vertical: false)
                     .padding(Theme.Space.cardPadding)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
