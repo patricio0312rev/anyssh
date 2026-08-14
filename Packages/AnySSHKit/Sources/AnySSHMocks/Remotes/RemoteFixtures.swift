@@ -5,8 +5,8 @@ public enum RemoteFixtures {
         id: RemoteID(rawValue: "workstation"),
         name: "Workstation",
         host: "workstation.local",
-        username: "patricio",
-        startPath: "~/Sites/anyssh",
+        username: "dev",
+        startPath: "~/src/api",
         tag: "home"
     )
 
