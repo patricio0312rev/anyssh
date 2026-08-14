@@ -1,41 +1,32 @@
 # Contributing
 
-AnySSH is a ground-up rebuild of a working legacy app, so most changes are ports, not inventions. Read [AGENTS.md](AGENTS.md) before writing code: it defines the module boundaries, the design system, and the review rules, and it is binding.
+Thanks for wanting to help. This file is the short version; [AGENTS.md](AGENTS.md) is the binding rulebook for anything that touches code, and it wins over habit, preference, and this summary.
 
-## Setup
-
-Follow the [getting started](README.md#getting-started) steps in the README. `make run` boots the app in mock mode with no live host, which is enough for almost all work.
-
-Before opening a PR, run:
+## Getting set up
 
 ```bash
-make lint
-make test
+cp .env.example .env
+make vendor
+make run
 ```
 
-`make lint` runs swift-format, the 300-line file budget, and the module import rules. CI runs swift-format and the line budget on every push; run both commands locally before opening a PR.
+`make vendor` builds the pinned libssh2 + OpenSSL xcframework once. `make run` boots the app in mock mode, where every port is mocked and no live host is needed. Every screen is reachable headlessly with `ANYSSH_SCENARIO=<name>`, which is also how the UI tests and screenshots get to a state.
 
-## Branches and commits
+## Before you open a PR
 
-- Branches: `type/short_descriptive_name` with underscores. Types: `feat`, `fix`, `docs`, `refactor`. Example: `fix/toolbar_double_glass`.
-- Commits: `type: description`, lowercase except acronyms. Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`.
-- One file per commit. The message describes the outcome the file delivers, never the filename.
-- Single author. No `Co-Authored-By` lines.
+- `make lint` must pass: swift-format, the 300-line file budget, the comment ban, and the module import rules.
+- `make test` (host), `make test-sim` (simulator), and `make ui-test` (XCUITest) must be green.
+- UI work follows the design system in AGENTS.md: compose from `AnySSHUI/Components/`, colors and spacing come from `Theme`, and every new screen needs a launch scenario so it can be reached without tapping.
+- Screenshot what you changed and look at it before claiming it works.
 
-## Ground rules
+## Ground rules worth knowing early
 
-The short version of AGENTS.md:
+- Zero comments in Swift sources. Names carry the meaning; AGENTS.md explains the one exception.
+- Max 300 lines per file. Tests, docs, and asset-like files are exempt.
+- One file per commit, conventional commit messages, outcome-focused: `fix: collapse the diff gutter when no line has a number`, never `update DiffGutter.swift`.
+- Behavior is sacred: gestures, the toolbar, and the keyboard accessory were paid for in bugs. Restyle appearance, never reflow logic, unless the change is the point of your PR.
+- Dead code does not land. If nothing reaches it, delete it.
 
-- Max 300 lines per Swift file.
-- Zero comments in code.
-- Reuse components from `AnySSHUI/Components/` before writing new UI.
-- Preserve legacy behavior. A behavior change is a bug unless a plan phase calls for one.
-- Colors, fonts, and motion come from `Theme`, never hardcoded.
+## Security
 
-## Pull requests
-
-Title format: `type: short descriptive name`, lowercase except acronyms. Fill in the PR template: say what changed and how to verify it. For UI changes, attach a simulator screenshot.
-
-## Bugs and ideas
-
-Open an issue with the matching template. For security problems, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+The SSH transport vendors libssh2 + OpenSSL from a pinned commit; the vendoring script refuses commits that do not descend from the fix for CVE-2026-55200. Do not weaken that check. Report security issues privately through the contact on [getanyssh.com](https://www.getanyssh.com) rather than a public issue.
