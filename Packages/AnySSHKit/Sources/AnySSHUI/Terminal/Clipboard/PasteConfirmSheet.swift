@@ -57,6 +57,7 @@ public struct PasteConfirmSheet: View {
         .padding(Theme.Space.screenMargin)
         .frame(maxWidth: .infinity)
         .background(Theme.surface.base)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(UIIdentifier.Terminal.Paste.sheet)
     }
 }
