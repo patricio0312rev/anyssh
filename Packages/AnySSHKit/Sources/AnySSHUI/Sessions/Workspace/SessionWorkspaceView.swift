@@ -108,11 +108,9 @@ public struct SessionWorkspaceView: View {
                     title: model.activeRecord?.title ?? Self.fallbackTitle,
                     transportState: model.activeTransportState,
                     keyboardEngine: model.activeSessionID.flatMap { model.surface(for: $0)?.engine },
-                    workspacePath: model.activeRecord?.workspace?.path,
                     showsBack: onClose != nil,
                     onBack: dismissToRemotes,
-                    onToggleSwitcher: toggleSwitcher,
-                    onOpenBrowser: { presentedBrowser = .changes }
+                    onToggleSwitcher: toggleSwitcher
                 )
             }
             .toolbarBackground(Theme.surface.base, for: .navigationBar)
