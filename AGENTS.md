@@ -59,6 +59,8 @@ The component catalog is the single source of visual truth. A screen is composit
 
 - Icon-only button: `IconButton`. Closing a screen: `CloseButton`. Screen title with actions: `ScreenHeader`. List row: `CatalogRow`. Copyable value: `CopyableRow`. Settings entry: `SettingsRow`. The only spinner: `LoadingView`. Passive feedback: `StatusToast`.
 - `LoadingView` has exactly two variants and no call site invents a third: `.inline` (small, unlabeled, sits where content will appear) and `.screen` (centered, standard size, with a required short label saying what is loading). Both monochrome `text.secondary`, never accent-tinted, sizes fixed by the component. A raw `ProgressView` outside `LoadingView` fails review.
+- Copy affordances go through `CopyableRow` and nothing else: the whole row is the hit target, not just the icon, and feedback is always the same icon swap to a checkmark for a fixed dwell. No labeled copy buttons, no oversized copy icons, no copy control that gives no feedback.
+- `CloseButton` has one size, period. The close control on a sheet, the keyboard-hide control, and every dismiss affordance share the same hit target and glyph scale; a bigger close button on one screen is a bug.
 - Code and diff rendering already exist under `AnySSHUI/Files/` and `AnySSHUI/Git/DiffRenderer/`. Never add a second viewer for a format that has one. A missing capability goes into the existing viewer so every caller gains it.
 - Writing `Button { Image(systemName:) }` by hand instead of using `IconButton` is how the legacy toolbar ended up with a button inside a button.
 
@@ -162,6 +164,7 @@ One hierarchy, applied everywhere:
 - **Primary action** (at most one per screen): `.buttonStyle(.glassProminent)` tinted with `accent`.
 - **Standard chrome buttons** (toolbars excluded): `.buttonStyle(.glass)`, untinted, one glass depth for the whole app.
 - **Toolbar buttons**: plain content only. The toolbar draws its own glass; adding `.glass` inside it nests capsules.
+- **Inside forms, lists, and cards**: no glass. Confirm/cancel pairs are plain text toolbar buttons without icons; a row-level action (test connection, import) is a bordered or plain row button that belongs to the form's surface. Glass is for controls floating over content, not for controls sitting in it.
 - **Inline text actions** inside lists and sheets: `.buttonStyle(.plain)` with `accent` foreground.
 - **Destructive** (remove, delete, disconnect-and-lose-state): same shape as its context with the `destructive` red role, always behind a confirmation.
 - **Over a scrim or dark overlay** (reconnect, error covers, full-screen states): plain `.glass` disappears against the darkness. Every button there is `.glassProminent`, accent for the single continue action and monochrome for the rest. If a screenshot cannot distinguish a control from its background, the style is wrong regardless of what this table says.
@@ -183,6 +186,8 @@ Choose by rule, not by mood:
 | `StatusToast` | passive outcome feedback, never requires a tap |
 
 Every sheet gets a visible drag indicator and a `ScreenHeader`. Mixing patterns for the same job across screens fails review.
+
+Forms follow one hierarchy, and the legacy Edit Host form is the reference for it: plain text Cancel/Save in the toolbar, sections introduced by a `SectionLabel`, controls grouped in raised cards, and every explanation as a `caption` in `text.secondary` sitting directly under the card it explains. A description never gets its own box, never sits above its control, and is never larger than the section label; if a text's role (title, label, or description) is not obvious at a glance, the hierarchy is wrong.
 
 Transient feedback is one family, not three. Everything passive flows through the single `StatusToastCenter`: one host, one position (bottom), one card treatment, one set of status colors and symbols. No ad-hoc top banners, no second smaller toast, no floating one-off alert card. The Live Activity and widget reuse the same status colors and iconography so an alert looks like a sibling of the in-app toast, not a stranger.
 
