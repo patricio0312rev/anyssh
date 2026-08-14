@@ -35,19 +35,18 @@ struct KeyImportSummary: View {
                 )
             }
         } header: {
-            SectionLabel("Key")
+            SectionLabel("Key").formSectionMargin()
         } footer: {
             if key.fingerprint == nil {
-                Text(
+                SectionCaption(
                     "This format keeps its public half encrypted, so there is no fingerprint to "
                         + "show until the passphrase is entered."
                 )
-                .font(Theme.Text.caption)
-                .foregroundStyle(Theme.text.secondary)
+                .formSectionMargin()
                 .accessibilityIdentifier(UIIdentifier.KeyImport.fingerprint)
             }
         }
-        .listRowBackground(Theme.surface.raised)
+        .formCardSection()
     }
 
     private var headline: String {
