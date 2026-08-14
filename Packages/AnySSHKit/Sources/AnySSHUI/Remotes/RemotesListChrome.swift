@@ -13,6 +13,7 @@ extension View {
             ToolbarItem(placement: .primaryAction) {
                 if canAdd {
                     Button("Add Host", systemImage: "plus", action: add)
+                        .tint(Theme.text.primary)
                         .accessibilityIdentifier(UIIdentifier.Remote.add)
                 }
             }
