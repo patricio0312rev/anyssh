@@ -1,5 +1,6 @@
 #if canImport(UIKit)
 import AnySSHCore
+import AnySSHMocks
 import Testing
 
 @testable import AnySSHUI
@@ -26,6 +27,34 @@ import Testing
             JumpToModel(sessions: largeTree(), kind: .herdr, layout: .list),
             named: "jumpTo-sixty-rows"
         )
+    }
+
+    @Test func aFailedJumpStaysInsideTheSheet() async throws {
+        let model = JumpToModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .herdrDefault),
+            directory: nil,
+            writer: nil
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        #expect(await model.jump(to: row) == false)
+        assert(model, named: "jumpTo-jump-failed")
+    }
+
+    @Test func theTappedRowSpinsWhileTheJumpIsInFlight() async throws {
+        let writer = GatedDisplayWriter()
+        let model = JumpToModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .herdrDefault),
+            directory: nil,
+            writer: writer
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        let jump = Task { await model.jump(to: row) }
+        try await waitUntil { await writer.hasWritten }
+        assert(model, named: "jumpTo-jumping")
+        await writer.release()
+        _ = await jump.value
     }
 
     private func model(kind: MultiplexerKind, layout: JumpLayout) -> JumpToModel {
