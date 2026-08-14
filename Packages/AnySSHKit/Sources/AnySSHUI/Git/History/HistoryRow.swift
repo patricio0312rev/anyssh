@@ -2,8 +2,6 @@ import AnySSHCore
 import SwiftUI
 
 struct HistoryRow: View {
-    static let metaSeparator = " • "
-
     let commit: Commit
     let date: String
 
@@ -21,10 +19,10 @@ struct HistoryRow: View {
         [
             String(commit.id.rawValue.prefix(7)),
             date,
-            commit.references.joined(separator: Self.metaSeparator),
+            commit.references.joined(separator: Theme.metaSeparator),
         ]
         .filter { !$0.isEmpty }
-        .joined(separator: Self.metaSeparator)
+        .joined(separator: Theme.metaSeparator)
     }
 }
 
