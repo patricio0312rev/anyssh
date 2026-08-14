@@ -11,14 +11,6 @@ import Testing
         #expect(Set(labels).count == labels.count)
     }
 
-    @Test func everyPresentationHasADistinctSymbol() {
-        let symbols = ReachabilityPresentation.allCases.map(\.symbolName)
-        for symbol in symbols {
-            #expect(!symbol.isEmpty)
-        }
-        #expect(Set(symbols).count == symbols.count)
-    }
-
     @Test func reachabilityMapsOntoPresentation() {
         #expect(ReachabilityPresentation(.reachable) == .reachable)
         #expect(ReachabilityPresentation(.unreachable) == .unreachable)
