@@ -23,6 +23,22 @@ extension SessionWorkspaceView {
             .accessibilityHidden(true)
     }
 
+    func axNotificationProbe() -> some View {
+        let last = model.systemNotificationRequests.last
+        let record = [
+            String(model.systemNotificationRequests.count),
+            last?.alert.title ?? "",
+            last?.alert.body ?? "",
+        ]
+        return Text(record.joined(separator: "|"))
+            .font(Theme.Text.caption)
+            .foregroundStyle(Theme.text.tertiary)
+            .frame(width: 1, height: 1)
+            .opacity(0)
+            .accessibilityIdentifier(UIIdentifier.JobAlerts.systemRequests)
+            .accessibilityHidden(true)
+    }
+
     var empty: some View {
         VStack(spacing: Theme.Space.step5) {
             VStack(spacing: Theme.Space.step2) {
