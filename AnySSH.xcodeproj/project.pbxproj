@@ -14,11 +14,14 @@
 		AA00000000000000000000A5 /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* LiveActivityAttributes.swift */; };
 		AA00000000000000000000A6 /* AnySSHUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000058 /* AnySSHUI */; };
 		AA00000000000000000000A7 /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* LiveActivityAttributes.swift */; };
+		AA00000000000000000000A9 /* AnySSHUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000059 /* AnySSHUI */; };
+		AA00000000000000000000AA /* AnySSHCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000005A /* AnySSHCore */; };
 		AA00000000000000000000A8 /* AnySSHWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000D /* AnySSHWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA0000000000000000000002 /* AnySSH.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnySSH.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000003 /* AnySSHUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnySSHUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000004 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 		AA000000000000000000000B /* LiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityAttributes.swift; sourceTree = "<group>"; };
 		AA000000000000000000000D /* AnySSHWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnySSHWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -30,6 +33,13 @@
 			exceptions = (
 			);
 			path = AnySSH;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000009 /* AnySSHUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = AnySSHUITests;
 			sourceTree = "<group>";
 		};
 		AA000000000000000000000C /* AnySSHWidgets */ = {
@@ -48,6 +58,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = AA0000000000000000000020;
 			remoteInfo = AnySSHWidgets;
+		};
+		AA0000000000000000000043 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000010;
+			remoteInfo = AnySSH;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -85,6 +102,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0000000000000000000026 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA00000000000000000000A9 /* AnySSHUI in Frameworks */,
+				AA00000000000000000000AA /* AnySSHCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -95,6 +121,7 @@
 				AA000000000000000000000A /* Shared */,
 				AA0000000000000000000008 /* AnySSH */,
 				AA000000000000000000000C /* AnySSHWidgets */,
+				AA0000000000000000000009 /* AnySSHUITests */,
 				AA0000000000000000000006 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -104,6 +131,7 @@
 			children = (
 				AA0000000000000000000002 /* AnySSH.app */,
 				AA000000000000000000000D /* AnySSHWidgets.appex */,
+				AA0000000000000000000003 /* AnySSHUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -178,6 +206,31 @@
 			productReference = AA000000000000000000000D /* AnySSHWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		AA0000000000000000000024 /* AnySSHUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000000000000000000003B /* Build configuration list for PBXNativeTarget "AnySSHUITests" */;
+			buildPhases = (
+				AA0000000000000000000025 /* Sources */,
+				AA0000000000000000000026 /* Frameworks */,
+				AA0000000000000000000027 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000042 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000009 /* AnySSHUITests */,
+			);
+			name = AnySSHUITests;
+			packageProductDependencies = (
+				AA0000000000000000000059 /* AnySSHUI */,
+				AA000000000000000000005A /* AnySSHCore */,
+			);
+			productName = AnySSHUITests;
+			productReference = AA0000000000000000000003 /* AnySSHUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -193,6 +246,10 @@
 					};
 					AA0000000000000000000020 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					AA0000000000000000000024 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = AA0000000000000000000010;
 					};
 				};
 			};
@@ -215,6 +272,7 @@
 			targets = (
 				AA0000000000000000000010 /* AnySSH */,
 				AA0000000000000000000020 /* AnySSHWidgets */,
+				AA0000000000000000000024 /* AnySSHUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -228,6 +286,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AA0000000000000000000023 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000027 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +318,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0000000000000000000025 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -260,6 +332,11 @@
 			isa = PBXTargetDependency;
 			target = AA0000000000000000000020 /* AnySSHWidgets */;
 			targetProxy = AA0000000000000000000041 /* PBXContainerItemProxy */;
+		};
+		AA0000000000000000000042 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000010 /* AnySSH */;
+			targetProxy = AA0000000000000000000043 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -423,6 +500,38 @@
 			};
 			name = Release;
 		};
+		AA0000000000000000000039 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.patricio0312rev.anyssh.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AnySSH;
+			};
+			name = Debug;
+		};
+		AA000000000000000000003A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.patricio0312rev.anyssh.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AnySSH;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -449,6 +558,15 @@
 			buildConfigurations = (
 				AA0000000000000000000037 /* Debug */,
 				AA0000000000000000000038 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000000000000000000003B /* Build configuration list for PBXNativeTarget "AnySSHUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000039 /* Debug */,
+				AA000000000000000000003A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -482,6 +600,14 @@
 		AA0000000000000000000058 /* AnySSHUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnySSHUI;
+		};
+		AA0000000000000000000059 /* AnySSHUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnySSHUI;
+		};
+		AA000000000000000000005A /* AnySSHCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnySSHCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
