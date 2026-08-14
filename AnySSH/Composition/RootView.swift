@@ -36,6 +36,8 @@ struct RootView: View {
                 AuthPromptScenarioView()
             case .errorState(let state):
                 ErrorStateScenarioView(state: state, secrets: environment.secretStore)
+            case .terminal(let scenario):
+                TerminalScenarioView(scenario: scenario)
             }
         } else {
             remotes
