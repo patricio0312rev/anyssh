@@ -183,17 +183,17 @@ public struct SessionWorkspaceView: View {
     }
 
     private var switchDurationProbe: some View {
-        Text(
-            SessionSwitchSignpost.measured
-                .map { String(format: "%.1f", $0) }
-                .joined(separator: ",")
-        )
-        .font(Theme.Text.caption)
-        .frame(width: 1, height: 1)
-        .clipped()
-        .opacity(0)
-        .accessibilityIdentifier(UIIdentifier.Session.switchDurations)
-        .id(model.activeSessionID)
+        let measured = SessionSwitchSignpost.measured
+            .map { String(format: "%.1f", $0) }
+            .joined(separator: ",")
+        return Text(measured)
+            .font(Theme.Text.caption)
+            .frame(width: 1, height: 1)
+            .clipped()
+            .opacity(0)
+            .accessibilityIdentifier(UIIdentifier.Session.switchDurations)
+            .accessibilityValue(measured)
+            .id(model.activeSessionID)
     }
 
     static let fallbackTitle = "Sessions"
