@@ -2,8 +2,6 @@ import AnySSHCore
 import SwiftUI
 
 struct RemoteRow: View {
-    static let metaSeparator = " • "
-
     let remote: Remote
     let reachability: ReachabilityPresentation
 
@@ -29,7 +27,7 @@ struct RemoteRow: View {
     private var detail: String {
         [remote.authMethod.label, remote.tag]
             .compactMap { $0 }
-            .joined(separator: Self.metaSeparator)
+            .joined(separator: Theme.metaSeparator)
     }
 }
 
