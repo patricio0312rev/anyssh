@@ -15,6 +15,7 @@ struct RemoteFormTestSection: View {
                     Text("Test Connection")
                 }
             }
+            .buttonStyle(.rowAction)
             .disabled(!model.canTest)
             .accessibilityIdentifier(UIIdentifier.RemoteForm.testConnection)
 
