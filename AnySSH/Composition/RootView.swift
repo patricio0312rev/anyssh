@@ -11,6 +11,7 @@ struct RootView: View {
         ThemedRoot {
             screen
         }
+        .environment(\.fileIconImageProvider, BundleFileIconImageProvider())
         .onOpenURL { url in
             guard environment.isMock else { return }
             routed = DeepLinkRouter.scenario(for: url) ?? routed
@@ -38,6 +39,8 @@ struct RootView: View {
                 ErrorStateScenarioView(state: state, secrets: environment.secretStore)
             case .terminal(let scenario):
                 TerminalScenarioView(scenario: scenario)
+            case .git(let scenario):
+                GitScenarioView(scenario: scenario)
             }
         } else {
             remotes
