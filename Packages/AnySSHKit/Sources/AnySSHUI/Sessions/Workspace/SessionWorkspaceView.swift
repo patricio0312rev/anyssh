@@ -68,6 +68,7 @@ public struct SessionWorkspaceView: View {
                 if hostsToasts { StatusToastHost(center: toasts) }
             }
             .onAppear { model.statusToasts = toasts }
+            .privacyCover()
     }
 
     private var stack: some View {
