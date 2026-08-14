@@ -58,8 +58,9 @@ Both are gitignored and neither holds a secret: the app ships no API keys and as
 AnySSH/                 app target: composition root, wiring, launch scenarios
 AnySSHWidgets/          widget and Live Activity extension
 AnySSHUITests/          XCUITest flows
+Shared/                 types compiled into both the app and the extension
 Packages/AnySSHKit/     all modules, tests, and fixtures
-Config/                 xcconfig build settings
+Config/                 xcconfig build settings and Info.plists
 Scripts/                build and vendoring automation
 ```
 
@@ -69,12 +70,18 @@ Scripts/                build and vendoring automation
 
 | Target | What it does |
 |---|---|
+| `make doctor` | Verify the toolchain and repair the SDK to runtime mapping |
+| `make vendor` | Build the pinned libssh2 + OpenSSL xcframework |
 | `make build` | Build the app for the simulator |
-| `make test` | Pure logic on the host, no simulator |
-| `make test-sim` | Package tests on the simulator |
-| `make lint` | swift-format, the 300-line budget, module import rules |
+| `make test` | Tier 1: pure logic on the host, no simulator |
+| `make test-sim` | Tier 2: package tests on the simulator |
+| `make ui-test` | Tier 3: the XCUITest flows in `AnySSHUITests` |
+| `make lint` | swift-format, the 300-line budget, the comment ban, module import rules |
 | `make format` | Rewrite sources in place |
 | `make run` | Boot, install, and launch in mock mode |
+| `make screenshot` | Capture a mock-mode screenshot headlessly, `SCENARIO=<name>` |
+
+The project holds three targets: `AnySSH` (the app), `AnySSHWidgets` (the widget and Live Activity extension, embedded and signed by the app), and `AnySSHUITests` (the XCUITest bundle, run through the `AnySSH` scheme). Every screen is reachable headlessly through `ANYSSH_SCENARIO=<name>`, which is how both the UI tests and the screenshot sweep get to a state without tapping.
 
 CI runs `swift-format` and the line budget on every push. The design system, module boundaries, and commit conventions are defined in [AGENTS.md](AGENTS.md) and are binding for every contributor.
 
