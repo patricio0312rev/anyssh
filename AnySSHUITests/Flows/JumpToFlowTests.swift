@@ -23,8 +23,8 @@ final class JumpToFlowTests: XCTestCase {
 
         let waiting = app.element(withIdentifier: JumpToIdentifier.waiting)
         XCTAssertEqual(
-            waiting.value as? String, "1",
-            "one of the two panes reports working, so the waiting count must be exactly 1"
+            waiting.value as? String, "2",
+            "two panes across the four fixture tabs report waiting, so the count must be exactly 2"
         )
 
         let status = app.element(withIdentifier: JumpToIdentifier.status("w1:t1"))
