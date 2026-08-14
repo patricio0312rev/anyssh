@@ -116,27 +116,33 @@ struct RemotesListView: View {
 
 ## Design System
 
-The theme is Monokai Pro over fully native structure: Apple layout, Apple controls, Apple typography, Apple motion. Only color and the terminal face come from the theme. Dark is the only appearance; every color is painted explicitly.
+Two visual worlds, one hard border between them:
 
-### Colors
+- **Chrome is native iOS.** System dark backgrounds, Liquid Glass controls, SF typography, system motion, system semantic colors. The app forces dark appearance and never follows the system setting.
+- **Code is Monokai Pro.** Terminal, diffs, source and JSON viewers, and snippets render on the Monokai canvas with JetBrains Mono. Monokai colors never leak into chrome, and chrome colors never leak into code surfaces.
 
-Every color is declared sRGB explicitly (`Color(.sRGB, ...)` or an sRGB asset), never `.displayP3`. No view references a hex value or `Color(red:green:blue:)` directly: views use `Theme` tokens only.
+### Chrome colors
 
-| Token | Hex | Use |
+Chrome never declares a hex value. Views use `Theme` tokens that wrap system semantics:
+
+| Token | Wraps | Use |
 |---|---|---|
-| `surface.base` | `#2d2a2e` | screen background, the only full-screen background |
-| `surface.raised` | `#363338` | cards, grouped rows, sheets |
-| `surface.overlay` | `#403d42` | popovers, menus, accessory bar |
-| `separator` | `#423f44` | hairlines |
-| `text.primary` | `#fcfcfa` | titles, body |
-| `text.secondary` | `#939293` | subtitles, metadata |
-| `text.tertiary` | `#7e7c7e` | non-essential labels only |
-| `accent` | `#ab9df2` | selection, focus, the one primary action on a screen |
-| `accent.pressed` | `#8f7fe0` | pressed states |
+| `surface.base` | `systemBackground` | screen background |
+| `surface.raised` | `secondarySystemBackground` | cards, grouped rows, sheets |
+| `surface.overlay` | `tertiarySystemBackground` | menus, accessory chrome |
+| `text.primary` | `label` | titles, body |
+| `text.secondary` | `secondaryLabel` | subtitles, metadata |
+| `text.tertiary` | `tertiaryLabel` | non-essential labels only |
+| `separator` | `separator` | hairlines |
+| `accent` | `#ab9df2` sRGB | selection, focus, at most one primary action per screen |
+| `destructive` | `systemRed` | remove, delete, disconnect-and-lose-state |
+| `status.*` | system green/yellow/orange/red/gray | online, busy, attention, error, offline dots and badges |
 
-Status colors are semantic and never decorative: `status.online #a9dc76`, `status.busy #ffd866`, `status.attention #fc9867`, `status.error #ff6188`, `status.offline #727072`.
+The accent is the one branded color in chrome and it is scarce on purpose: selected rows, focus rings, one primary action. An accent-colored icon row, spinner, or decorative tint fails review. Elevation comes from glass and the three surfaces, never from a fourth background color.
 
-Three surfaces exist. A fourth background color is a design-system bug, not a choice. Bright black `#727072` fails WCAG AA on the base surface and is forbidden for chrome text; it is correct only inside terminal content and as `status.offline`.
+### Code colors
+
+Monokai Pro, declared once in `Theme.Code`, always sRGB (`Color(.sRGB, ...)`), never `.displayP3`: canvas `#2d2a2e`, the ANSI table, the syntax role mapping, and the diff tints (`#a9dc76` at 13% added, `#ff6188` at 13% removed). Terminal content reproduces the palette exactly. No chrome token appears inside a code surface and no `Theme.Code` token appears outside one.
 
 ### Typography
 
@@ -155,9 +161,10 @@ One hierarchy, applied everywhere:
 - **Standard chrome buttons** (toolbars excluded): `.buttonStyle(.glass)`, untinted, one glass depth for the whole app.
 - **Toolbar buttons**: plain content only. The toolbar draws its own glass; adding `.glass` inside it nests capsules.
 - **Inline text actions** inside lists and sheets: `.buttonStyle(.plain)` with `accent` foreground.
-- **Destructive**: same shape as its context, `status.error` role, always behind a confirmation.
+- **Destructive** (remove, delete, disconnect-and-lose-state): same shape as its context with the `destructive` red role, always behind a confirmation.
+- **Over a scrim or dark overlay** (reconnect, error covers, full-screen states): plain `.glass` disappears against the darkness. Every button there is `.glassProminent`, accent for the single continue action and monochrome for the rest. If a screenshot cannot distinguish a control from its background, the style is wrong regardless of what this table says.
 
-All buttons of the same role share the same size: `IconButton` defines the icon hit target, `Theme.Buttons` defines heights. A button visually smaller or darker than its siblings is a bug.
+All buttons of the same role share the same size: `IconButton` defines the icon hit target, `Theme.Buttons` defines heights. A button visually smaller, darker, or shinier than its siblings is a bug.
 
 ### Presentation
 
@@ -174,6 +181,12 @@ Choose by rule, not by mood:
 | `StatusToast` | passive outcome feedback, never requires a tap |
 
 Every sheet gets a visible drag indicator and a `ScreenHeader`. Mixing patterns for the same job across screens fails review.
+
+Transient feedback is one family, not three. Everything passive flows through the single `StatusToastCenter`: one host, one position (bottom), one card treatment, one set of status colors and symbols. No ad-hoc top banners, no second smaller toast, no floating one-off alert card. The Live Activity and widget reuse the same status colors and iconography so an alert looks like a sibling of the in-app toast, not a stranger.
+
+### Spacing
+
+Margins and padding come from `Theme.Space`, a 4pt grid: 4, 8, 12, 16, 24, 32. Screen edge margin is 16, card padding is 12, row gaps are 8. Lists keep system default insets. One corner radius per shape class (`card`, `control`) defined in `Theme.Space`, matched to the concentric radius of its container. A raw number inside `padding()`, `spacing:`, `cornerRadius`, or `frame` that exists in `Theme.Space` fails review; a value the scale lacks is a design-system change, not a local liberty.
 
 ### Motion
 
