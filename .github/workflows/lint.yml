@@ -1,0 +1,20 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  swift-format:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift-format lint
+        run: |
+          files=$(find AnySSH AnySSHWidgets Packages -name '*.swift' -not -path '*/.build/*' 2>/dev/null || true)
+          if [ -z "$files" ]; then
+            echo "No Swift sources yet"
+            exit 0
+          fi
+          swift format lint --strict --parallel $files
