@@ -14,7 +14,7 @@ public struct CopyableRow: View {
         value: String,
         monospaced: Bool = false,
         accessibilityIdentifier: String,
-        onCopy: @escaping (String) -> Void
+        onCopy: @escaping (String) -> Void = { SystemClipboardPasteboard().write($0) }
     ) {
         self.label = label
         self.value = value
