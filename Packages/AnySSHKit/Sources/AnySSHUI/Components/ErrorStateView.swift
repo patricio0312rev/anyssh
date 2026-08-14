@@ -43,13 +43,12 @@ public struct ErrorStateView: View {
     private var actions: some View {
         if let recover {
             Button(action: recover) { label(state.copy.recoveryLabel) }
-                .buttonStyle(.glassProminent)
-                .tint(Theme.accent)
+                .buttonStyle(.accentCapsule)
                 .accessibilityIdentifier("\(state.accessibilityIdentifier).recover")
         }
         if let dismiss {
             Button(action: dismiss) { label("Dismiss") }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.raised)
                 .accessibilityIdentifier("\(state.accessibilityIdentifier).dismiss")
         }
     }
