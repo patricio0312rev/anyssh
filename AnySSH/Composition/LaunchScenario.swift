@@ -8,6 +8,7 @@ enum LaunchScenario: Equatable {
     case hostKeyTrust(String)
     case authPrompt
     case errorState(ErrorState)
+    case terminal(TerminalScenario)
 
     static let fallback = LaunchScenario.remotes("default")
 
@@ -29,6 +30,8 @@ enum LaunchScenario: Equatable {
             self = .hostKeyTrust(name)
         } else if name == Self.authPromptName {
             self = .authPrompt
+        } else if let terminal = TerminalScenario(rawValue: name) {
+            self = .terminal(terminal)
         } else if let state = ErrorState(stateID: Self.stateID(from: name)) {
             self = .errorState(state)
         } else {
@@ -43,7 +46,7 @@ enum LaunchScenario: Equatable {
     var remotesFixture: String {
         switch self {
         case .remotes(let name): name
-        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState: "single"
+        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState, .terminal: "single"
         }
     }
 
