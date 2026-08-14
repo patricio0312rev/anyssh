@@ -28,6 +28,8 @@ struct RootView: View {
             switch routed ?? environment.scenario {
             case .remotes:
                 remotes
+            case .remoteForm(let route):
+                RemoteFormScenarioView(environment: environment, route: route)
             case .hostKeyTrust:
                 TrustScenarioView(store: environment.hostKeyStore, scenario: environment.scenario)
             case .authPrompt:
