@@ -14,21 +14,18 @@ public struct SettingsView: View {
     }
 
     public var body: some View {
-        NavigationStack {
+        SheetScaffold(
+            "Settings",
+            closeIdentifier: UIIdentifier.Settings.close,
+            onClose: { dismiss() }
+        ) {
             List {
                 terminal
                 legal
             }
             .catalogListSurface()
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    CloseButton(accessibilityIdentifier: UIIdentifier.Settings.close) { dismiss() }
-                }
-            }
             .accessibilityIdentifier(UIIdentifier.Settings.screen)
         }
-        .tint(Theme.accent)
     }
 
     private var terminal: some View {
