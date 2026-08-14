@@ -41,22 +41,27 @@ public struct ErrorStateView: View {
 
     @ViewBuilder
     private var actions: some View {
-        if let recover {
-            Button(action: recover) { label(state.copy.recoveryLabel) }
-                .buttonStyle(.accentCapsule)
-                .accessibilityIdentifier("\(state.accessibilityIdentifier).recover")
-        }
-        if let dismiss {
-            Button(action: dismiss) { label("Dismiss") }
-                .buttonStyle(.raised)
-                .accessibilityIdentifier("\(state.accessibilityIdentifier).dismiss")
+        if recover != nil || dismiss != nil {
+            VStack(spacing: Theme.Space.step3) {
+                if let recover {
+                    Button(action: recover) { label(state.copy.recoveryLabel) }
+                        .buttonStyle(.accentCapsule)
+                        .accessibilityIdentifier("\(state.accessibilityIdentifier).recover")
+                }
+                if let dismiss {
+                    Button(action: dismiss) { label("Dismiss") }
+                        .buttonStyle(.raised)
+                        .accessibilityIdentifier("\(state.accessibilityIdentifier).dismiss")
+                }
+            }
+            .frame(maxWidth: .infinity)
         }
     }
 
     private func label(_ title: String) -> some View {
         Text(title)
             .font(Theme.Text.body)
-            .frame(maxWidth: .infinity, minHeight: Theme.Buttons.height)
+            .frame(minWidth: Theme.Buttons.minWidth)
     }
 }
 
