@@ -15,6 +15,7 @@ This repository is a ground-up rebuild of a working legacy codebase. Functionali
 - **Single responsibility.** Every file, type, and function does one thing. If describing it needs "and", split it.
 - **SOLID by default.** Protocols (ports) declare seams, adapters implement them, the composition root wires them. Depend on abstractions, inject at the root.
 - **Reuse before creating.** Before writing any UI element, check `AnySSHUI/Components/`. If a variation seems better than the existing component, improve the shared component for every call site instead of forking a local copy.
+- **Name what repeats.** A literal that appears more than twice (string, number, duration, key, layout value) becomes a named constant owned by one module: UI values in `Theme.Space`/`Theme.Motion`, accessibility ids in `UIIdentifier`, everything else in a constants enum next to its owner. Two files declaring the same magic value is a bug.
 - **Match the codebase.** Follow existing naming, structure, and idiom before introducing new ones.
 - **Preserve behavior.** Gestures, toolbar wiring, and the keyboard accessory are fragile and were paid for in bugs. Port their logic exactly; restyle only their appearance.
 
