@@ -59,6 +59,15 @@ public enum GitFixtures {
         unmerged: []
     )
 
+    public static let newFileStatus = RepositoryStatus(
+        head: .branch("feat/git_surfaces"),
+        upstream: UpstreamTracking(name: "origin/feat/git_surfaces", ahead: 2, behind: 1),
+        staged: [GitDiffFixtures.newFile(at: "docs/plan-git-surfaces.md")],
+        unstaged: [],
+        untracked: [],
+        unmerged: []
+    )
+
     public static let cleanStatus = RepositoryStatus(
         head: .branch("main"),
         upstream: UpstreamTracking(name: "origin/main", ahead: 0, behind: 0),
