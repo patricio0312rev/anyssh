@@ -13,7 +13,7 @@ public struct RowActionButtonStyle: ButtonStyle {
         configuration.label
             .font(Theme.Text.body)
             .foregroundStyle(isEnabled ? tint : Theme.text.tertiary)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: Theme.Buttons.height, alignment: .leading)
             .contentShape(.rect)
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
