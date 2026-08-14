@@ -11,13 +11,13 @@ public struct TerminalLinkScenarioView: View {
         TerminalLinkScenarioRepresentable()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.surface.base)
-            .accessibilityIdentifier(UIIdentifier.Terminal.canvas)
     }
 }
 
 @MainActor
 final class TerminalLinkScenarioController: UIViewController, UIContextMenuInteractionDelegate {
     private let grid = TerminalLinkGridView()
+    private let copied = UILabel()
     private let opener = TerminalLinkOpener { nil }
     private var activeSpan: LinkSpan?
     private let pasteboard: UIPasteboard
@@ -45,7 +45,28 @@ final class TerminalLinkScenarioController: UIViewController, UIContextMenuInter
         ])
         grid.addInteraction(UIContextMenuInteraction(delegate: self))
         grid.accessibilityIdentifier = UIIdentifier.Terminal.canvas
+        installCopiedProbe()
         opener.presenting = { [weak self] in self }
+    }
+
+    private func installCopiedProbe() {
+        copied.translatesAutoresizingMaskIntoConstraints = false
+        copied.isAccessibilityElement = true
+        copied.accessibilityIdentifier = UIIdentifier.Terminal.Links.copied
+        copied.accessibilityValue = ""
+        copied.alpha = 0.01
+        view.addSubview(copied)
+        NSLayoutConstraint.activate([
+            copied.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            copied.topAnchor.constraint(equalTo: view.topAnchor),
+            copied.widthAnchor.constraint(equalToConstant: 1),
+            copied.heightAnchor.constraint(equalToConstant: 1),
+        ])
+    }
+
+    private func note(copied text: String) {
+        pasteboard.string = text
+        copied.accessibilityValue = text
     }
 
     func contextMenuInteraction(
@@ -64,8 +85,8 @@ final class TerminalLinkScenarioController: UIViewController, UIContextMenuInter
                 for: span,
                 present: { [weak self] url in self?.opener.open(url) },
                 refuse: { [weak self] state in self?.opener.refuse(state) },
-                copyAddress: { [weak self] address in self?.pasteboard.string = address },
-                copySelection: { [weak self] text in self?.pasteboard.string = text }
+                copyAddress: { [weak self] address in self?.note(copied: address) },
+                copySelection: { [weak self] text in self?.note(copied: text) }
             )
             return UIMenu(children: actions)
         }
