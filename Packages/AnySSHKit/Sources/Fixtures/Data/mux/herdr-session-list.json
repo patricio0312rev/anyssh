@@ -1,0 +1,1 @@
+{"sessions":[{"default":true,"name":"default","running":true,"session_dir":"/Users/dev/.config/herdr","socket_path":"/Users/dev/.config/herdr/herdr.sock"},{"default":false,"name":"anyssh-test","running":true,"session_dir":"/Users/dev/.config/herdr/sessions/anyssh-test","socket_path":"/Users/dev/.config/herdr/sessions/anyssh-test/herdr.sock"}]}
