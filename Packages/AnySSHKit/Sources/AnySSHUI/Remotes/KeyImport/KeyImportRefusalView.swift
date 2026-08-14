@@ -20,7 +20,7 @@ struct KeyImportRefusalView: View {
             .accessibilityElement(children: .combine)
 
             Button(copy.recoveryLabel, action: dismiss)
-                .buttonStyle(.rowAction)
+                .buttonStyle(.rowAction(tint: Theme.accent))
         }
         .formCardSection()
     }
