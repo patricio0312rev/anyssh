@@ -27,8 +27,9 @@ This repository is a ground-up rebuild of a working legacy codebase. Functionali
 AnySSH/                 app target: composition root, wiring, launch scenarios
 AnySSHWidgets/          widget and Live Activity extension
 AnySSHUITests/          XCUITest flows
+Shared/                 types compiled into both the app and the extension
 Packages/AnySSHKit/     all modules, tests, and fixtures
-Config/                 xcconfig build settings
+Config/                 xcconfig build settings and Info.plists
 Scripts/                build and vendoring automation (minimal set only)
 docs/                   plans and working notes, untracked
 ```
