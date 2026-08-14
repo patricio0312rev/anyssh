@@ -82,6 +82,7 @@ public struct ShortcutPanelsView: View {
                 .fill(Theme.separator)
                 .frame(height: AccessoryBarMetrics.hairline)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(ShortcutPanelIdentifier.bar)
         .sheet(item: $editorPresentation) { presentation in
             editorSheet(presentation)
