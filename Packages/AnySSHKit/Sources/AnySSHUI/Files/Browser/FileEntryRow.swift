@@ -12,11 +12,7 @@ struct FileEntryRow: View {
             titleLineLimit: 1,
             accessibilityIdentifier: UIIdentifier.Workspace.entry(entry.name),
             leading: { icon },
-            trailing: {
-                Image(systemName: "chevron.right")
-                    .font(Theme.Text.caption.weight(.semibold))
-                    .foregroundStyle(Theme.text.tertiary)
-            },
+            trailing: { RowChevron() },
             footer: { EmptyView() }
         )
     }
