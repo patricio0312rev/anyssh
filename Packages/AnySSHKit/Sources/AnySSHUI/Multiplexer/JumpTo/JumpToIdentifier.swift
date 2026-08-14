@@ -4,10 +4,10 @@ public enum JumpToIdentifier {
     public static let open = "jump.open"
     public static let sheet = "jump.sheet"
     public static let close = "jump.close"
-    public static let title = "jump.title"
     public static let waiting = "jump.waiting"
     public static let explanation = "jump.explanation"
     public static let bytes = "jump.bytes"
+    public static let failure = "jump.failure"
     public static let layoutList = "jump.layout.list"
     public static let layoutAccordion = "jump.layout.accordion"
     public static let layoutGrid = "jump.layout.grid"
@@ -18,6 +18,10 @@ public enum JumpToIdentifier {
 
     public static func row(_ id: String) -> String {
         "jump.row.\(id)"
+    }
+
+    public static func jumping(_ id: String) -> String {
+        "jump.jumping.\(id)"
     }
 
     public static func status(_ id: String) -> String {
