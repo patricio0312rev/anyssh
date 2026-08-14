@@ -6,6 +6,5 @@ extension UIIdentifier {
         public static let forget = "trust.forget"
         public static let offeredFingerprint = "trust.fingerprint.offered"
         public static let storedFingerprint = "trust.fingerprint.stored"
-        public static let dismiss = "trust.dismiss"
     }
 }
