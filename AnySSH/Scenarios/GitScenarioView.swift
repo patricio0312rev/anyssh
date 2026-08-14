@@ -25,6 +25,13 @@ struct GitScenarioView: View {
                 expandsFirstFile: true
             )
             .navigationTitle("Changes")
+        case .changesNewFile:
+            ChangesListView(
+                location: GitFixtures.location,
+                git: MockGitService(.newFile),
+                expandsFirstFile: true
+            )
+            .navigationTitle("Changes")
         case .changesClean:
             ChangesListView(location: GitFixtures.location, git: MockGitService(.clean))
                 .navigationTitle("Changes")
