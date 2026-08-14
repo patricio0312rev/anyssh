@@ -11,6 +11,8 @@ public enum Theme {
     public static let accent = Color.srgb(accentHex)
     public static let accentPressed = Color.srgb(accentPressedHex)
 
+    public static let metaSeparator = " • "
+
     #if canImport(UIKit)
     public static let separator = Color(uiColor: .separator)
     public static let destructive = Color(uiColor: .systemRed)
