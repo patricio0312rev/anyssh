@@ -38,6 +38,17 @@ public enum CodeFont {
     public static func characterWidth(size: CGFloat) -> CGFloat {
         ("0" as NSString).size(withAttributes: [.font: platformFont(size: size)]).width
     }
+
+    #if canImport(UIKit)
+    public static func lineHeight(size: CGFloat) -> CGFloat {
+        platformFont(size: size).lineHeight
+    }
+    #else
+    public static func lineHeight(size: CGFloat) -> CGFloat {
+        let font = platformFont(size: size)
+        return font.ascender - font.descender + font.leading
+    }
+    #endif
 }
 
 extension Theme {
