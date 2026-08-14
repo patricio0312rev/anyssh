@@ -21,10 +21,10 @@ struct SnippetComposer: View {
             }
             Section {
                 Button("Save", action: save)
-                    .buttonStyle(.rowAction)
+                    .buttonStyle(.rowAction(tint: Theme.accent))
                     .disabled(command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityIdentifier(SnippetIdentifier.save)
-                    .catalogRowChrome()
+                    .catalogActionRowChrome()
             }
         }
     }
