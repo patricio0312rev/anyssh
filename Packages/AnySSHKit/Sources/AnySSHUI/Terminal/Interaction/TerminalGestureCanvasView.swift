@@ -14,8 +14,6 @@ final class TerminalGestureCanvasView: UIScrollView {
     }
 
     private let mouseLabel = UILabel()
-    private let endLabel = UILabel()
-    private let scrollLabel = UILabel()
     private var anchor = (column: 0, row: 0)
 
     override init(frame: CGRect) {
@@ -25,10 +23,7 @@ final class TerminalGestureCanvasView: UIScrollView {
         alwaysBounceVertical = true
         isScrollEnabled = true
         keyboardDismissMode = .none
-        installProbeLabels()
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(noteScroll))
-        pan.cancelsTouchesInView = false
-        addGestureRecognizer(pan)
+        installMouseLabel()
     }
 
     @available(*, unavailable)
@@ -43,7 +38,6 @@ final class TerminalGestureCanvasView: UIScrollView {
         hasSelection = true
         selectedText = "https://example.com/path"
         selectionRect = CGRect(x: point.x, y: point.y, width: 24, height: 24)
-        publishSelection()
     }
 
     func extendSelection(to point: CGPoint) {
@@ -57,7 +51,6 @@ final class TerminalGestureCanvasView: UIScrollView {
             width: width,
             height: 24
         )
-        publishSelection()
     }
 
     private func cell(at point: CGPoint) -> (column: Int, row: Int) {
@@ -67,35 +60,18 @@ final class TerminalGestureCanvasView: UIScrollView {
         )
     }
 
-    private func publishSelection() {
-        endLabel.accessibilityValue = "\(selectionEnd.column),\(selectionEnd.row)"
-        scrollLabel.accessibilityValue = String(format: "%.1f", contentOffset.y)
-    }
-
-    @objc private func noteScroll(_ gesture: UIPanGestureRecognizer) {
-        scrollLabel.accessibilityValue = String(format: "%.1f", contentOffset.y)
-    }
-
-    private func installProbeLabels() {
-        for (label, id) in [
-            (endLabel, UIIdentifier.Terminal.Gestures.selectionEnd),
-            (scrollLabel, UIIdentifier.Terminal.Gestures.scrollOffset),
-            (mouseLabel, UIIdentifier.Terminal.Gestures.route),
-        ] {
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.isAccessibilityElement = true
-            label.accessibilityIdentifier = id
-            label.alpha = 0.01
-            addSubview(label)
-            NSLayoutConstraint.activate([
-                label.leadingAnchor.constraint(equalTo: leadingAnchor),
-                label.topAnchor.constraint(equalTo: topAnchor),
-                label.widthAnchor.constraint(equalToConstant: 1),
-                label.heightAnchor.constraint(equalToConstant: 1),
-            ])
-        }
-        endLabel.accessibilityValue = "0,0"
-        scrollLabel.accessibilityValue = "0.0"
+    private func installMouseLabel() {
+        mouseLabel.translatesAutoresizingMaskIntoConstraints = false
+        mouseLabel.isAccessibilityElement = true
+        mouseLabel.accessibilityIdentifier = UIIdentifier.Terminal.Gestures.mouseReports
+        mouseLabel.alpha = 0.01
+        addSubview(mouseLabel)
+        NSLayoutConstraint.activate([
+            mouseLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
+            mouseLabel.topAnchor.constraint(equalTo: topAnchor),
+            mouseLabel.widthAnchor.constraint(equalToConstant: 1),
+            mouseLabel.heightAnchor.constraint(equalToConstant: 1),
+        ])
         mouseLabel.accessibilityValue = ""
     }
 }
