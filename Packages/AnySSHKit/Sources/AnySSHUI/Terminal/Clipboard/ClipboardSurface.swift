@@ -18,8 +18,8 @@ public struct ClipboardSurface<Content: View>: View {
             ClipboardPasteControl {
                 Task { await controller.beginPaste() }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 4)
+            .padding(.horizontal, Theme.Space.cardPadding)
+            .padding(.vertical, Theme.Space.step1)
         }
         .sheet(isPresented: pendingBinding) {
             if let content = controller.confirmationContent {
