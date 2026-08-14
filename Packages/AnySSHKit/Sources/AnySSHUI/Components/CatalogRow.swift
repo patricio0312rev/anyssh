@@ -11,6 +11,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
     private let subtitleMonospaced: Bool
     private let subtitleLineLimit: Int?
     private let detail: String?
+    private let detailStatus: StatusDot?
     private let detailAccessibilityIdentifier: String?
     private let titleLineLimit: Int
     private let layout: Layout
@@ -25,6 +26,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
         subtitleMonospaced: Bool = false,
         subtitleLineLimit: Int? = nil,
         detail: String? = nil,
+        detailStatus: StatusDot? = nil,
         detailAccessibilityIdentifier: String? = nil,
         titleLineLimit: Int = 2,
         layout: Layout = .list,
@@ -38,6 +40,7 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
         self.subtitleMonospaced = subtitleMonospaced
         self.subtitleLineLimit = subtitleLineLimit
         self.detail = detail
+        self.detailStatus = detailStatus
         self.detailAccessibilityIdentifier = detailAccessibilityIdentifier
         self.titleLineLimit = titleLineLimit
         self.layout = layout
@@ -73,9 +76,17 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let detail {
-                detailText(detail)
+                detailRow(detail)
             }
             footer
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func detailRow(_ detail: String) -> some View {
+        HStack(spacing: Theme.Space.step2) {
+            detailText(detail)
+            detailStatus
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -87,7 +98,6 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
             .foregroundStyle(Theme.text.tertiary)
             .lineLimit(2)
             .truncationMode(.tail)
-            .frame(maxWidth: .infinity, alignment: .leading)
         if let detailAccessibilityIdentifier {
             text.accessibilityIdentifier(detailAccessibilityIdentifier)
         } else {
@@ -107,6 +117,7 @@ extension CatalogRow where Leading == EmptyView, Trailing == EmptyView, Footer =
         subtitleMonospaced: Bool = false,
         subtitleLineLimit: Int? = nil,
         detail: String? = nil,
+        detailStatus: StatusDot? = nil,
         detailAccessibilityIdentifier: String? = nil,
         titleLineLimit: Int = 2,
         layout: Layout = .list,
@@ -118,6 +129,7 @@ extension CatalogRow where Leading == EmptyView, Trailing == EmptyView, Footer =
             subtitleMonospaced: subtitleMonospaced,
             subtitleLineLimit: subtitleLineLimit,
             detail: detail,
+            detailStatus: detailStatus,
             detailAccessibilityIdentifier: detailAccessibilityIdentifier,
             titleLineLimit: titleLineLimit,
             layout: layout,
@@ -148,7 +160,7 @@ extension CatalogRow where Leading == EmptyView, Trailing == EmptyView, Footer =
                 ) {
                     RowIconTile(systemImage: "server.rack", label: "Host")
                 } trailing: {
-                    Image(systemName: "chevron.right").foregroundStyle(Theme.text.tertiary)
+                    RowChevron()
                 } footer: {
                     EmptyView()
                 }
