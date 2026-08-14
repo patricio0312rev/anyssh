@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: swift-format lint
         run: |
-          files=$(find AnySSH AnySSHWidgets Packages -name '*.swift' -not -path '*/.build/*' 2>/dev/null || true)
+          files=$(find AnySSH AnySSHWidgets AnySSHUITests Shared Packages -name '*.swift' -not -path '*/.build/*' 2>/dev/null || true)
           if [ -z "$files" ]; then
             echo "No Swift sources yet"
             exit 0
