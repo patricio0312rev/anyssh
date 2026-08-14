@@ -8,8 +8,6 @@ enum RemoteFormKeyboard {
 }
 
 struct RemoteFormField: View {
-    static let labelWidth: CGFloat = 92
-
     let title: String
     let identifier: String
 
@@ -25,7 +23,7 @@ struct RemoteFormField: View {
                 Text(title)
                     .font(Theme.Text.body)
                     .foregroundStyle(Theme.text.primary)
-                    .frame(width: Self.labelWidth, alignment: .leading)
+                    .frame(width: FormMetrics.labelWidth, alignment: .leading)
                 field
                     .autocorrectionDisabled()
                     .foregroundStyle(Theme.text.primary)
