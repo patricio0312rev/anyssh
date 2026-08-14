@@ -106,6 +106,43 @@ import Testing
         #expect(writes.last == expected)
     }
 
+    @Test func jumpIgnoresFurtherTapsWhileOneIsInFlight() async throws {
+        let writer = GatedDisplayWriter()
+        let model = JumpToModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
+            directory: nil,
+            writer: writer
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        let first = Task { await model.jump(to: row) }
+        try await waitUntil { await writer.hasWritten }
+
+        #expect(model.jumpingRowID == row.id)
+        #expect(model.isJumping)
+        #expect(await model.jump(to: row) == false)
+        #expect(await model.jump(to: row) == false)
+        #expect(model.jumpFailure == nil)
+
+        await writer.release()
+        #expect(await first.value)
+        #expect(model.jumpingRowID == nil)
+        #expect(await writer.writes.count == 1)
+    }
+
+    @Test func jumpKeepsTheFailureForTheSheetToShow() async throws {
+        let model = JumpToModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
+            directory: nil,
+            writer: nil
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        #expect(await model.jump(to: row) == false)
+        #expect(model.jumpFailure == .mux(.attachTargetVanished))
+        #expect(model.jumpingRowID == nil)
+    }
+
     @Test func buildKeepsOnlySessionsWithSnapshots() {
         let listed = [
             MuxSession(id: MuxSessionID(rawValue: "kept"), name: "kept", isAttached: true),
