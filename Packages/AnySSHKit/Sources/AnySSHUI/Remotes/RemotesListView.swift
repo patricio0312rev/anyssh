@@ -8,6 +8,7 @@ public struct RemotesListView: View {
     @State private var route: RemoteRoute?
     @State private var pendingDeletion: Remote?
     @State private var isReordering = false
+    @State private var isPresentingSettings = false
 
     private let secrets: any SecretStore
     private let hostKeys: (any HostKeyStore)?
@@ -30,6 +31,7 @@ public struct RemotesListView: View {
     public var body: some View {
         NavigationStack {
             content
+                .settingsButton(floatsOverContent: hasRows) { isPresentingSettings = true }
                 .navigationTitle("Remotes")
                 .remotesChrome(
                     isReordering: $isReordering,
@@ -43,6 +45,10 @@ public struct RemotesListView: View {
             Task { await reachability.update(remotes: remotes) }
         }
         .reachabilityLifecycle(reachability)
+        .sheet(isPresented: $isPresentingSettings) {
+            SettingsView(layoutDirectory: AppDirectories.support)
+                .presentationDragIndicator(.visible)
+        }
         .sheet(item: $route) { route in
             RemoteSheet(
                 route: route,
@@ -65,6 +71,11 @@ public struct RemotesListView: View {
             Text("The host and any key, password or passphrase saved for it are removed.")
         }
         .remoteSecretRefusal(model.refusal, dismiss: model.dismissRefusal)
+    }
+
+    private var hasRows: Bool {
+        if case .loaded(let remotes) = model.state { return !remotes.isEmpty }
+        return false
     }
 
     @ViewBuilder
