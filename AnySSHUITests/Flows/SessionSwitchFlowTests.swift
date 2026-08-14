@@ -5,7 +5,7 @@ import XCTest
 @MainActor
 final class SessionSwitchFlowTests: XCTestCase {
     private let titles = [
-        "dev@workstation: ~/Sites/anyssh",
+        "dev@workstation: ~/src/api",
         "ci@build-box: tmux ci",
         "root@edge-node",
         "dev@workstation: ~/tmp",
