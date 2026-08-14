@@ -9,6 +9,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     case herdr = "sessions.workspace.herdr"
     case agent = "sessions.workspace.agent"
     case accessory = "sessions.workspace.accessory"
+    case landscape = "sessions.workspace.landscape"
     case switcher = "sessions.workspace.switcher"
     case palette = "sessions.workspace.palette"
     case changes = "sessions.workspace.changes"
@@ -36,7 +37,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
         switch self {
         case .switcher: .switcher
         case .palette: .palette
-        case .changes, .openedBrowser: .changes
+        case .changes, .openedBrowser, .landscape: .changes
         case .files: .files
         case .jobAlerts: .jobAlerts
         default: nil
@@ -68,16 +69,20 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
         self == .tmux || self == .herdr
     }
 
-    var transcript: String {
+    var transcript: [UInt8] {
         switch self {
-        case .agent: OpenCodeHomeTranscript.home
-        case .tmux, .herdr: WorkspaceScenarioTranscript.multiplexed
-        default: WorkspaceScenarioTranscript.shell
+        case .agent: OpenCodeHomeCapture.bytes
+        case .tmux, .herdr: Array(WorkspaceScenarioTranscript.multiplexed.utf8)
+        default: Array(WorkspaceScenarioTranscript.shell.utf8)
         }
     }
 
     var forcesAccessoryBar: Bool {
         self == .accessory
+    }
+
+    var prefersLandscape: Bool {
+        self == .landscape
     }
 
     var opensFromRemotes: Bool {
