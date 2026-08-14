@@ -7,6 +7,8 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     case empty = "sessions.workspace.empty"
     case tmux = "sessions.workspace.tmux"
     case herdr = "sessions.workspace.herdr"
+    case agent = "sessions.workspace.agent"
+    case accessory = "sessions.workspace.accessory"
     case switcher = "sessions.workspace.switcher"
     case palette = "sessions.workspace.palette"
     case changes = "sessions.workspace.changes"
@@ -22,7 +24,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
 
     var recordsFixture: String {
         switch self {
-        case .single: "single"
+        case .single, .agent, .accessory: "single"
         case .empty: "empty"
         case .notifyForeground: "notifyForeground"
         case .notifyBackground: "notifyBackground"
@@ -64,6 +66,18 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
 
     var isMultiplexed: Bool {
         self == .tmux || self == .herdr
+    }
+
+    var transcript: String {
+        switch self {
+        case .agent: OpenCodeHomeTranscript.home
+        case .tmux, .herdr: WorkspaceScenarioTranscript.multiplexed
+        default: WorkspaceScenarioTranscript.shell
+        }
+    }
+
+    var forcesAccessoryBar: Bool {
+        self == .accessory
     }
 
     var opensFromRemotes: Bool {
