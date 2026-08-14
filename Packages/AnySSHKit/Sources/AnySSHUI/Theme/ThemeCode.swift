@@ -25,6 +25,7 @@ extension Theme {
         public static let selectionBackground = Color.srgb(Hex.selectionBackground)
         public static let selectionForeground = foreground
         public static let gutter = Color.srgb(Hex.gutter)
+        public static let lineNumber = Color.srgb(Hex.brightBlack)
 
         public static let ansiHex: [UInt32] = [
             Hex.canvas, Hex.red, Hex.green, Hex.yellow,
