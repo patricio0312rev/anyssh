@@ -20,13 +20,4 @@ public enum ReachabilityPresentation: String, CaseIterable, Sendable {
         case .unknown: "Reachability unknown"
         }
     }
-
-    public var symbolName: String {
-        switch self {
-        case .checking: "circle.dotted"
-        case .reachable: "checkmark.circle.fill"
-        case .unreachable: "xmark.circle.fill"
-        case .unknown: "questionmark.circle.fill"
-        }
-    }
 }
