@@ -35,7 +35,7 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
         case .herdrProtocolMismatch:
             info = MultiplexerInfo(
                 kind: .herdr,
-                binaryPath: "/Users/dev/.local/bin/herdr",
+                binaryPath: "/home/dev/.local/bin/herdr",
                 version: "0.7.0",
                 protocolVersion: 18
             )
