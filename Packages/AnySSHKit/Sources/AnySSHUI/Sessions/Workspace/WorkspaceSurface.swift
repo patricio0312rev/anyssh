@@ -3,4 +3,5 @@ public enum WorkspaceSurface: String, CaseIterable, Hashable, Sendable {
     case palette
     case changes
     case files
+    case jobAlerts
 }
