@@ -19,7 +19,7 @@ import Testing
         arguments: [
             ("::1", 22, "[::1]:22"),
             ("fd7a:115c:a1e0::1", 2200, "[fd7a:115c:a1e0::1]:2200"),
-            ("192.0.2.10", 22, "192.0.2.10:22"),
+            ("100.100.100.100", 22, "100.100.100.100:22"),
             ("mac-mini.ts.net", 22, "mac-mini.ts.net:22"),
         ])
     func bracketsAnIPv6LiteralAndNothingElse(host: String, port: Int, rendered: String) {
