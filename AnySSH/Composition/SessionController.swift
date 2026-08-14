@@ -15,7 +15,7 @@ final class SessionController {
     let restoreStore: SessionRestoreStore
     let restoreEnabled: Bool
     let activityCoordinator: SessionActivityCoordinator
-    let jobAlertScheduler: any NotificationScheduler = RecordingNotificationScheduler()
+    private(set) var jobAlertScheduler: any NotificationScheduler = RecordingNotificationScheduler()
 
     private(set) var workspace: SessionWorkspaceModel?
     var isPresentingWorkspace = false
@@ -41,6 +41,10 @@ final class SessionController {
             clock: SystemClock()
         )
         restoreCoordinator = SessionRestoreCoordinator(store: restoreStore)
+        guard !isMock else { return }
+        jobAlertScheduler = SystemNotificationScheduler { [weak self] id, pane in
+            self?.selectSession(id, pane: pane)
+        }
     }
 
     func selectSession(_ id: SessionID, pane: MuxPaneID? = nil) {
