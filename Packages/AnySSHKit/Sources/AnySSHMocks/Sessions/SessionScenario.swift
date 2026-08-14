@@ -37,7 +37,7 @@ public enum SessionScenario {
             capabilities: ssh,
             age: 1_800,
             idle: 4,
-            workspace: WorkspaceLocation(path: "~/Sites/anyssh", provenance: .shellIntegration)
+            workspace: WorkspaceLocation(path: GitFixtures.root, provenance: .shellIntegration)
         ),
         record(
             id: "session-2",
