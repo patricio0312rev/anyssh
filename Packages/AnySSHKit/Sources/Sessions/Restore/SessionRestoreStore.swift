@@ -1,3 +1,4 @@
+import AnySSHCore
 import Foundation
 
 public struct SessionRestoreStore: Sendable {
@@ -16,9 +17,7 @@ public struct SessionRestoreStore: Sendable {
     }
 
     public static func applicationSupport() -> SessionRestoreStore {
-        SessionRestoreStore(
-            directory: URL.applicationSupportDirectory.appending(path: "AnySSH")
-        )
+        SessionRestoreStore(directory: AppDirectories.support)
     }
 
     public func load() throws -> SessionRestoreSnapshot? {
