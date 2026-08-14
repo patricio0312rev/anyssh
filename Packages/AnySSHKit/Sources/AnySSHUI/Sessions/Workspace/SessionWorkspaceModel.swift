@@ -25,7 +25,8 @@ public final class SessionWorkspaceModel {
     let signpost = SessionSwitchSignpost()
     let reconnectCoordinator: ReconnectCoordinator
     let activityCoordinator: SessionActivityCoordinator?
-    let jobAlerts: (any NotificationScheduler)?
+    let jobAlertSettings: JobAlertSettings
+    private(set) var jobAlerts: (any NotificationScheduler)?
     #if canImport(UIKit)
     let backgroundTask = SessionBackgroundTask()
     #endif
@@ -40,6 +41,7 @@ public final class SessionWorkspaceModel {
     public internal(set) var lastRemote: Remote?
     public internal(set) var shouldPresentSwitcher = false
     public internal(set) var barModels = [SessionID: AccessoryBarModel]()
+    public internal(set) var systemNotificationRequests: [JobAlertRequest] = []
     var pendingPane: MuxPaneID?
 
     public let multiplexerKind: MultiplexerKind
@@ -75,6 +77,7 @@ public final class SessionWorkspaceModel {
         reconnectCoordinator: ReconnectCoordinator = ReconnectCoordinator(),
         activityCoordinator: SessionActivityCoordinator? = nil,
         jobAlertScheduler: (any NotificationScheduler)? = nil,
+        jobAlertSettings: JobAlertSettings = JobAlertSettings(),
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {
@@ -85,7 +88,7 @@ public final class SessionWorkspaceModel {
         self.hostKeys = hostKeys
         self.reconnectCoordinator = reconnectCoordinator
         self.activityCoordinator = activityCoordinator
-        jobAlerts = jobAlertScheduler
+        self.jobAlertSettings = jobAlertSettings
         self.registry = registry
         self.remotes = Dictionary(uniqueKeysWithValues: remotes.map { ($0.id, $0) })
         self.activeSessionID = activeSessionID
@@ -94,7 +97,19 @@ public final class SessionWorkspaceModel {
         self.muxBindings = muxBindings
         self.multiplexerAdapter = multiplexerAdapter
         self.layoutDirectory = layoutDirectory
-        store.setJobAlerts(jobAlertScheduler)
+        if let jobAlertScheduler {
+            let delivery = JobAlertDelivery(
+                system: jobAlertScheduler,
+                settings: jobAlertSettings,
+                isForeground: JobAlertDelivery.defaultForegroundCheck,
+                presentBanner: { [weak self] toast in self?.statusToasts?.present(toast) },
+                onSystemRequest: { [weak self] request in
+                    self?.systemNotificationRequests.append(request)
+                }
+            )
+            jobAlerts = delivery
+            store.setJobAlerts(delivery)
+        }
         for record in registry.sessions {
             guard let connection = connections[record.id] else { continue }
             attach(record.id, connection: connection)
