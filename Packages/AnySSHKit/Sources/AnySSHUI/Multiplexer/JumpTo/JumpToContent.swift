@@ -22,8 +22,12 @@ struct JumpToContent: View {
             ForEach(model.sessions) { session in
                 Section {
                     ForEach(session.groups) { row in
-                        JumpToRowView(row: row, onTap: { onJump(row) })
-                            .catalogRowChrome(selected: row.isActive)
+                        JumpToRowView(
+                            row: row,
+                            isJumping: model.jumpingRowID == row.id,
+                            onTap: { onJump(row) }
+                        )
+                        .catalogRowChrome(selected: row.isActive)
                     }
                 } header: {
                     sectionHeader(session)
@@ -39,8 +43,12 @@ struct JumpToContent: View {
                 Section {
                     if model.expandedSessionIDs.contains(session.id) {
                         ForEach(session.groups) { row in
-                            JumpToRowView(row: row, onTap: { onJump(row) })
-                                .catalogRowChrome()
+                            JumpToRowView(
+                                row: row,
+                                isJumping: model.jumpingRowID == row.id,
+                                onTap: { onJump(row) }
+                            )
+                            .catalogRowChrome()
                         }
                     }
                 } header: {
@@ -121,7 +129,12 @@ struct JumpToContent: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Spacer(minLength: 0)
-                JumpToStatusDot(row: row)
+                if model.jumpingRowID == row.id {
+                    LoadingView(.inline)
+                        .accessibilityIdentifier(JumpToIdentifier.jumping(row.id.rawValue))
+                } else {
+                    JumpToStatusDot(row: row)
+                }
             }
             .padding(.horizontal, Theme.Space.step3)
             .frame(minHeight: Theme.Buttons.height)
