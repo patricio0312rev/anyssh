@@ -1,0 +1,7 @@
+prefix = "ctrl+b"
+new_tab = "prefix+t"
+new_workspace = "prefix+shift+t"
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+zoom = "prefix+z"
+workspace_picker = "prefix+w"
