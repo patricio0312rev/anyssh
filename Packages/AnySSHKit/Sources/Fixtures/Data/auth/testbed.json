@@ -1,0 +1,10 @@
+{
+  "accounts": { "keyuser": "publickey", "otpuser": "keyboard-interactive",
+                "pwuser": "password" },
+  "container": "anyssh-testbed-sshd", "host": "127.0.0.1", "port": 2222,
+  "hostKeyAlgorithm": "ssh-ed25519", "hostKeyBase64": "AAAAC3NzaC1lZDI1NTE5AAAAIKqUfcCXwK9dfAPGYTDnR79qFMJuzBOyzI62QSRNppxA",
+  "hostKeyFingerprint": "SHA256:r70+gfFM07gNUgFdLQtPVbPTVNl9GO4kD62XjwiDqIs",
+  "keyboardInteractiveRounds": [ { "isEchoed": false, "text": "Verification code: " },
+                                 { "isEchoed": true, "text": "Which device answered? " } ],
+  "pubkeyAcceptedAlgorithms": ["ssh-ed25519", "rsa-sha2-256", "rsa-sha2-512"]
+}
