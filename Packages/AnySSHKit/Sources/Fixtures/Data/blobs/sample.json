@@ -1,0 +1,9 @@
+{
+  "name": "origin",
+  "attempts": 0,
+  "enabled": true,
+  "tags": ["alpha", "beta"],
+  "nested": {
+    "delay": 0.5
+  }
+}
