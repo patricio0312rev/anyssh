@@ -32,7 +32,7 @@ final class RemotesFirstLaunchFlowTests: XCTestCase {
         try axe.tap(UIIdentifier.RemoteForm.host)
         try axe.type("build-box.local")
         try axe.tap(UIIdentifier.RemoteForm.username)
-        try axe.type("patricio")
+        try axe.type("dev")
         try axe.tap(UIIdentifier.RemoteForm.port)
         try axe.type("2222")
 
@@ -60,7 +60,7 @@ final class RemotesFirstLaunchFlowTests: XCTestCase {
         try axe.tap(UIIdentifier.RemoteForm.host)
         try axe.type("build-box.local")
         try axe.tap(UIIdentifier.RemoteForm.username)
-        try axe.type("patricio")
+        try axe.type("dev")
         try axe.tap(UIIdentifier.RemoteForm.port)
         try axe.type("70000")
         try axe.tap(UIIdentifier.RemoteForm.save)
