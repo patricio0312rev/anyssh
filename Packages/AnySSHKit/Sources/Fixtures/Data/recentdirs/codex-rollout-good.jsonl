@@ -1,2 +1,2 @@
-{"timestamp":"2026-08-12T13:50:35.914Z","type":"session_meta","payload":{"session_id":"019ff63c-9cdf-74f0-9665-75df26c3f8cc","cwd":"/Users/dev/src/anyssh","originator":"Claude Code","cli_version":"0.144.1"}}
+{"timestamp":"2026-08-12T13:50:35.914Z","type":"session_meta","payload":{"session_id":"019ff63c-9cdf-74f0-9665-75df26c3f8cc","cwd":"/home/dev/src/api","originator":"Claude Code","cli_version":"0.144.1"}}
 {"timestamp":"2026-08-12T13:50:36.000Z","type":"event_msg","payload":{"type":"token_count"}}
