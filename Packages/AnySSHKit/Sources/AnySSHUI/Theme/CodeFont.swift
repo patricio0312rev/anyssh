@@ -34,6 +34,10 @@ public enum CodeFont {
             ?? NSFont.monospacedSystemFont(ofSize: size, weight: .regular)
     }
     #endif
+
+    public static func characterWidth(size: CGFloat) -> CGFloat {
+        ("0" as NSString).size(withAttributes: [.font: platformFont(size: size)]).width
+    }
 }
 
 extension Theme {
