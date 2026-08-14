@@ -13,7 +13,7 @@ import Testing
             name: "box",
             host: "100.1.2.3",
             port: 22,
-            username: "patricio",
+            username: "dev",
             authMethod: .password,
             startupCommand: "printf 'ANYSSH-START\\n'"
         )
