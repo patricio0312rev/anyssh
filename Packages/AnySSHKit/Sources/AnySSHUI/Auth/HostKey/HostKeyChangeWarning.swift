@@ -26,32 +26,42 @@ public struct HostKeyChangeWarning: View {
             }
             .accessibilityElement(children: .combine)
 
-            VStack(alignment: .leading, spacing: Theme.Space.step3) {
-                HostKeyFingerprintRow(
-                    label: "Stored for \(prompt.target)",
-                    fingerprint: prompt.storedFingerprint ?? "",
-                    identifier: UIIdentifier.Trust.storedFingerprint
-                )
-                HostKeyFingerprintRow(
-                    label: "Offered now (\(prompt.algorithmName))",
-                    fingerprint: prompt.offeredFingerprint,
-                    identifier: UIIdentifier.Trust.offeredFingerprint
-                )
+            SurfaceCard {
+                VStack(spacing: Theme.Space.rowGap) {
+                    CopyableRow(
+                        label: "Stored for \(prompt.target)",
+                        value: prompt.storedFingerprint ?? "",
+                        monospaced: true,
+                        accessibilityIdentifier: UIIdentifier.Trust.storedFingerprint
+                    )
+                    Divider().overlay(Theme.separator)
+                    CopyableRow(
+                        label: "Offered now (\(prompt.algorithmName))",
+                        value: prompt.offeredFingerprint,
+                        monospaced: true,
+                        accessibilityIdentifier: UIIdentifier.Trust.offeredFingerprint
+                    )
+                }
             }
 
-            VStack(spacing: Theme.Space.step3) {
-                Button(copy.recoveryLabel, action: cancel)
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
-                    .accessibilityIdentifier(UIIdentifier.Trust.cancel)
-                Button("Forget This Host", role: .destructive, action: forget)
-                    .accessibilityIdentifier(UIIdentifier.Trust.forget)
+            VStack(spacing: Theme.Space.step2) {
+                SheetActionButton(
+                    copy.recoveryLabel,
+                    emphasis: .primary,
+                    accessibilityIdentifier: UIIdentifier.Trust.cancel,
+                    action: cancel
+                )
+                SheetActionButton(
+                    "Forget This Host",
+                    emphasis: .destructive,
+                    accessibilityIdentifier: UIIdentifier.Trust.forget,
+                    action: forget
+                )
             }
-            .frame(maxWidth: .infinity)
-            .controlSize(.large)
         }
         .padding(Theme.Space.step5)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.surface.base)
         .overlay(alignment: .topLeading) { ScreenMarker(state: ErrorState.trust(.hostKeyChanged)) }
     }
 }
