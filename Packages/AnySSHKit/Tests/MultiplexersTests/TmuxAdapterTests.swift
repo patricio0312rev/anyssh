@@ -14,9 +14,9 @@ import Testing
 
         let sessions = try parser.sessions(from: sessionsText)
         #expect(sessions.count == 2)
-        #expect(sessions[0] == MuxSession(id: MuxSessionID(rawValue: "$1"), name: "main", isAttached: true))
         #expect(
-            sessions[1] == MuxSession(id: MuxSessionID(rawValue: "$2"), name: "agents", isAttached: false))
+            sessions[0] == MuxSession(id: MuxSessionID(rawValue: "$2"), name: "agents", isAttached: false))
+        #expect(sessions[1] == MuxSession(id: MuxSessionID(rawValue: "$1"), name: "main", isAttached: true))
 
         let snapshot = try parser.snapshot(
             sessionID: MuxSessionID(rawValue: "$1"),
@@ -41,8 +41,8 @@ import Testing
                 ),
             ])
         #expect(snapshot.panes.count == 3)
-        #expect(snapshot.panes[0].workingDirectory == "/Users/dev/src/anyssh")
-        #expect(snapshot.panes[1].workingDirectory == #"/Users/dev/src/my project's "notes""#)
+        #expect(snapshot.panes[0].workingDirectory == "/home/dev/src/api")
+        #expect(snapshot.panes[1].workingDirectory == #"/home/dev/src/my project's "notes""#)
         #expect(snapshot.panes[1].id.rawValue == "%2")
         #expect(snapshot.panes[2].groupID.rawValue == "@2")
         #expect(parser.prefix(from: prefixText) == "C-b")
@@ -65,10 +65,10 @@ import Testing
         #expect(info.binaryPath == "/opt/homebrew/bin/tmux")
 
         let sessions = try await adapter.listSessions()
-        #expect(sessions.map(\.name) == ["main", "agents"])
+        #expect(sessions.map(\.name) == ["agents", "main"])
 
         let snapshot = try await adapter.snapshot(MuxSessionID(rawValue: "$1"))
-        #expect(snapshot.panes[1].workingDirectory == #"/Users/dev/src/my project's "notes""#)
+        #expect(snapshot.panes[1].workingDirectory == #"/home/dev/src/my project's "notes""#)
 
         let bindings = try await adapter.keyBindings()
         #expect(bindings.prefix == "C-b")
