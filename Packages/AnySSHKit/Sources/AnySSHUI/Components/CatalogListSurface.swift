@@ -7,6 +7,7 @@ extension View {
             .background { Theme.surface.base.ignoresSafeArea() }
             .contentMargins(.horizontal, Theme.Space.screenMargin, for: .scrollContent)
             .contentMargins(.top, Theme.Space.rowGap, for: .scrollContent)
+            .modifier(SectionSpacing())
     }
 
     public func catalogRowChrome(selected: Bool = false) -> some View {
@@ -28,6 +29,16 @@ extension View {
                 )
             )
     }
+}
+
+private struct SectionSpacing: ViewModifier {
+    #if canImport(UIKit)
+    func body(content: Content) -> some View {
+        content.listSectionSpacing(Theme.Space.step3)
+    }
+    #else
+    func body(content: Content) -> some View { content }
+    #endif
 }
 
 private struct ReorderGutter: ViewModifier {
