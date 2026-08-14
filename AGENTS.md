@@ -58,6 +58,7 @@ Rules the structure enforces:
 The component catalog is the single source of visual truth. A screen is composition, not invention.
 
 - Icon-only button: `IconButton`. Closing a screen: `CloseButton`. Screen title with actions: `ScreenHeader`. List row: `CatalogRow`. Copyable value: `CopyableRow`. Settings entry: `SettingsRow`. The only spinner: `LoadingView`. Passive feedback: `StatusToast`.
+- `LoadingView` has exactly two variants and no call site invents a third: `.inline` (small, unlabeled, sits where content will appear) and `.screen` (centered, standard size, with a required short label saying what is loading). Both monochrome `text.secondary`, never accent-tinted, sizes fixed by the component. A raw `ProgressView` outside `LoadingView` fails review.
 - Code and diff rendering already exist under `AnySSHUI/Files/` and `AnySSHUI/Git/DiffRenderer/`. Never add a second viewer for a format that has one. A missing capability goes into the existing viewer so every caller gains it.
 - Writing `Button { Image(systemName:) }` by hand instead of using `IconButton` is how the legacy toolbar ended up with a button inside a button.
 
