@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in the app misbehaves
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, what did the app do, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version or commit
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: iOS version and device
+      placeholder: iOS 26.1, iPhone 17 Pro
+    validations:
+      required: true
+  - type: textarea
+    id: host
+    attributes:
+      label: Host details
+      description: OS and SSH server on the remote host, and whether tmux or herdr was involved. Leave out anything private.
