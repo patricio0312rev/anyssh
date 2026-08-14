@@ -10,14 +10,18 @@
 		AA00000000000000000000A0 /* AnySSHCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000055 /* AnySSHCore */; };
 		AA00000000000000000000A1 /* AnySSHUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000051 /* AnySSHUI */; };
 		AA00000000000000000000A3 /* AnySSHMocks in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000053 /* AnySSHMocks */; };
-		AA00000000000000000000A5 /* Highlighting in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000057 /* Highlighting */; };
+		AA00000000000000000000A4 /* Highlighting in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000057 /* Highlighting */; };
 		AA00000000000000000000A5 /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* LiveActivityAttributes.swift */; };
+		AA00000000000000000000A6 /* AnySSHUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000058 /* AnySSHUI */; };
+		AA00000000000000000000A7 /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* LiveActivityAttributes.swift */; };
+		AA00000000000000000000A8 /* AnySSHWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000D /* AnySSHWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA0000000000000000000002 /* AnySSH.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnySSH.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000004 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 		AA000000000000000000000B /* LiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityAttributes.swift; sourceTree = "<group>"; };
+		AA000000000000000000000D /* AnySSHWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnySSHWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,7 +32,38 @@
 			path = AnySSH;
 			sourceTree = "<group>";
 		};
+		AA000000000000000000000C /* AnySSHWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = AnySSHWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXContainerItemProxy section */
+		AA0000000000000000000041 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000020;
+			remoteInfo = AnySSHWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AA0000000000000000000014 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA00000000000000000000A8 /* AnySSHWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AA0000000000000000000012 /* Frameworks */ = {
@@ -38,7 +73,15 @@
 				AA00000000000000000000A0 /* AnySSHCore in Frameworks */,
 				AA00000000000000000000A1 /* AnySSHUI in Frameworks */,
 				AA00000000000000000000A3 /* AnySSHMocks in Frameworks */,
-				AA00000000000000000000A5 /* Highlighting in Frameworks */,
+				AA00000000000000000000A4 /* Highlighting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000022 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA00000000000000000000A6 /* AnySSHUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,6 +94,7 @@
 				AA0000000000000000000007 /* Config */,
 				AA000000000000000000000A /* Shared */,
 				AA0000000000000000000008 /* AnySSH */,
+				AA000000000000000000000C /* AnySSHWidgets */,
 				AA0000000000000000000006 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000002 /* AnySSH.app */,
+				AA000000000000000000000D /* AnySSHWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -89,10 +134,12 @@
 				AA0000000000000000000011 /* Sources */,
 				AA0000000000000000000012 /* Frameworks */,
 				AA0000000000000000000013 /* Resources */,
+				AA0000000000000000000014 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AA0000000000000000000040 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AA0000000000000000000008 /* AnySSH */,
@@ -108,6 +155,29 @@
 			productReference = AA0000000000000000000002 /* AnySSH.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AA0000000000000000000020 /* AnySSHWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000032 /* Build configuration list for PBXNativeTarget "AnySSHWidgets" */;
+			buildPhases = (
+				AA0000000000000000000021 /* Sources */,
+				AA0000000000000000000022 /* Frameworks */,
+				AA0000000000000000000023 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA000000000000000000000C /* AnySSHWidgets */,
+			);
+			name = AnySSHWidgets;
+			packageProductDependencies = (
+				AA0000000000000000000058 /* AnySSHUI */,
+			);
+			productName = AnySSHWidgets;
+			productReference = AA000000000000000000000D /* AnySSHWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -119,6 +189,9 @@
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					AA0000000000000000000010 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					AA0000000000000000000020 = {
 						CreatedOnToolsVersion = 26.6;
 					};
 				};
@@ -141,12 +214,20 @@
 			projectRoot = "";
 			targets = (
 				AA0000000000000000000010 /* AnySSH */,
+				AA0000000000000000000020 /* AnySSHWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		AA0000000000000000000013 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000023 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -164,7 +245,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0000000000000000000021 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA00000000000000000000A7 /* LiveActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA0000000000000000000040 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000020 /* AnySSHWidgets */;
+			targetProxy = AA0000000000000000000041 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AA0000000000000000000033 /* Debug */ = {
@@ -278,6 +375,54 @@
 			};
 			name = Release;
 		};
+		AA0000000000000000000037 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/WidgetInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AnySSH;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.patricio0312rev.anyssh.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000038 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/WidgetInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AnySSH;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.patricio0312rev.anyssh.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -295,6 +440,15 @@
 			buildConfigurations = (
 				AA0000000000000000000035 /* Debug */,
 				AA0000000000000000000036 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000032 /* Build configuration list for PBXNativeTarget "AnySSHWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000037 /* Debug */,
+				AA0000000000000000000038 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -324,6 +478,10 @@
 		AA0000000000000000000057 /* Highlighting */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Highlighting;
+		};
+		AA0000000000000000000058 /* AnySSHUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnySSHUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
