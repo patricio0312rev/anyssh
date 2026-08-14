@@ -2,13 +2,14 @@ import SwiftUI
 
 struct DiffCodeRow: View {
     let row: DiffRow
+    let gutter: DiffGutter
     let softWrap: Bool
     let fontSize: CGFloat
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
-            number(row.oldLineNumber)
-            number(row.newLineNumber)
+            if gutter.showsOldNumbers { number(row.oldLineNumber) }
+            if gutter.showsNewNumbers { number(row.newLineNumber) }
             Text(marker)
                 .font(Theme.code(size: fontSize))
                 .frame(width: DiffMetrics.markerColumn)
@@ -59,30 +60,36 @@ struct DiffCodeRow: View {
 }
 
 #Preview("DiffCodeRow") {
-    ThemedRoot {
+    let rows = [
+        DiffRow(
+            id: "line-0-0",
+            kind: .context,
+            text: "func load() async {",
+            oldLineNumber: 41,
+            newLineNumber: 41
+        ),
+        DiffRow(id: "line-0-1", kind: .deletion, text: "    state = .idle", oldLineNumber: 42),
+        DiffRow(id: "line-0-2", kind: .addition, text: "    state = .loading", newLineNumber: 42),
+    ]
+    let added = [DiffRow(id: "line-1-0", kind: .addition, text: "# New file", newLineNumber: 1)]
+    return ThemedRoot {
         VStack(spacing: 0) {
-            DiffCodeRow(
-                row: DiffRow(
-                    id: "line-0-0",
-                    kind: .context,
-                    text: "func load() async {",
-                    oldLineNumber: 41,
-                    newLineNumber: 41
-                ),
-                softWrap: true,
-                fontSize: DiffFontScale.defaultSize
-            )
-            DiffCodeRow(
-                row: DiffRow(id: "line-0-1", kind: .deletion, text: "    state = .idle", oldLineNumber: 42),
-                softWrap: true,
-                fontSize: DiffFontScale.defaultSize
-            )
-            DiffCodeRow(
-                row: DiffRow(
-                    id: "line-0-2", kind: .addition, text: "    state = .loading", newLineNumber: 42),
-                softWrap: true,
-                fontSize: DiffFontScale.defaultSize
-            )
+            ForEach(rows) { row in
+                DiffCodeRow(
+                    row: row,
+                    gutter: DiffGutter(rows: rows),
+                    softWrap: true,
+                    fontSize: DiffFontScale.defaultSize
+                )
+            }
+            ForEach(added) { row in
+                DiffCodeRow(
+                    row: row,
+                    gutter: DiffGutter(rows: added),
+                    softWrap: true,
+                    fontSize: DiffFontScale.defaultSize
+                )
+            }
         }
         .background(Theme.Code.canvas)
     }
