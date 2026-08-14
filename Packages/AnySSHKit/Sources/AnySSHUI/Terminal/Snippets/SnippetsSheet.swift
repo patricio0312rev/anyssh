@@ -4,8 +4,6 @@ import SwiftUI
 
 public struct SnippetsSheet: View {
     @State private var model: SnippetsModel
-    @State private var newTitle = ""
-    @State private var newBody = ""
     @Environment(\.dismiss) private var dismiss
 
     private let insert: (String) -> Void
@@ -40,56 +38,18 @@ public struct SnippetsSheet: View {
                         insert(snippet.body)
                         dismiss()
                     } label: {
-                        CatalogRow(
-                            title: snippet.label,
-                            subtitle: snippet.title.isEmpty ? nil : snippet.body,
-                            subtitleMonospaced: true,
-                            accessibilityIdentifier: SnippetIdentifier.row(snippet.id),
-                            leading: {
-                                RowIconTile(
-                                    systemImage: "chevron.left.forwardslash.chevron.right",
-                                    label: "Snippet"
-                                )
-                            },
-                            trailing: { EmptyView() },
-                            footer: { EmptyView() }
-                        )
+                        SnippetRow(snippet: snippet)
                     }
                     .buttonStyle(.plain)
                     .catalogRowChrome()
                 }
                 .onDelete { model.remove($0) }
             }
-            Section {
-                newSnippetCard
-            } header: {
-                SectionLabel("New snippet")
+            SnippetComposer(title: "New snippet") { title, body in
+                model.add(title: title, body: body)
             }
         }
         .catalogListSurface()
-    }
-
-    private var newSnippetCard: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.step3) {
-            TextField("Name", text: $newTitle)
-                .foregroundStyle(Theme.text.primary)
-                .accessibilityIdentifier(SnippetIdentifier.newTitle)
-            TextField("Command", text: $newBody)
-                .font(Theme.code())
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .foregroundStyle(Theme.text.primary)
-                .accessibilityIdentifier(SnippetIdentifier.newBody)
-            Button("Save") {
-                model.add(title: newTitle, body: newBody)
-                newTitle = ""
-                newBody = ""
-            }
-            .buttonStyle(.rowAction)
-            .disabled(newBody.trimmingCharacters(in: .whitespaces).isEmpty)
-            .accessibilityIdentifier(SnippetIdentifier.save)
-        }
-        .catalogRowChrome()
     }
 }
 #endif
