@@ -11,7 +11,7 @@ final class ThroughputDrainTarget {
     private var hasher = SHA256()
     private var sentInput: ContinuousClock.Instant?
     private var inputLatencies = [Double]()
-    private let signposter = OSSignposter(subsystem: "com.patricio.anyssh", category: "throughput")
+    private let signposter = OSSignposter(subsystem: "com.patricio0312rev.anyssh", category: "throughput")
     private(set) var bytes = 0
     private(set) var longestBlockMilliseconds = 0.0
     private(set) var presentedFrames = 0
