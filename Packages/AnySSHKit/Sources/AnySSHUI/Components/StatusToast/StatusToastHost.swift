@@ -3,7 +3,6 @@ import SwiftUI
 public struct StatusToastHost: View {
     @Bindable private var center: StatusToastCenter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var announcedIDs: Set<UUID> = []
 
     public init(center: StatusToastCenter) {
         self.center = center
@@ -22,12 +21,6 @@ public struct StatusToastHost: View {
         .animation(hostAnimation, value: center.items.map(\.id))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(UIIdentifier.StatusToast.host)
-        .onChange(of: center.items.map(\.id)) { _, ids in
-            announceNewItems(ids: ids)
-        }
-        .onAppear {
-            announceNewItems(ids: center.items.map(\.id))
-        }
     }
 
     private var hostAnimation: Animation? {
@@ -36,15 +29,6 @@ public struct StatusToastHost: View {
 
     private var cardTransition: AnyTransition {
         reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity)
-    }
-
-    private func announceNewItems(ids: [UUID]) {
-        let fresh = center.items.filter { !announcedIDs.contains($0.id) }
-        for toast in fresh {
-            announcedIDs.insert(toast.id)
-            AccessibilityNotification.Announcement(toast.announcement).post()
-        }
-        announcedIDs = announcedIDs.intersection(Set(ids))
     }
 }
 
