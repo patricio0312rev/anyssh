@@ -1,0 +1,10 @@
+anyssh-recents/1
+claude	1786544322823	/Users/dev/src/anyssh
+codex	1786542635914	/Users/dev/src/anyssh
+opencode	1786545915143	/Users/dev/src/anyssh
+cursor	1786540000000	/Users/dev/src/terminal-android
+claude	1786500000000	/Users/dev/src/portfolio
+opencode	1786530000000	/Users/dev/src/portfolio
+cursor	1786520000000	/Users/dev/src/agentkit
+claude	1786400000000	/Users/dev/src/client-project/.claude-worktrees/fix-login-flow
+opencode	1786300000000	/
