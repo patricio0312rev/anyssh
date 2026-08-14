@@ -24,12 +24,12 @@ public enum CapabilityFixture: String, CaseIterable, Sendable {
                 shell: "/bin/zsh",
                 platform: "Darwin arm64",
                 locale: "en_US.UTF-8",
-                home: "/Users/dev",
-                searchPath: "/Users/dev/.local/bin:/opt/homebrew/bin:/usr/bin",
+                home: "/home/dev",
+                searchPath: "/home/dev/.local/bin:/usr/local/bin:/usr/bin",
                 git: ToolReport(path: "/opt/homebrew/bin/git", version: "2.54.0"),
                 tmux: ToolReport(path: "/opt/homebrew/bin/tmux", version: "3.6a"),
                 herdr: HerdrReport(
-                    tool: ToolReport(path: "/Users/dev/.local/bin/herdr", version: "0.8.0"),
+                    tool: ToolReport(path: "/home/dev/.local/bin/herdr", version: "0.8.0"),
                     protocolVersion: 19
                 )
             )
