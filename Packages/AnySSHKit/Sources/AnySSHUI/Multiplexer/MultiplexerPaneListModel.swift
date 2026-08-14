@@ -27,12 +27,10 @@ public final class MultiplexerPaneListModel {
         defer { isLoading = false }
         do {
             let listed = try await adapter.listSessions()
-            var loaded = [MuxSessionID: MuxSnapshot]()
-            for session in listed {
-                loaded[session.id] = try await adapter.snapshot(session.id)
-            }
-            sessions = listed
-            snapshots = loaded
+            let collected = await MuxSnapshotLoader.collect(sessions: listed, using: adapter)
+            if collected.isEmpty, let failure = collected.failure { throw failure }
+            sessions = listed.filter { collected.snapshots[$0.id] != nil }
+            snapshots = collected.snapshots
             failureState = nil
         } catch {
             failureState = (error as? ErrorState) ?? .mux(.attachTargetVanished)
