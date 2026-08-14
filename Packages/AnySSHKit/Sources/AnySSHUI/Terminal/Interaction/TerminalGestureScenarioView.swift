@@ -10,7 +10,6 @@ public struct TerminalGestureScenarioView: View {
         TerminalGestureScenarioRepresentable()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.surface.base)
-            .accessibilityIdentifier(UIIdentifier.Terminal.canvas)
     }
 }
 
@@ -50,7 +49,6 @@ final class TerminalGestureScenarioController: UIViewController {
         switcher.textColor = Theme.Platform.textPrimary
         switcher.backgroundColor = Theme.Platform.surfaceRaised
         switcher.textAlignment = .center
-        switcher.accessibilityIdentifier = UIIdentifier.Terminal.Gestures.sessionSwitcher
         view.addSubview(switcher)
         NSLayoutConstraint.activate([
             switcher.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -96,8 +94,6 @@ final class TerminalGestureScenarioController: UIViewController {
 
     private func openSwitcher() {
         switcher.isHidden = false
-        switcher.isAccessibilityElement = true
-        switcher.accessibilityValue = "open"
     }
 }
 
