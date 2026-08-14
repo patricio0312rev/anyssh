@@ -7,16 +7,19 @@ enum LaunchScenario: Equatable {
     case remoteForm(RemoteRoute)
     case hostKeyTrust(String)
     case authPrompt
+    case savePassword
     case errorState(ErrorState)
     case terminal(TerminalScenario)
     case git(GitScenario)
     case files(FilesScenario)
     case sessions(SessionsScenario)
+    case workspace(WorkspaceScenario)
 
     static let fallback = LaunchScenario.remotes("default")
 
     static let remoteFixtures = ["default", "empty", "single", "many", "mixed"]
     static let authPromptName = "auth.keyboardInteractive"
+    static let savePasswordName = "auth.savePassword"
 
     static let formRoutes: [String: RemoteRoute] = [
         "remote.form.add": .add,
@@ -33,6 +36,10 @@ enum LaunchScenario: Equatable {
             self = .hostKeyTrust(name)
         } else if name == Self.authPromptName {
             self = .authPrompt
+        } else if name == Self.savePasswordName {
+            self = .savePassword
+        } else if let workspace = WorkspaceScenario(rawValue: name) {
+            self = .workspace(workspace)
         } else if let terminal = TerminalScenario(rawValue: name) {
             self = .terminal(terminal)
         } else if let git = GitScenario(rawValue: name) {
@@ -55,8 +62,9 @@ enum LaunchScenario: Equatable {
     var remotesFixture: String {
         switch self {
         case .remotes(let name): name
-        case .remoteForm, .hostKeyTrust, .authPrompt, .errorState, .terminal, .git, .files,
-            .sessions:
+        case .workspace: "mixed"
+        case .remoteForm, .hostKeyTrust, .authPrompt, .savePassword, .errorState, .terminal, .git,
+            .files, .sessions:
             "single"
         }
     }
