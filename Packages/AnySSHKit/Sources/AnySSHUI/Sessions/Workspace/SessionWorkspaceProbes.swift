@@ -20,7 +20,7 @@ extension SessionWorkspaceView {
             .frame(width: 1, height: 1)
             .opacity(0)
             .accessibilityIdentifier(SessionSwitcherIdentifier.byteCounter)
-            .accessibilityHidden(true)
+            .accessibilityValue(String(bytes))
     }
 
     func axNotificationProbe() -> some View {
@@ -36,7 +36,7 @@ extension SessionWorkspaceView {
             .frame(width: 1, height: 1)
             .opacity(0)
             .accessibilityIdentifier(UIIdentifier.JobAlerts.systemRequests)
-            .accessibilityHidden(true)
+            .accessibilityValue(record.joined(separator: "|"))
     }
 
     var empty: some View {
