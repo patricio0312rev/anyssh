@@ -2,6 +2,7 @@ import AnySSHCore
 import AnySSHMocks
 import Foundation
 import SSHTransport
+import Sessions
 
 struct AppEnvironment {
     let remoteStore: any RemoteStore
@@ -12,6 +13,8 @@ struct AppEnvironment {
     let migrationFailure: SecretsErrorState?
     let keychainMigrationRuns: Int
     let isMock: Bool
+    let sessionRestoreStore: SessionRestoreStore
+    let restoreEnabled: Bool
 
     init(mode: LaunchMode) {
         switch mode {
@@ -22,6 +25,8 @@ struct AppEnvironment {
             secretStore = KeychainSecretStore()
             hostKeyStore = FileHostKeyStore.applicationSupport()
             reachabilityProbe = NWConnectionProbe()
+            sessionRestoreStore = SessionRestoreStore.applicationSupport()
+            restoreEnabled = true
         case .mock(let name):
             let scenario = LaunchScenario(name)
             self.scenario = scenario
@@ -30,6 +35,13 @@ struct AppEnvironment {
             secretStore = InMemorySecretStore(failure: scenario.secretFailure)
             hostKeyStore = HostKeyFixtures.store(scenario.hostKeyScenario)
             reachabilityProbe = Self.mockProbe(fixture: scenario.remotesFixture)
+            sessionRestoreStore = SessionRestoreStore(
+                directory: Self.mockRestoreDirectory(scenario: name)
+            )
+            if ProcessInfo.processInfo.arguments.contains(Self.clearRestoreArgument) {
+                try? sessionRestoreStore.clear()
+            }
+            restoreEnabled = name == SessionRestoreScenario.name
         }
         let migration = Self.migrate()
         migrationFailure = migration.failure
@@ -48,6 +60,15 @@ struct AppEnvironment {
             return (.migrationFailed, runs)
         }
     }
+
+    private static func mockRestoreDirectory(scenario: String) -> URL {
+        URL.applicationSupportDirectory
+            .appending(path: "AnySSH")
+            .appending(path: "MockRestore")
+            .appending(path: scenario)
+    }
+
+    static let clearRestoreArgument = "-ANYSSH_CLEAR_RESTORE"
 
     private static let mockScripts: [ScriptedReachability.Script] = [
         .reachable,
