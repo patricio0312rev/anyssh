@@ -1,0 +1,31 @@
+name: Line Budget
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce 300 line budget
+        run: |
+          status=0
+          while IFS= read -r file; do
+            lines=$(wc -l < "$file")
+            if [ "$lines" -gt 300 ]; then
+              echo "::error file=$file,line=$lines::$file has $lines lines, over the 300 line budget"
+              status=1
+            elif [ "$lines" -gt 280 ]; then
+              echo "::warning file=$file,line=$lines::$file has $lines lines, close to the 300 line budget"
+            fi
+          done < <(find . -name '*.swift' \
+            -not -path '*/.build/*' \
+            -not -path '*/Tests/*' \
+            -not -path './AnySSHUITests/*' \
+            -not -path '*/Fixtures/*' \
+            -not -path '*/Icons/*' \
+            -not -name '*.generated.swift')
+          exit $status
