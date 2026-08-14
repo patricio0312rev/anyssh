@@ -69,12 +69,6 @@ public struct SessionSwitcherView: View {
             ) {
                 model.toggleGridMode()
             }
-            if let onDismiss {
-                CloseButton(
-                    accessibilityIdentifier: SessionSwitcherIdentifier.dismiss,
-                    action: onDismiss
-                )
-            }
         }
     }
 
