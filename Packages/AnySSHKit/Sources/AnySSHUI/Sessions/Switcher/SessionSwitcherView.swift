@@ -5,6 +5,7 @@ public struct SessionSwitcherView: View {
     let model: any SessionSwitcherPresenting
     let onSwitch: (SessionID) -> Void
     var onDismiss: (() -> Void)?
+    var onOpenJobAlerts: (() -> Void)?
 
     @State var selection = 0
     @FocusState private var isFocused: Bool
@@ -14,11 +15,13 @@ public struct SessionSwitcherView: View {
     public init(
         model: any SessionSwitcherPresenting,
         onSwitch: @escaping (SessionID) -> Void,
-        onDismiss: (() -> Void)? = nil
+        onDismiss: (() -> Void)? = nil,
+        onOpenJobAlerts: (() -> Void)? = nil
     ) {
         self.model = model
         self.onSwitch = onSwitch
         self.onDismiss = onDismiss
+        self.onOpenJobAlerts = onOpenJobAlerts
     }
 
     var columns: [GridItem] {
@@ -52,6 +55,15 @@ public struct SessionSwitcherView: View {
 
     private var header: some View {
         ScreenHeader("Sessions") {
+            if let onOpenJobAlerts {
+                IconButton(
+                    systemImage: "bell",
+                    label: "Job alerts",
+                    surface: .raised,
+                    accessibilityIdentifier: UIIdentifier.JobAlerts.open,
+                    action: onOpenJobAlerts
+                )
+            }
             IconButton(
                 systemImage: "plus",
                 label: "New session",
