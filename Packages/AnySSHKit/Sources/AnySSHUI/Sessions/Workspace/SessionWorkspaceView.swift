@@ -23,16 +23,19 @@ public struct SessionWorkspaceView: View {
     let onClose: (() -> Void)?
     private let initialSurface: WorkspaceSurface?
     private let hostsToasts: Bool
+    private let pinsAccessoryBar: Bool
 
     public init(
         model: SessionWorkspaceModel,
         initialSurface: WorkspaceSurface? = nil,
         hostsToasts: Bool = false,
+        pinsAccessoryBar: Bool = false,
         onClose: (() -> Void)? = nil
     ) {
         _model = State(wrappedValue: model)
         self.initialSurface = initialSurface
         self.hostsToasts = hostsToasts
+        self.pinsAccessoryBar = pinsAccessoryBar
         self.onClose = onClose
     }
 
@@ -144,7 +147,7 @@ public struct SessionWorkspaceView: View {
     }
 
     private var showsAccessoryBar: Bool {
-        keyboard.isVisible
+        (keyboard.isVisible || pinsAccessoryBar)
             && model.activeSessionID != nil
             && !isSwitcherPresented
             && !isPalettePresented
