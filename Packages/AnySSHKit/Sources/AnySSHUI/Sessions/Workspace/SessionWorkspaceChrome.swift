@@ -46,6 +46,10 @@ extension SessionWorkspaceView {
         withAnimation(Theme.Motion.overlay) { isSwitcherPresented = true }
     }
 
+    func toggleSwitcher() {
+        if isSwitcherPresented { dismissSwitcher() } else { presentSwitcher() }
+    }
+
     func runCommand(_ id: String) {
         commandRegistry.run(id: id)
         isPalettePresented = false
