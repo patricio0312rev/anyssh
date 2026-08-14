@@ -39,6 +39,7 @@ public struct CopyableRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Copy \(label)")
+        .accessibilityValue(value)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 
