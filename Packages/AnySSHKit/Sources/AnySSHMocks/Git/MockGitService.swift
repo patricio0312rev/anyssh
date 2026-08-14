@@ -5,6 +5,7 @@ public struct MockGitService: GitService {
     public enum Scenario: String, Sendable, CaseIterable {
         case dirty
         case clean
+        case newFile
         case emptyHistory
         case notARepository
     }
@@ -29,7 +30,11 @@ public struct MockGitService: GitService {
 
     public func status(of repository: RepositoryRef) async throws -> RepositoryStatus {
         try await pause()
-        return scenario == .dirty ? GitFixtures.dirtyStatus : GitFixtures.cleanStatus
+        switch scenario {
+        case .dirty: return GitFixtures.dirtyStatus
+        case .newFile: return GitFixtures.newFileStatus
+        case .clean, .emptyHistory, .notARepository: return GitFixtures.cleanStatus
+        }
     }
 
     public func diff(
