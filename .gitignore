@@ -30,3 +30,4 @@ Screenshots/
 *.cer
 *.certSigningRequest
 AuthKey_*.p8
+!docs/ARCHITECTURE.md
