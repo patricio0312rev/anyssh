@@ -7,9 +7,9 @@ import Testing
     private static let hostileBodies: [(label: String, body: Data, exit: Int32, count: Int)] = [
         (
             "repo.root",
-            Framing.bytes("/Users/dev/src/anyssh-testbed\n")
+            Framing.bytes("/home/dev/src/anyssh-testbed\n")
                 + Framing.record("R0:0:0", nonce: Framing.nearMissNonce),
-            0, 81
+            0, 73
         ),
         (
             "git.status",
