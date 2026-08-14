@@ -4,6 +4,7 @@ public struct IconButton: View {
     public enum Surface {
         case toolbar
         case inline
+        case raised
     }
 
     private let systemImage: String
@@ -44,7 +45,7 @@ public struct IconButton: View {
             switch surface {
             case .toolbar:
                 content
-            case .inline:
+            case .inline, .raised:
                 content
                     .frame(
                         width: Theme.Buttons.iconHitTarget,
@@ -62,6 +63,7 @@ public struct IconButton: View {
             switch surface {
             case .toolbar: content
             case .inline: content.buttonStyle(.glass).buttonBorderShape(.circle)
+            case .raised: content.buttonStyle(.plain).background(Theme.surface.raised, in: Circle())
             }
         }
     }
@@ -71,6 +73,7 @@ public struct IconButton: View {
     ThemedRoot {
         HStack(spacing: Theme.Space.step4) {
             IconButton(systemImage: "gearshape", label: "Settings", surface: .inline) {}
+            IconButton(systemImage: "gearshape", label: "Settings", surface: .raised) {}
             IconButton(systemImage: "plus", label: "Add host", surface: .toolbar) {}
         }
     }
