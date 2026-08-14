@@ -16,7 +16,7 @@ public struct LastDirectoryStore: Sendable {
     }
 
     public static func applicationSupport() -> LastDirectoryStore {
-        LastDirectoryStore(directory: URL.applicationSupportDirectory.appending(path: "AnySSH"))
+        LastDirectoryStore(directory: AppDirectories.support)
     }
 
     public func path(for remote: RemoteID) -> String? {
