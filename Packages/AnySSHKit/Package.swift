@@ -7,6 +7,8 @@ let baseSettings: [SwiftSetting] = [
     .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
 ]
 
+let mainActorSettings: [SwiftSetting] = baseSettings + [.defaultIsolation(MainActor.self)]
+
 let moduleNames = [
     "AnySSHCore",
     "SSHTransport",
@@ -17,6 +19,7 @@ let moduleNames = [
     "GitClient",
     "FileTransfer",
     "AnySSHMocks",
+    "AnySSHUI",
 ]
 
 let grammars = [
@@ -67,6 +70,7 @@ let package = Package(
     platforms: [.iOS(.v26), .macOS(.v26)],
     products: moduleNames.map(library),
     dependencies: [
+        .package(url: "https://github.com/migueldeicaza/SwiftTerm", exact: "1.18.0"),
         .package(url: "https://github.com/tree-sitter/swift-tree-sitter", exact: "0.10.0"),
         .package(
             url: "https://github.com/alex-pinkus/tree-sitter-swift",
@@ -79,6 +83,10 @@ let package = Package(
         .package(url: "https://github.com/tree-sitter/tree-sitter-json", exact: "0.24.8"),
         .package(url: "https://github.com/tree-sitter-grammars/tree-sitter-yaml", exact: "0.7.0"),
         .package(url: "https://github.com/tree-sitter-grammars/tree-sitter-markdown", exact: "0.5.3"),
+        .package(url: "https://github.com/swhitty/SwiftDraw", exact: "0.29.0"),
+        .package(url: "https://github.com/LiYanan2004/MarkdownView", exact: "3.0.0", traits: []),
+        .package(url: "https://github.com/swiftlang/swift-markdown", exact: "0.8.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.4"),
         .package(url: "https://github.com/apple/swift-async-algorithms", exact: "1.1.5"),
     ],
     targets: [
@@ -93,6 +101,18 @@ let package = Package(
         module("FileTransfer", ["AnySSHCore", "SSHTransport"]),
         module("Multiplexers", ["AnySSHCore", "TerminalEmulator", "Sessions"]),
         module("AnySSHMocks", ["AnySSHCore"]),
+        module(
+            "AnySSHUI",
+            [
+                "AnySSHCore", "SSHTransport", "TerminalEmulator", "Highlighting", "Sessions",
+                "Multiplexers", "GitClient", "FileTransfer",
+                .product(name: "SwiftTerm", package: "SwiftTerm"),
+                .product(name: "SwiftDraw", package: "SwiftDraw"),
+                .product(name: "MarkdownView", package: "MarkdownView"),
+                .product(name: "Markdown", package: "swift-markdown"),
+            ],
+            settings: mainActorSettings
+        ),
         suite("AnySSHCore"),
         suite("SSHTransport", extraDependencies: ["CSSH"]),
         suite("TerminalEmulator", extraDependencies: ["AnySSHMocks"]),
@@ -102,5 +122,13 @@ let package = Package(
         suite("GitClient"),
         suite("FileTransfer"),
         suite("AnySSHMocks"),
+        .testTarget(
+            name: "AnySSHUISnapshotTests",
+            dependencies: [
+                "AnySSHUI", "AnySSHMocks", "Fixtures",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ],
+            swiftSettings: mainActorSettings
+        ),
     ]
 )
