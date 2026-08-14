@@ -13,7 +13,10 @@ enum SessionWorkspaceAssembly {
         let mux = muxContext(for: scenario)
         var connections = [SessionID: any RemoteConnection]()
         for record in records {
-            connections[record.id] = MockRemoteConnection(connectionID: record.connectionID)
+            connections[record.id] = MockRemoteConnection(
+                connectionID: record.connectionID,
+                displayScript: scenario.alertScript
+            )
         }
         let model = SessionWorkspaceModel(
             registry: SessionRegistry(records),
@@ -29,7 +32,23 @@ enum SessionWorkspaceAssembly {
             makeBrowserServices: { _, _ in mockBrowserServices }
         )
         seedTranscripts(in: model, records: records, for: scenario)
+        attachDisplays(in: model, records: records, for: scenario)
         return SessionWorkspaceView(model: model, initialSurface: scenario.surface)
+    }
+
+    private static func attachDisplays(
+        in model: SessionWorkspaceModel,
+        records: [SessionRecord],
+        for scenario: WorkspaceScenario
+    ) {
+        guard scenario.deliversAlerts else { return }
+        for record in records {
+            guard let surface = model.surface(for: record.id),
+                let connection = model.connection(for: record.id)
+            else { continue }
+            let size = surface.engine.size
+            Task { try? await connection.attachDisplay(sink: surface.pump, size: size) }
+        }
     }
 
     private static func seedTranscripts(
