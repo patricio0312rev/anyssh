@@ -12,22 +12,22 @@ public enum RecentsFixture: String, CaseIterable, Sendable {
         case .allFourSources:
             return [
                 RecentDirectory(
-                    path: "/Users/dev/src/anyssh",
+                    path: "/home/dev/src/api",
                     sources: [.claude, .codex, .opencode],
                     lastUsed: Date(timeIntervalSince1970: 1_786_545_915.143)
                 ),
                 RecentDirectory(
-                    path: "/Users/dev/src/terminal-android",
+                    path: "/home/dev/src/web",
                     sources: [.cursor, .claude],
                     lastUsed: Date(timeIntervalSince1970: 1_786_540_000)
                 ),
                 RecentDirectory(
-                    path: "/Users/dev/src/portfolio",
+                    path: "/home/dev/src/docs",
                     sources: [.opencode],
                     lastUsed: Date(timeIntervalSince1970: 1_786_530_000)
                 ),
                 RecentDirectory(
-                    path: "/Users/dev/src/agentkit",
+                    path: "/home/dev/src/infra",
                     sources: [.cursor],
                     lastUsed: Date(timeIntervalSince1970: 1_786_520_000)
                 ),
@@ -35,7 +35,7 @@ public enum RecentsFixture: String, CaseIterable, Sendable {
         case .claudeOnly:
             return [
                 RecentDirectory(
-                    path: "/Users/dev/src/anyssh",
+                    path: "/home/dev/src/api",
                     sources: [.claude],
                     lastUsed: Date(timeIntervalSince1970: 1_786_545_915.143)
                 )
