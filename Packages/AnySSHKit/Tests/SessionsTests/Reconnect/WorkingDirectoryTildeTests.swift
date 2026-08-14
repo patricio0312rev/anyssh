@@ -11,7 +11,7 @@ import Testing
     }
 
     @Test func aTildePathIsHandedToTheShellAsHome() {
-        #expect(payload("~/Sites/portfolio") == "cd \"$HOME\"/'Sites/portfolio'\n")
+        #expect(payload("~/src/web") == "cd \"$HOME\"/'src/web'\n")
     }
 
     @Test func theRestOfTheTildePathStaysQuoted() {
