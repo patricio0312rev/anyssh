@@ -45,6 +45,8 @@ struct RootView: View {
                 GitScenarioView(scenario: scenario)
             case .files(let scenario):
                 FilesScenarioView(scenario: scenario)
+            case .sessions(let scenario):
+                SessionsScenarioView(scenario: scenario)
             }
         } else {
             remotes
