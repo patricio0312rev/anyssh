@@ -25,9 +25,9 @@ import Testing
         #expect(ForegroundProcessCommand.processNames(from: output) == ["python3", "bash"])
     }
 
-    @Test func theScriptFallsBackToTheSessionParentWhenThePortIsUnresolvable() {
+    @Test func theScriptFindsTheShellByItsSSHConnectionWhenThePortIsUnresolvable() {
         let script = ForegroundProcessCommand.script(clientPort: 1)
-        #expect(script.contains(#"[ -z "$pid" ] && pid=$PPID"#))
+        #expect(script.contains(#"SSH_CONNECTION=[^ ]* $p "#))
         #expect(script.contains(#"readlink "/proc/$1/cwd""#))
     }
 }
