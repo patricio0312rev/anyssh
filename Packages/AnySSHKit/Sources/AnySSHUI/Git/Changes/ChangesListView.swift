@@ -6,10 +6,17 @@ public struct ChangesListView: View {
     @State private var model: ChangesListModel
 
     private let expandsFirstFile: Bool
+    private let onRetry: (() -> Void)?
 
-    public init(location: WorkspaceLocation, git: any GitService, expandsFirstFile: Bool = false) {
+    public init(
+        location: WorkspaceLocation,
+        git: any GitService,
+        expandsFirstFile: Bool = false,
+        onRetry: (() -> Void)? = nil
+    ) {
         _model = State(wrappedValue: ChangesListModel(location: location, git: git))
         self.expandsFirstFile = expandsFirstFile
+        self.onRetry = onRetry
     }
 
     public var body: some View {
@@ -41,7 +48,9 @@ public struct ChangesListView: View {
                 .background(Theme.surface.base)
                 .accessibilityIdentifier(UIIdentifier.Changes.loading)
         case .failure(let state):
-            ErrorStateView(state: state) { Task { await model.load() } }
+            ErrorStateView(state: state) {
+                if let onRetry { onRetry() } else { Task { await model.load() } }
+            }
         case .loaded(let status):
             changes(status)
         }
