@@ -9,7 +9,7 @@ public enum ForegroundProcessCommand {
           pid=$(ss -tnp 2>/dev/null | awk -v p=":$p" '$0 ~ p' \
             | sed -n 's/.*pid=\\([0-9]*\\).*/\\1/p' | head -1)
         fi
-        [ -z "$pid" ] && exit 0
+        [ -z "$pid" ] && pid=$PPID
         kids=$(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '
           { parent[$1]=$2 }
           END {
@@ -24,10 +24,18 @@ public enum ForegroundProcessCommand {
         for k in $kids; do
           ps -o comm= -p "$k" 2>/dev/null | sed 's/^/P /'
         done
-        shell=$(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '$2 == root { print $1; exit }')
-        [ -n "$shell" ] && lsof -a -p "$shell" -d cwd -Fn 2>/dev/null | sed -n 's/^n/S /p'
+        cwd() {
+          d=$(readlink "/proc/$1/cwd" 2>/dev/null)
+          [ -z "$d" ] && d=$(lsof -a -p "$1" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
+          [ -n "$d" ] && echo "$2 $d"
+        }
+        shell=$(for k in $(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '$2 == root { print $1 }'); do
+          case "$(ps -o tty= -p "$k" 2>/dev/null)" in ""|"?") ;; *) echo "$k"; break ;; esac
+        done)
+        [ -z "$shell" ] && shell=$(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '$2 == root { print $1; exit }')
+        [ -n "$shell" ] && cwd "$shell" S
         for k in $kids; do
-          lsof -a -p "$k" -d cwd -Fn 2>/dev/null | sed -n 's/^n/D /p'
+          cwd "$k" D
         done
         """
     }
