@@ -79,9 +79,9 @@ enum SessionWorkspaceAssembly {
         records: [SessionRecord],
         for scenario: WorkspaceScenario
     ) {
-        let transcript = scenario.transcript
         for record in records {
-            model.surface(for: record.id)?.engine.feed(ArraySlice(transcript))
+            guard let engine = model.surface(for: record.id)?.engine else { continue }
+            WorkspaceTranscriptSeeder.seed(scenario, into: engine)
         }
     }
 

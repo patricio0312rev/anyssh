@@ -69,9 +69,13 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
         self == .tmux || self == .herdr
     }
 
-    var transcript: [UInt8] {
+    var fitsTranscriptToGrid: Bool {
+        self == .agent
+    }
+
+    func transcript(columns: Int, rows: Int) -> [UInt8] {
         switch self {
-        case .agent: OpenCodeHomeCapture.bytes
+        case .agent: OpenCodeHomeTranscript.home(columns: columns, rows: rows)
         case .tmux, .herdr: Array(WorkspaceScenarioTranscript.multiplexed.utf8)
         default: Array(WorkspaceScenarioTranscript.shell.utf8)
         }
