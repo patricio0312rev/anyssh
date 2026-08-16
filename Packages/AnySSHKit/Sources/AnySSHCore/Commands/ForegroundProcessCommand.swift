@@ -9,7 +9,15 @@ public enum ForegroundProcessCommand {
           pid=$(ss -tnp 2>/dev/null | awk -v p=":$p" '$0 ~ p' \
             | sed -n 's/.*pid=\\([0-9]*\\).*/\\1/p' | head -1)
         fi
-        [ -z "$pid" ] && pid=$PPID
+        if [ -z "$pid" ]; then
+          for k in $(ps -u "$(id -u)" -o pid= 2>/dev/null); do
+            cat "/proc/$k/environ" 2>/dev/null | tr '\\0' '\\n' | grep -q "^SSH_CONNECTION=[^ ]* $p " || continue
+            pp=$(ps -o ppid= -p "$k" 2>/dev/null | tr -d ' ')
+            cat "/proc/$pp/environ" 2>/dev/null | tr '\\0' '\\n' | grep -q "^SSH_CONNECTION=[^ ]* $p " && continue
+            pid=$pp; break
+          done
+        fi
+        [ -z "$pid" ] && exit 0
         kids=$(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '
           { parent[$1]=$2 }
           END {
