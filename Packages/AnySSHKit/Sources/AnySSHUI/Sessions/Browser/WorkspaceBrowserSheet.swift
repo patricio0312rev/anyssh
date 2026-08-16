@@ -34,7 +34,7 @@ public struct WorkspaceBrowserSheet: View {
                 .toolbar { toggleItem }
                 .accessibilityIdentifier(UIIdentifier.Workspace.sheet)
         }
-        .task { await resolveIfNeeded() }
+        .task { await refresh() }
     }
 
     @ToolbarContentBuilder
@@ -60,10 +60,12 @@ public struct WorkspaceBrowserSheet: View {
         } else if let location {
             switch mode {
             case .changes:
-                ChangesListView(location: location, git: git)
+                ChangesListView(location: location, git: git) { Task { await retry() } }
+                    .id(location.path)
                     .transition(.opacity)
             case .files:
                 FileBrowserView(root: location.path, browser: files)
+                    .id(location.path)
                     .transition(.opacity)
             }
         } else {
@@ -73,23 +75,28 @@ public struct WorkspaceBrowserSheet: View {
         }
     }
 
-    private func resolveIfNeeded() async {
-        guard location == nil else { return }
-        for attempt in 0..<Self.attempts {
-            if let resolved = await resolve() {
-                location = resolved
-                isResolving = false
-                return
-            }
-            guard attempt + 1 < Self.attempts else { break }
-            try? await Task.sleep(for: Self.retryDelay)
+    private func refresh() async {
+        if let resolved = await resolveWithRetries(), resolved.path != location?.path {
+            location = resolved
         }
         isResolving = false
     }
 
     private func retry() async {
+        let previous = location
+        location = nil
         isResolving = true
-        await resolveIfNeeded()
+        location = await resolveWithRetries() ?? previous
+        isResolving = false
+    }
+
+    private func resolveWithRetries() async -> WorkspaceLocation? {
+        for attempt in 0..<Self.attempts {
+            if let resolved = await resolve() { return resolved }
+            guard attempt + 1 < Self.attempts else { break }
+            try? await Task.sleep(for: Self.retryDelay)
+        }
+        return nil
     }
 
     private static let attempts = 5
