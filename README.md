@@ -92,3 +92,7 @@ CI runs `swift-format` and the line budget on every push. The design system, mod
 ## Security
 
 The SSH transport is libssh2 with OpenSSL, vendored as an xcframework and built on demand from a pinned commit rather than a release tarball. The vendoring script refuses to build any commit that does not descend from the fix for CVE-2026-55200, because a malicious server is the threat model.
+
+---
+
+Made with 💜 by [Patricio Marroquin](https://www.patriciomarroquin.dev)
