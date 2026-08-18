@@ -103,4 +103,81 @@ import Testing
         #expect(adapter.capabilities.remoteBootstrapSurvival == .unverified)
         #expect(adapter.capabilities.crossHostSurvival == .unverified)
     }
+
+    @Test func focusingAPaneAsksTheAgentToTakeFocus() async throws {
+        let runner = try focusRunner()
+        let adapter = HerdrAdapter(runner: runner)
+
+        try await adapter.focus(
+            MuxTarget(
+                session: MuxSessionID(rawValue: "default"),
+                group: MuxGroupID(rawValue: "w18:t5"),
+                pane: MuxPaneID(rawValue: "w18:p9")
+            )
+        )
+
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                ["/home/dev/.local/bin/herdr", "agent", "focus", "w18:p9"]
+            ]
+        )
+    }
+
+    @Test func aRefusedAgentFocusFallsBackToTheTab() async throws {
+        let runner = try focusRunner(agentExitCode: 1)
+        let adapter = HerdrAdapter(runner: runner)
+
+        try await adapter.focus(
+            MuxTarget(
+                session: MuxSessionID(rawValue: "default"),
+                group: MuxGroupID(rawValue: "w18:t5"),
+                pane: MuxPaneID(rawValue: "w18:p9")
+            )
+        )
+
+        #expect(
+            runner.batches.map { $0.commands.map(\.arguments) }.last == [
+                ["/home/dev/.local/bin/herdr", "tab", "focus", "w18:t5"]
+            ]
+        )
+    }
+
+    @Test func focusingAGroupNamesTheNonDefaultSession() async throws {
+        let runner = try focusRunner()
+        let adapter = HerdrAdapter(runner: runner)
+
+        try await adapter.focus(
+            MuxTarget(
+                session: MuxSessionID(rawValue: "anyssh-test"),
+                group: MuxGroupID(rawValue: "w2:t1")
+            )
+        )
+
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                [
+                    "/home/dev/.local/bin/herdr", "--session", "anyssh-test", "tab", "focus",
+                    "w2:t1",
+                ]
+            ]
+        )
+    }
+
+    @Test func focusingASessionWithoutATargetIsRefused() async throws {
+        let runner = try focusRunner()
+        let adapter = HerdrAdapter(runner: runner)
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.focus(MuxTarget(session: MuxSessionID(rawValue: "default")))
+        }
+    }
+
+    private func focusRunner(agentExitCode: Int32 = 0) throws -> ScriptedMuxRunner {
+        ScriptedMuxRunner(
+            sections: [
+                HerdrCommands.detectLabel: try MuxFixtureData.bytes("herdr-status-client.json")
+            ],
+            exitCodes: [HerdrCommands.focusAgentLabel: agentExitCode]
+        )
+    }
 }
