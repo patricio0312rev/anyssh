@@ -17,8 +17,11 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        if adapter == nil, !publishedAgentTitleIDs.contains(sessionID) {
-            sessionAgentTitles.removeValue(forKey: sessionID)
+        if adapter == nil {
+            sessionMuxIDs.removeValue(forKey: sessionID)
+            if !publishedAgentTitleIDs.contains(sessionID) {
+                sessionAgentTitles.removeValue(forKey: sessionID)
+            }
         }
         guard let adapter, adapter.kind == .herdr else { return }
         startStallWatcher(for: sessionID, adapter: adapter)
@@ -43,9 +46,12 @@ extension SessionWorkspaceModel {
     func startStallWatcher(for sessionID: SessionID, adapter: any MultiplexerAdapter) {
         guard let scheduler = jobAlerts else { return }
         let scope = scopes[sessionID]
-        stallWatchers[sessionID] = Task {
+        stallWatchers[sessionID] = Task { [weak self] in
             let sessions = (try? await adapter.listSessions()) ?? []
-            guard let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first
+            guard
+                let muxSession = await MainActor.run(body: {
+                    self?.muxSession(in: sessions, for: sessionID)
+                })
             else { return }
             let watcher = HerdrStallWatcher(
                 sessionID: sessionID,
@@ -102,7 +108,7 @@ extension SessionWorkspaceModel {
         terminalTitle: String?
     ) async {
         guard let sessions = try? await adapter.listSessions(),
-            let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first,
+            let muxSession = muxSession(in: sessions, for: sessionID),
             let snapshot = try? await adapter.snapshot(muxSession.id)
         else {
             sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
