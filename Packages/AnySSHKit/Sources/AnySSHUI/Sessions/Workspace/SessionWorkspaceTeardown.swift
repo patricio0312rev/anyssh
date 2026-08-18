@@ -60,6 +60,7 @@ extension SessionWorkspaceModel {
         connections.removeValue(forKey: id)
         sessionAdapters.removeValue(forKey: id)
         sessionAgentKinds.removeValue(forKey: id)
+        sessionAgentTitles.removeValue(forKey: id)
         agentStates.removeValue(forKey: id)
         barModels.removeValue(forKey: id)
         stallWatchers.removeValue(forKey: id)?.cancel()
