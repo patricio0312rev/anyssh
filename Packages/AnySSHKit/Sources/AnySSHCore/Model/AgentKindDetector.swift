@@ -13,6 +13,12 @@ public struct AgentKindDetector: Sendable {
         }
     }
 
+    public func detectMultiplexer(processNames: [String]) -> AgentKind? {
+        AgentKindCatalog.kinds.first { kind in
+            kind.isMultiplexer && processNames.contains { name in matches(kind, name) }
+        }
+    }
+
     public func detect(signals: [String]) -> AgentKind? {
         signals.lazy.compactMap { match($0) }.compactMap(preferred).first
     }
