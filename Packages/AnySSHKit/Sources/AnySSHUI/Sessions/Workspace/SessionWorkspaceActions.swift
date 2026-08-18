@@ -15,42 +15,7 @@ extension SessionWorkspaceView {
             guard model.registry.count > 1 else { return }
             switchEdge = .leading
             commandRegistry.run(id: "session.previous")
-        case .twoFingerSwipeLeft:
-            sendMultiplexerGesture(.previousPane)
-        case .twoFingerSwipeRight:
-            sendMultiplexerGesture(.nextPane)
-        case .twoFingerSwipeUp:
-            presentedBrowser = .changes
-        case .twoFingerSwipeDown:
-            withAnimation(Theme.Motion.overlay) { presentedBrowser = nil }
-        default:
-            return
         }
-    }
-
-    enum MultiplexerGesture {
-        case previousPane
-        case nextPane
-
-        func action(for kind: MultiplexerKind) -> String {
-            switch self {
-            case .previousPane: kind == .tmux ? "previous-pane" : "previous_pane"
-            case .nextPane: kind == .tmux ? "next-pane" : "next_pane"
-            }
-        }
-    }
-
-    func sendMultiplexerGesture(_ gesture: MultiplexerGesture) {
-        guard let adapter = model.activeMultiplexerAdapter,
-            let bindings = model.activeMuxBindings,
-            let chord = bindings.chord(
-                for: gesture.action(for: model.multiplexerKind),
-                kind: adapter.kind
-            ),
-            let sessionID = model.activeSessionID,
-            let connection = model.connection(for: sessionID)
-        else { return }
-        Task { await model.sendMultiplexerChord(chord, on: connection) }
     }
 
     func send(_ text: String) {
