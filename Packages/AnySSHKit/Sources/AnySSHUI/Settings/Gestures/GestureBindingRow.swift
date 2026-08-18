@@ -52,7 +52,7 @@ struct GestureBindingRow: View {
                 bind: { _ in }
             )
             .catalogRowChrome()
-            GestureBindingRow(slot: .tap, binding: nil, bind: { _ in })
+            GestureBindingRow(slot: .swipeRight, binding: nil, bind: { _ in })
                 .catalogRowChrome()
         }
         .catalogListSurface()
