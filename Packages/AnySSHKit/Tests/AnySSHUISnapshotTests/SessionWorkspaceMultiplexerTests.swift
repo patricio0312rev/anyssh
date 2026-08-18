@@ -41,6 +41,24 @@ import Testing
         #expect(!model.showsMultiplexer)
     }
 
+    @Test func filesAndChangesUseTheActiveHerdrPaneRepo() async throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let sessionID = try #require(model.activeSessionID)
+        model.replaceMultiplexer(
+            for: sessionID,
+            with: FixtureMultiplexerAdapter(fixture: .herdrDefault)
+        )
+        model.registry.setWorkspace(
+            WorkspaceLocation(path: "/home/dev", provenance: .process),
+            for: sessionID
+        )
+
+        await model.resolveWorkspaceForActiveSession()
+
+        #expect(model.activeRecord?.workspace?.path == "/home/dev/src/api")
+        #expect(model.activeRecord?.workspace?.provenance == .multiplexer)
+    }
+
     @Test func aHerdrProtocolTheAppCannotReadIsNotAHerdrAdapter() async throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
