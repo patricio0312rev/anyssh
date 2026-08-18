@@ -83,15 +83,8 @@ extension TerminalInteractionCoordinator {
         }
     }
 
-    @objc func handleTwoFingerSwipeUp(_ gesture: UISwipeGestureRecognizer) {
-        guard gesture.state == .ended else { return }
-        handleGesture(.twoFingerSwipeUp)
-    }
-
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer === tap || gestureRecognizer === longPress
-            || gestureRecognizer === twoFingerSwipeUp
-        {
+        if gestureRecognizer === tap || gestureRecognizer === longPress {
             return true
         }
         guard gestureRecognizer === oneFingerPan else { return true }
@@ -105,13 +98,9 @@ extension TerminalInteractionCoordinator {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer
     ) -> Bool {
-        if gestureRecognizer === twoFingerSwipeUp {
-            return other === scrollView?.panGestureRecognizer || other === oneFingerPan
-        }
         if gestureRecognizer === longPress { return other === oneFingerPan }
         if gestureRecognizer === tap { return other === oneFingerPan }
         if gestureRecognizer === oneFingerPan {
-            if other === twoFingerSwipeUp { return true }
             if isSelecting || currentRoute != .scrollback {
                 return other !== scrollView?.panGestureRecognizer
             }
