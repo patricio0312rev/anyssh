@@ -90,4 +90,51 @@ import Testing
         #expect(adapter.capabilities == .tmux)
         #expect(adapter.capabilities.localSessionSurvival == .proven)
     }
+
+    @Test func focusSelectsTheWindowAndThePaneInOneBatch() async throws {
+        let runner = ScriptedMuxRunner(sections: [:])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        try await adapter.focus(
+            MuxTarget(
+                session: MuxSessionID(rawValue: "$1"),
+                group: MuxGroupID(rawValue: "@3"),
+                pane: MuxPaneID(rawValue: "%5")
+            )
+        )
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                ["tmux", "select-window", "-t", "@3"],
+                ["tmux", "select-pane", "-t", "%5"],
+            ]
+        )
+
+        try await adapter.focus(
+            MuxTarget(session: MuxSessionID(rawValue: "$1"), group: MuxGroupID(rawValue: "@3"))
+        )
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                ["tmux", "select-window", "-t", "@3"]
+            ]
+        )
+
+        try await adapter.focus(
+            MuxTarget(session: MuxSessionID(rawValue: "$1"), pane: MuxPaneID(rawValue: "%5"))
+        )
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                ["tmux", "select-pane", "-t", "%5"]
+            ]
+        )
+    }
+
+    @Test func focusingASessionWithoutAWindowOrPaneIsRefused() async {
+        let runner = ScriptedMuxRunner(sections: [:])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.focus(MuxTarget(session: MuxSessionID(rawValue: "$1")))
+        }
+        #expect(runner.batches.isEmpty)
+    }
 }
