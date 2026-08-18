@@ -25,7 +25,18 @@ public struct SessionTitleSettingsView: View {
             } header: {
                 SectionLabel("Session title")
             } footer: {
-                SectionCaption("Shown in the session bar. The session name is the fallback.")
+                SectionCaption("The session name is the fallback when a source is missing.")
+            }
+            Section {
+                SessionNavbarChrome(
+                    title: SessionNavbarTitle.preview(for: store.mode),
+                    transportState: .connected
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.Space.step2)
+                .accessibilityIdentifier(UIIdentifier.Settings.titlePreviewBar)
+            } header: {
+                SectionLabel("Preview")
             }
         }
         .catalogListSurface()
@@ -36,7 +47,7 @@ public struct SessionTitleSettingsView: View {
     private func row(_ mode: SessionTitleDisplayMode) -> some View {
         CatalogRow(
             title: mode.title,
-            subtitle: "Looks like \(SessionNavbarTitle.preview(for: mode))",
+            subtitle: mode.summary,
             titleLineLimit: 1,
             accessibilityIdentifier: UIIdentifier.Settings.titlePreview(mode.rawValue),
             leading: { EmptyView() },
