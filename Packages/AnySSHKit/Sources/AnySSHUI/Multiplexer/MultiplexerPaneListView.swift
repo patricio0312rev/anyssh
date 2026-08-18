@@ -9,6 +9,7 @@ public struct MultiplexerPaneListView: View {
     public init(
         adapter: any MultiplexerAdapter,
         writer: (any DisplayWriter)? = nil,
+        probe: MuxNavigator.AttachmentProbe? = nil,
         onBoundSession: ((MuxSessionID) -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
@@ -16,6 +17,7 @@ public struct MultiplexerPaneListView: View {
             wrappedValue: MultiplexerPaneListModel(
                 adapter: adapter,
                 writer: writer,
+                probe: probe,
                 onBoundSession: onBoundSession
             )
         )
@@ -102,7 +104,19 @@ public struct MultiplexerPaneListView: View {
         Task {
             guard await model.attach(to: session.id, from: pane) else { return }
             onDismiss?()
-            statusToasts.present(severity: .success, title: "Attached to \(session.name)")
+            announce(session)
         }
+    }
+
+    private func announce(_ session: MuxSession) {
+        guard case .focusedElsewhere = model.lastOutcome else {
+            statusToasts.present(severity: .success, title: "Attached to \(session.name)")
+            return
+        }
+        statusToasts.present(
+            severity: .attention,
+            title: MuxNavigationCopy.focused(in: session.name),
+            body: MuxNavigationCopy.detachToSwitch
+        )
     }
 }
