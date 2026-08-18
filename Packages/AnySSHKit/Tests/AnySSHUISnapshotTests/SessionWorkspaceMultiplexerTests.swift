@@ -59,6 +59,19 @@ import Testing
         #expect(model.activeRecord?.workspace?.provenance == .multiplexer)
     }
 
+    @Test func filesAndChangesStayOnTheBoundMuxSession() throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let sessionID = try #require(model.activeSessionID)
+        let first = MuxSession(id: MuxSessionID(rawValue: "alpha"), name: "alpha", isAttached: true)
+        let second = MuxSession(id: MuxSessionID(rawValue: "beta"), name: "beta", isAttached: true)
+
+        #expect(model.muxSession(in: [first, second], for: sessionID) == nil)
+
+        model.rememberMuxSession(second.id, for: sessionID)
+
+        #expect(model.muxSession(in: [first, second], for: sessionID)?.id == second.id)
+    }
+
     @Test func aHerdrProtocolTheAppCannotReadIsNotAHerdrAdapter() async throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
