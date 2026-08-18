@@ -30,6 +30,7 @@ public final class TerminalGestureBridge {
 
     public func install() {
         guard coordinator == nil else { return }
+        let inherited = view.gestureRecognizers ?? []
         let coordinator = TerminalInteractionCoordinator(
             scrollView: view,
             modeProvider: { [weak self] shiftHeld in
@@ -88,11 +89,30 @@ public final class TerminalGestureBridge {
             probe: probe
         )
         coordinator.install()
+        yieldMenuGestures(in: inherited, to: coordinator)
         self.coordinator = coordinator
     }
 
     public func dismissKeyboard() {
         coordinator?.dismissKeyboard()
+    }
+
+    private func yieldMenuGestures(
+        in recognizers: [UIGestureRecognizer],
+        to coordinator: TerminalInteractionCoordinator
+    ) {
+        for recognizer in recognizers {
+            if recognizer is UILongPressGestureRecognizer {
+                recognizer.isEnabled = false
+                continue
+            }
+            guard let tap = recognizer as? UITapGestureRecognizer else { continue }
+            if tap.numberOfTapsRequired == 1 {
+                tap.isEnabled = false
+            } else if tap.delegate == nil {
+                tap.delegate = coordinator
+            }
+        }
     }
 
     private func mode(shiftHeld: Bool) -> TerminalGestureMode {
