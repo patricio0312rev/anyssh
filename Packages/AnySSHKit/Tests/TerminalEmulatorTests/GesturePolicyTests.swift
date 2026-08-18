@@ -16,6 +16,19 @@ struct GesturePolicyTests {
     }
 
     @Test
+    func aStationaryRemoteAppDragIsAClick() {
+        #expect(
+            TerminalGesturePolicy.shouldReportClick(route: .remoteApp, didTravel: false)
+        )
+        #expect(
+            !TerminalGesturePolicy.shouldReportClick(route: .remoteApp, didTravel: true)
+        )
+        for route in [TerminalGestureRoute.scrollback, .remoteKeys, .selection] {
+            #expect(!TerminalGesturePolicy.shouldReportClick(route: route, didTravel: false))
+        }
+    }
+
+    @Test
     func ourPanBeginsOnEveryRoute() {
         for route in [TerminalGestureRoute.scrollback, .remoteApp, .remoteKeys, .selection] {
             #expect(TerminalGesturePolicy.dragShouldBegin(route: route, selectionActive: false))
