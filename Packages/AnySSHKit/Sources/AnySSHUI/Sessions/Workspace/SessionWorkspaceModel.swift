@@ -59,6 +59,7 @@ public final class SessionWorkspaceModel {
     var pendingSwitch: (id: SessionID, handle: SessionSwitchSignpost.Handle)?
     var sessionAdapters = [SessionID: any MultiplexerAdapter]()
     var sessionAgentKinds = [SessionID: AgentKind]()
+    var sessionAgentTitles = [SessionID: String]()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
 
@@ -191,6 +192,7 @@ extension SessionWorkspaceModel: SessionSwitcherPresenting {
             mode,
             context: SessionTitleContext(
                 sessionName: record.title,
+                agentSessionTitle: sessionAgentTitles[record.id],
                 agentName: agentKind(for: record.id)?.name,
                 multiplexerName: multiplexerName(for: record.id)
             )
