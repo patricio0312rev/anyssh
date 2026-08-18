@@ -11,7 +11,7 @@ import Testing
         ComponentSnapshot.assert(
             GestureSettingsView(directory: Self.gestureDirectory()),
             named: "settings-gestures",
-            height: 1560
+            height: 420
         )
     }
 
@@ -19,7 +19,7 @@ import Testing
         ComponentSnapshot.assert(
             SessionTitleSettingsView(store: SessionTitlePreferenceStore(defaults: Self.titleDefaults())),
             named: "settings-session-title",
-            height: 720
+            height: 980
         )
     }
 
