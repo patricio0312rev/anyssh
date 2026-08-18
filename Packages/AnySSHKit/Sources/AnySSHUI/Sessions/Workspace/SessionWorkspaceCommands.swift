@@ -68,8 +68,9 @@ extension SessionWorkspaceModel {
 
     func applyWorkspace(_ location: WorkspaceLocation, to sessionID: SessionID) {
         registry.setWorkspace(location, for: sessionID)
-        if let remoteID = record(for: sessionID)?.remoteID {
-            lastDirectories.remember(location.path, for: remoteID)
-        }
+        guard location.provenance == .process,
+            let remoteID = record(for: sessionID)?.remoteID
+        else { return }
+        lastDirectories.remember(location.path, for: remoteID)
     }
 }
