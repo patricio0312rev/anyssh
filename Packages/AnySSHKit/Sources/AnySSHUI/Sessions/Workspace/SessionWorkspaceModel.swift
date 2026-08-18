@@ -60,6 +60,7 @@ public final class SessionWorkspaceModel {
     var sessionAdapters = [SessionID: any MultiplexerAdapter]()
     var sessionAgentKinds = [SessionID: AgentKind]()
     var sessionAgentTitles = [SessionID: String]()
+    var sessionMuxIDs = [SessionID: MuxSessionID]()
     var publishedAgentTitleIDs = Set<SessionID>()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
