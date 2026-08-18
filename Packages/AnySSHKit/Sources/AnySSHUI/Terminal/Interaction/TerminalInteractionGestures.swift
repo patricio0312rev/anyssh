@@ -83,32 +83,15 @@ extension TerminalInteractionCoordinator {
         }
     }
 
-    @objc func handleTwoFingerSwipe(_ gesture: UISwipeGestureRecognizer) {
+    @objc func handleTwoFingerSwipeUp(_ gesture: UISwipeGestureRecognizer) {
         guard gesture.state == .ended else { return }
-        cancelRemoteClick()
-        let direction: SwipeDirection
-        switch gesture.direction {
-        case .left: direction = .left
-        case .right: direction = .right
-        case .up: direction = .up
-        case .down: direction = .down
-        default: return
-        }
-        handleGesture(SessionSwitchGesturePolicy.slot(direction, fingers: 2))
-    }
-
-    private func cancelRemoteClick() {
-        remoteMouseHeld = false
-        wheelTravelled = true
-        didEmitClick = true
-        lastReportedCell = nil
+        handleGesture(.twoFingerSwipeUp)
     }
 
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer === tap {
-            return true
-        }
-        if gestureRecognizer === longPress || twoFingerSwipes.contains(where: { $0 === gestureRecognizer }) {
+        if gestureRecognizer === tap || gestureRecognizer === longPress
+            || gestureRecognizer === twoFingerSwipeUp
+        {
             return true
         }
         guard gestureRecognizer === oneFingerPan else { return true }
@@ -122,16 +105,13 @@ extension TerminalInteractionCoordinator {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer
     ) -> Bool {
-        if twoFingerSwipes.contains(where: { $0 === gestureRecognizer }) {
-            return other === scrollView?.panGestureRecognizer || other === oneFingerPan || other === tap
+        if gestureRecognizer === twoFingerSwipeUp {
+            return other === scrollView?.panGestureRecognizer || other === oneFingerPan
         }
         if gestureRecognizer === longPress { return other === oneFingerPan }
-        if gestureRecognizer === tap {
-            return other === oneFingerPan
-                || twoFingerSwipes.contains(where: { $0 === other })
-        }
+        if gestureRecognizer === tap { return other === oneFingerPan }
         if gestureRecognizer === oneFingerPan {
-            if twoFingerSwipes.contains(where: { $0 === other }) { return true }
+            if other === twoFingerSwipeUp { return true }
             if isSelecting || currentRoute != .scrollback {
                 return other !== scrollView?.panGestureRecognizer
             }
