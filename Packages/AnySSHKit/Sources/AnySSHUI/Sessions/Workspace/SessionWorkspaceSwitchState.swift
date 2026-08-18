@@ -39,9 +39,13 @@ extension SessionWorkspaceModel {
             return
         }
         pendingPane = nil
-        Task { [adapter, connection] in
+        let sessionID = activeSessionID
+        Task { [weak self, adapter, connection, sessionID] in
             let sessions = (try? await adapter.listSessions()) ?? []
-            guard let session = sessions.first(where: { $0.isAttached }) ?? sessions.first
+            guard let sessionID,
+                let session = await MainActor.run(body: {
+                    self?.muxSession(in: sessions, for: sessionID)
+                })
             else { return }
             let command = adapter.attachCommand(MuxTarget(session: session.id, pane: pane))
             try? await connection.sendDisplay(Array((command + "\r").utf8)[...])
