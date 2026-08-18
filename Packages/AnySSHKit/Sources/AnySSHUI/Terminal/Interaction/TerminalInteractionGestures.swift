@@ -72,11 +72,15 @@ extension TerminalInteractionCoordinator {
 
     @objc func handleTap(_ gesture: UITapGestureRecognizer) {
         guard gesture.state == .ended else { return }
+        guard !isSelecting, !remoteMouseHeld else { return }
+        let point = gesture.location(in: scrollView)
         let route = resolvedRoute(for: gesture)
-        guard TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled)
-        else { return }
-        guard !isSelecting, !remoteMouseHeld, !didEmitClick else { return }
-        emitClick(at: gesture.location(in: scrollView))
+        if TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled) {
+            didEmitClick = false
+            emitClick(at: point)
+        } else {
+            focusHandler()
+        }
     }
 
     @objc func handleTwoFingerPan(_ gesture: UIPanGestureRecognizer) {
@@ -105,10 +109,7 @@ extension TerminalInteractionCoordinator {
 
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if gestureRecognizer === tap {
-            return TerminalGesturePolicy.shouldReportClick(
-                route: resolvedRoute(for: gestureRecognizer),
-                didTravel: false
-            )
+            return true
         }
         if gestureRecognizer === longPress || gestureRecognizer === twoFingerPan {
             return true
