@@ -109,5 +109,6 @@ private struct SnapshotAdapter: MultiplexerAdapter {
         MuxKeyBindings(prefix: "", chords: [:])
     }
 
+    func focus(_ target: MuxTarget) async throws {}
     func attachCommand(_ target: MuxTarget) -> String { "" }
 }
