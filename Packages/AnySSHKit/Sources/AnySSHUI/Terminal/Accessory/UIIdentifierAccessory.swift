@@ -8,5 +8,8 @@ extension UIIdentifier.Terminal {
         public static let add = "terminal.accessory.add"
         public static let addPrefix = "terminal.accessory.addPrefix"
         public static let reset = "terminal.accessory.reset"
+        public static let changes = "terminal.accessory.changes"
+        public static let files = "terminal.accessory.files"
+        public static let compact = "terminal.accessory.compact"
     }
 }
