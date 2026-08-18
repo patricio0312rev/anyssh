@@ -10,24 +10,35 @@ extension SessionWorkspaceModel {
             await detectAgent(for: sessionID)
             return
         }
+        replaceMultiplexer(for: sessionID, with: adapter(for: capabilities, connection: connection))
+        await detectAgent(for: sessionID)
+    }
+
+    func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
+        stallWatchers.removeValue(forKey: sessionID)?.cancel()
+        sessionAdapters[sessionID] = adapter
+        guard let adapter else { return }
+        startStallWatcher(for: sessionID, adapter: adapter)
+    }
+
+    func adapter(
+        for capabilities: HostCapabilities,
+        connection: any RemoteConnection
+    ) -> (any MultiplexerAdapter)? {
         if capabilities.herdr.isProtocolSupported {
-            let adapter = HerdrAdapter(
-                runner: connection,
-                binaryPath: capabilities.herdr.tool.path
-            )
-            sessionAdapters[sessionID] = adapter
-            startStallWatcher(for: sessionID, adapter: adapter)
-        } else if capabilities.tmux.isAvailable {
-            sessionAdapters[sessionID] = TmuxAdapter(
+            return HerdrAdapter(runner: connection, binaryPath: capabilities.herdr.tool.path)
+        }
+        if capabilities.tmux.isAvailable {
+            return TmuxAdapter(
                 runner: connection,
                 binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath
             )
         }
-        await detectAgent(for: sessionID)
+        return nil
     }
 
     func startStallWatcher(for sessionID: SessionID, adapter: any MultiplexerAdapter) {
-        guard let scheduler = jobAlerts, stallWatchers[sessionID] == nil else { return }
+        guard let scheduler = jobAlerts else { return }
         let scope = scopes[sessionID]
         stallWatchers[sessionID] = Task {
             let sessions = (try? await adapter.listSessions()) ?? []
@@ -78,15 +89,38 @@ extension SessionWorkspaceModel {
             sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
             return
         }
+        sessionAgentKinds[sessionID] = await detectAgent(
+            detector: detector,
+            adapter: adapter,
+            terminalTitle: terminalTitle
+        )
+    }
+
+    func detectAgent(
+        detector: AgentKindDetector,
+        adapter: any MultiplexerAdapter,
+        terminalTitle: String?
+    ) async -> AgentKind? {
         guard let sessions = try? await adapter.listSessions(),
             let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first,
             let snapshot = try? await adapter.snapshot(muxSession.id)
-        else { return }
+        else {
+            return detector.detect(terminalTitle: terminalTitle)
+        }
         let pane = snapshot.panes.first(where: { $0.isActive }) ?? snapshot.panes.first
-        sessionAgentKinds[sessionID] = detector.detect(
-            multiplexerTitle: pane?.title,
-            terminalTitle: terminalTitle
+        return detector.detect(
+            signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
+                $0
+            }
         )
+    }
+
+    func multiplexerName(for sessionID: SessionID) -> String? {
+        switch sessionAdapters[sessionID]?.kind ?? multiplexerAdapter?.kind {
+        case .herdr: "herdr"
+        case .tmux: "tmux"
+        default: nil
+        }
     }
 
     static let tmuxFallbackPath = "tmux"
