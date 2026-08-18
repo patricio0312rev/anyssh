@@ -48,7 +48,7 @@ public final class TerminalInteractionCoordinator: NSObject,
     var lastReportedCell: (column: Int, row: Int)?
     var wheelAnchor: CGPoint = .zero
     var wheelTravelled = false
-    var didEmitClick = false
+    var clickArbiter = TerminalClickArbiter()
     var remoteMouseHeld = false
     var selectionDragActive = false
     var claimsScrollForSwipe = false
