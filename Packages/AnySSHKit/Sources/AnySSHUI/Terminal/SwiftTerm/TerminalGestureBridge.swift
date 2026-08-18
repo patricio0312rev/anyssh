@@ -10,6 +10,7 @@ public final class TerminalGestureBridge {
     public var onKeyBytes: (([UInt8]) -> Void)?
     public var onCopy: ((String) -> Void)?
     public var onGesture: ((GestureSlot) -> Void)?
+    public var onFocus: (() -> Void)?
     public var touchMode = false {
         didSet { view.allowMouseReporting = !touchMode }
     }
@@ -83,7 +84,8 @@ public final class TerminalGestureBridge {
                 return (max(size.width, 1), max(size.height, 1))
             },
             focusHandler: { [weak self] in
-                self?.view.becomeFirstResponder()
+                self?.onFocus?()
+                _ = self?.view.becomeFirstResponder()
             },
             probe: probe
         )
@@ -123,8 +125,8 @@ public final class TerminalGestureBridge {
         let cell = view.caretFrame.size
         let width = max(cell.width, 1)
         let height = max(cell.height, 1)
-        let col = max(0, Int((point.x + view.contentOffset.x) / width))
-        let row = max(0, Int((point.y + view.contentOffset.y) / height))
+        let col = max(0, Int(point.x / width))
+        let row = max(0, Int(point.y / height))
         return Position(col: col, row: row)
     }
 
