@@ -83,9 +83,44 @@ public final class HerdrAdapter: MultiplexerAdapter {
         return parser.keyBindings(from: MuxCommandSupport.text(section))
     }
 
+    public func focus(_ target: MuxTarget) async throws {
+        let binary = try await resolvedBinary()
+        let session = target.session.rawValue
+        if let pane = target.pane {
+            let batch = HerdrCommands.focusAgent(
+                binary: binary,
+                session: session,
+                pane: pane.rawValue
+            )
+            let response = try await runner.run(batch)
+            guard target.group != nil else {
+                _ = try MuxCommandSupport.section(
+                    label: HerdrCommands.focusAgentLabel,
+                    in: response,
+                    batch: batch
+                )
+                return
+            }
+            let focused = response.sections.first { $0.label == HerdrCommands.focusAgentLabel }
+            if focused?.exitCode == 0 { return }
+        }
+        guard let group = target.group else { throw ErrorState.mux(.attachTargetVanished) }
+        try await focusTab(binary: binary, session: session, group: group.rawValue)
+    }
+
     public func attachCommand(_ target: MuxTarget) -> String {
         let binary = cachedPath.withLock { $0 } ?? fixedBinaryPath ?? "herdr"
         return MuxAttachCommand.herdr(binary: binary, target: target)
+    }
+
+    private func focusTab(binary: String, session: String, group: String) async throws {
+        let batch = HerdrCommands.focusTab(binary: binary, session: session, group: group)
+        let response = try await runner.run(batch)
+        _ = try MuxCommandSupport.section(
+            label: HerdrCommands.focusTabLabel,
+            in: response,
+            batch: batch
+        )
     }
 
     private func resolvedBinary() async throws -> String {
