@@ -42,7 +42,7 @@ public final class TerminalInteractionCoordinator: NSObject,
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
-    var twoFingerSwipes: [UISwipeGestureRecognizer] = []
+    var twoFingerSwipeUp: UISwipeGestureRecognizer?
     var longPress: UILongPressGestureRecognizer?
     var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
@@ -108,7 +108,13 @@ public final class TerminalInteractionCoordinator: NSObject,
         scrollView.addInteraction(editMenu)
         editMenuInteraction = editMenu
         oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
-        twoFingerSwipes = addTwoFingerSwipes()
+        let swipeUp = UISwipeGestureRecognizer(target: self, action: #selector(handleTwoFingerSwipeUp))
+        swipeUp.numberOfTouchesRequired = 2
+        swipeUp.direction = .up
+        swipeUp.delegate = self
+        swipeUp.cancelsTouchesInView = false
+        scrollView.addGestureRecognizer(swipeUp)
+        twoFingerSwipeUp = swipeUp
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapRecognizer.cancelsTouchesInView = false
         tapRecognizer.delegate = self
@@ -180,19 +186,6 @@ public final class TerminalInteractionCoordinator: NSObject,
         pan.cancelsTouchesInView = false
         scrollView?.addGestureRecognizer(pan)
         return pan
-    }
-
-    private func addTwoFingerSwipes() -> [UISwipeGestureRecognizer] {
-        let directions: [UISwipeGestureRecognizer.Direction] = [.left, .right, .up, .down]
-        return directions.map { direction in
-            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleTwoFingerSwipe))
-            swipe.numberOfTouchesRequired = 2
-            swipe.direction = direction
-            swipe.delegate = self
-            swipe.cancelsTouchesInView = false
-            scrollView?.addGestureRecognizer(swipe)
-            return swipe
-        }
     }
 }
 #endif
