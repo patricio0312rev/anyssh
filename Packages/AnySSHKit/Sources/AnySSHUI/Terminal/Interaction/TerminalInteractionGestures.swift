@@ -78,7 +78,6 @@ extension TerminalInteractionCoordinator {
         let point = gesture.location(in: scrollView)
         let route = resolvedRoute(for: gesture)
         if TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled) {
-            didEmitClick = false
             emitClick(at: point)
         } else {
             focusHandler()
