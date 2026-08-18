@@ -42,7 +42,7 @@ public final class TerminalInteractionCoordinator: NSObject,
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
-    var twoFingerPan: UIPanGestureRecognizer?
+    var twoFingerSwipes: [UISwipeGestureRecognizer] = []
     var longPress: UILongPressGestureRecognizer?
     var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
@@ -108,7 +108,7 @@ public final class TerminalInteractionCoordinator: NSObject,
         scrollView.addInteraction(editMenu)
         editMenuInteraction = editMenu
         oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
-        twoFingerPan = addPan(touches: 2, action: #selector(handleTwoFingerPan))
+        twoFingerSwipes = addTwoFingerSwipes()
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapRecognizer.cancelsTouchesInView = false
         tapRecognizer.delegate = self
@@ -180,6 +180,19 @@ public final class TerminalInteractionCoordinator: NSObject,
         pan.cancelsTouchesInView = false
         scrollView?.addGestureRecognizer(pan)
         return pan
+    }
+
+    private func addTwoFingerSwipes() -> [UISwipeGestureRecognizer] {
+        let directions: [UISwipeGestureRecognizer.Direction] = [.left, .right, .up, .down]
+        return directions.map { direction in
+            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleTwoFingerSwipe))
+            swipe.numberOfTouchesRequired = 2
+            swipe.direction = direction
+            swipe.delegate = self
+            swipe.cancelsTouchesInView = false
+            scrollView?.addGestureRecognizer(swipe)
+            return swipe
+        }
     }
 }
 #endif
