@@ -10,18 +10,22 @@ public final class MultiplexerPaneListModel {
     public private(set) var failureState: ErrorState?
     public private(set) var attachingPaneID: MuxPaneID?
     public private(set) var attachFailure: ErrorState?
+    public private(set) var lastOutcome: MuxJumpOutcome?
 
     private let adapter: any MultiplexerAdapter
-    private let writer: (any DisplayWriter)?
+    private let navigator: MuxNavigator?
     private let onBoundSession: ((MuxSessionID) -> Void)?
 
     public init(
         adapter: any MultiplexerAdapter,
         writer: (any DisplayWriter)? = nil,
+        probe: MuxNavigator.AttachmentProbe? = nil,
         onBoundSession: ((MuxSessionID) -> Void)? = nil
     ) {
         self.adapter = adapter
-        self.writer = writer
+        navigator = writer.map {
+            MuxNavigator(adapter: adapter, writer: $0, probe: probe ?? { .unknown })
+        }
         self.onBoundSession = onBoundSession
     }
 
@@ -51,15 +55,19 @@ public final class MultiplexerPaneListModel {
         guard attachingPaneID == nil else { return false }
         attachingPaneID = pane
         attachFailure = nil
+        lastOutcome = nil
         defer { attachingPaneID = nil }
-        let command = adapter.attachCommand(MuxTarget(session: session))
-        guard !command.isEmpty, let writer else {
+        guard let navigator else {
             attachFailure = .mux(.attachTargetVanished)
             return false
         }
         do {
-            try await writer.send(Array((command + "\r").utf8)[...])
-            onBoundSession?(session)
+            let outcome = try await navigator.jump(to: MuxTarget(session: session, pane: pane))
+            lastOutcome = outcome
+            switch outcome {
+            case .focused, .attached: onBoundSession?(session)
+            case .focusedElsewhere: break
+            }
             return true
         } catch {
             attachFailure = (error as? ErrorState) ?? .mux(.attachTargetVanished)
