@@ -125,8 +125,8 @@ public final class TerminalGestureBridge {
         let cell = view.caretFrame.size
         let width = max(cell.width, 1)
         let height = max(cell.height, 1)
-        let col = max(0, Int(point.x / width))
-        let row = max(0, Int(point.y / height))
+        let col = max(0, Int((point.x + view.contentOffset.x) / width))
+        let row = max(0, Int((point.y + view.contentOffset.y) / height))
         return Position(col: col, row: row)
     }
 
