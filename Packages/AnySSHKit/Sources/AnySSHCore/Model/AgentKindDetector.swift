@@ -4,13 +4,22 @@ public struct AgentKindDetector: Sendable {
     public func detect(
         herdrKind: String? = nil, multiplexerTitle: String? = nil, terminalTitle: String? = nil
     ) -> AgentKind? {
-        [herdrKind, multiplexerTitle, terminalTitle].compactMap { $0 }.lazy.compactMap(match).first
+        detect(signals: [herdrKind, multiplexerTitle, terminalTitle].compactMap { $0 })
     }
 
     public func detect(processNames: [String]) -> AgentKind? {
         AgentKindCatalog.kinds.first { kind in
-            processNames.contains { name in matches(kind, name) }
+            !kind.isMultiplexer && processNames.contains { name in matches(kind, name) }
         }
+    }
+
+    public func detect(signals: [String]) -> AgentKind? {
+        signals.lazy.compactMap { match($0) }.compactMap(preferred).first
+    }
+
+    private func preferred(_ kind: AgentKind?) -> AgentKind? {
+        guard let kind, !kind.isMultiplexer else { return nil }
+        return kind
     }
 
     private func match(_ signal: String) -> AgentKind? {
