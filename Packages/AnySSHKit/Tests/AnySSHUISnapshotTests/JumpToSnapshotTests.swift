@@ -46,7 +46,8 @@ import Testing
         let model = JumpToModel(
             adapter: FixtureMultiplexerAdapter(fixture: .herdrDefault),
             directory: nil,
-            writer: writer
+            writer: writer,
+            probe: { .detached }
         )
         await model.load()
         let row = try #require(model.sessions.first?.groups.first)
