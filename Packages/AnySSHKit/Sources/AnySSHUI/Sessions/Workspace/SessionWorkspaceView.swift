@@ -17,13 +17,17 @@ public struct SessionWorkspaceView: View {
     @State var fileImport = FileImportModel()
     @State var switchEdge = Edge.trailing
     @State var commandRegistry = AppCommandRegistry(commands: [])
-    @State private var keyboard = KeyboardVisibility()
+    @State var keyboard = KeyboardVisibility()
     @Environment(\.statusToasts) var toasts
+
+    var isPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
 
     let onClose: (() -> Void)?
     private let initialSurface: WorkspaceSurface?
     private let hostsToasts: Bool
-    private let pinsAccessoryBar: Bool
+    let pinsAccessoryBar: Bool
 
     public init(
         model: SessionWorkspaceModel,
@@ -88,6 +92,9 @@ public struct SessionWorkspaceView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 if showsAccessoryBar { accessoryBar }
             }
+            .overlay(alignment: .bottomTrailing) {
+                if showsCompactActions { compactAccessory }
+            }
             .fileImporter(
                 isPresented: $isImportingFile,
                 allowedContentTypes: [.item],
@@ -108,7 +115,7 @@ public struct SessionWorkspaceView: View {
             }
             .toolbar {
                 SessionWorkspaceToolbar(
-                    title: model.activeRecord?.title ?? Self.fallbackTitle,
+                    title: model.navbarTitle(),
                     transportState: model.activeTransportState,
                     keyboardEngine: model.activeSessionID.flatMap { model.surface(for: $0)?.engine },
                     showsBack: onClose != nil,
@@ -146,30 +153,6 @@ public struct SessionWorkspaceView: View {
         )
     }
 
-    private var showsAccessoryBar: Bool {
-        (keyboard.isVisible || pinsAccessoryBar)
-            && model.activeSessionID != nil
-            && !isSwitcherPresented
-            && !isPalettePresented
-            && presentedBrowser == nil
-    }
-
-    @ViewBuilder
-    var accessoryBar: some View {
-        if let id = model.activeSessionID, let bar = model.barModels[id] {
-            AccessoryBar(
-                model: bar,
-                isDictating: dictation.isListening,
-                onDictate: toggleDictation,
-                onImportFile: { isImportingFile = true },
-                onOpenSnippets: { isSnippetsPresented = true },
-                onOpenMultiplexer: model.showsMultiplexer ? { isMultiplexerPresented = true } : nil,
-                onOpenJumpTo: model.showsMultiplexer ? { isJumpToPresented = true } : nil
-            )
-            .id(id)
-        }
-    }
-
     private func installCommands() {
         commandRegistry.replace(
             with: AppCommandBinding.workspaceCommands(
@@ -197,6 +180,5 @@ public struct SessionWorkspaceView: View {
             .id(model.activeSessionID)
     }
 
-    static let fallbackTitle = "Sessions"
 }
 #endif
