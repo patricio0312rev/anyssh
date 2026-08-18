@@ -4,24 +4,22 @@ import UIKit
 
 extension TerminalInteractionCoordinator {
     func emitWheel(from start: CGPoint, to point: CGPoint) {
-        guard let scrollView else { return }
-        let rowHeight = max(scrollView.bounds.height / 24, 1)
+        let rowHeight = cellSize().height
         let travelled = Int((point.y - wheelAnchor.y) / rowHeight)
         guard travelled != 0 else { return }
+        wheelTravelled = true
         wheelAnchor.y += CGFloat(travelled) * rowHeight
-        let column = max(0, Int(point.x / max(scrollView.bounds.width / 80, 1)))
-        let row = max(0, Int(point.y / rowHeight))
+        let cell = cellAt(point)
         let button: TerminalMouseButton = travelled > 0 ? .wheelUp : .wheelDown
         for _ in 0..<abs(travelled) {
             mouseReportHandler(
-                TerminalMouseReport(button: button, column: column, row: row, pressed: true)
+                TerminalMouseReport(button: button, column: cell.column, row: cell.row, pressed: true)
             )
         }
     }
 
     func emitScrollKeys(to point: CGPoint) {
-        guard let scrollView else { return }
-        let rowHeight = max(scrollView.bounds.height / 24, 1)
+        let rowHeight = cellSize().height
         let travelled = Int((point.y - wheelAnchor.y) / rowHeight)
         guard travelled != 0 else { return }
         wheelAnchor.y += CGFloat(travelled) * rowHeight
@@ -31,18 +29,28 @@ extension TerminalInteractionCoordinator {
 
     func beginWheel(at point: CGPoint) {
         wheelAnchor = point
+        wheelTravelled = false
+        didEmitClick = false
+    }
+
+    func emitClick(at point: CGPoint) {
+        guard !didEmitClick else { return }
+        didEmitClick = true
+        lastReportedCell = nil
+        emitMouse(at: point, pressed: true)
+        lastReportedCell = nil
+        emitMouse(at: point, pressed: false)
+        focusHandler()
     }
 
     func emitMouse(at point: CGPoint, pressed: Bool) {
-        guard let scrollView else { return }
-        let column = max(0, Int(point.x / max(scrollView.bounds.width / 80, 1)))
-        let row = max(0, Int(point.y / max(scrollView.bounds.height / 24, 1)))
-        if let last = lastReportedCell, last.column == column, last.row == row, pressed {
+        let cell = cellAt(point)
+        if let last = lastReportedCell, last.column == cell.column, last.row == cell.row, pressed {
             return
         }
-        lastReportedCell = (column, row)
+        lastReportedCell = cell
         mouseReportHandler(
-            TerminalMouseReport(button: .primary, column: column, row: row, pressed: pressed)
+            TerminalMouseReport(button: .primary, column: cell.column, row: cell.row, pressed: pressed)
         )
     }
 }
