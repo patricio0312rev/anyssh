@@ -19,15 +19,18 @@ public final class JumpToModel {
     private let adapter: (any MultiplexerAdapter)?
     private let writer: (any DisplayWriter)?
     private let directory: URL?
+    private let onBoundSession: ((MuxSessionID) -> Void)?
 
     public init(
         adapter: any MultiplexerAdapter,
         directory: URL?,
-        writer: (any DisplayWriter)?
+        writer: (any DisplayWriter)?,
+        onBoundSession: ((MuxSessionID) -> Void)? = nil
     ) {
         self.adapter = adapter
         self.writer = writer
         self.directory = directory
+        self.onBoundSession = onBoundSession
         kind = adapter.kind
         layout = JumpLayoutPreference.load(from: directory)
     }
@@ -41,6 +44,7 @@ public final class JumpToModel {
         adapter = nil
         writer = nil
         directory = nil
+        onBoundSession = nil
         self.kind = kind
         self.layout = layout
     }
@@ -108,6 +112,7 @@ public final class JumpToModel {
         lastBytes = bytes
         do {
             try await writer.send(bytes[...])
+            onBoundSession?(row.sessionID)
             return true
         } catch {
             jumpFailure = (error as? ErrorState) ?? .mux(.attachTargetVanished)
