@@ -61,6 +61,7 @@ extension SessionWorkspaceModel {
         sessionAdapters.removeValue(forKey: id)
         sessionAgentKinds.removeValue(forKey: id)
         sessionAgentTitles.removeValue(forKey: id)
+        sessionMuxIDs.removeValue(forKey: id)
         publishedAgentTitleIDs.remove(id)
         agentStates.removeValue(forKey: id)
         barModels.removeValue(forKey: id)
