@@ -9,6 +9,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     case herdr = "sessions.workspace.herdr"
     case agent = "sessions.workspace.agent"
     case accessory = "sessions.workspace.accessory"
+    case compact = "sessions.workspace.compact"
     case landscape = "sessions.workspace.landscape"
     case switcher = "sessions.workspace.switcher"
     case palette = "sessions.workspace.palette"
@@ -25,7 +26,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
 
     var recordsFixture: String {
         switch self {
-        case .single, .agent, .accessory: "single"
+        case .single, .agent, .accessory, .compact: "single"
         case .empty: "empty"
         case .notifyForeground: "notifyForeground"
         case .notifyBackground: "notifyBackground"
