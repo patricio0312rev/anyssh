@@ -60,10 +60,33 @@ extension SessionWorkspaceModel {
         record: SessionRecord
     ) async -> WorkspaceLocation? {
         guard let sessions = try? await adapter.listSessions(),
-            let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first
+            let muxSession = muxSession(in: sessions, for: record.id)
         else { return nil }
         return await MultiplexerPathResolver(adapter: adapter, sessionID: muxSession.id)
             .resolve(record)
+    }
+
+    func rememberMuxSession(_ muxID: MuxSessionID, for sessionID: SessionID? = nil) {
+        guard let sessionID = sessionID ?? activeSessionID else { return }
+        sessionMuxIDs[sessionID] = muxID
+    }
+
+    func muxSession(in sessions: [MuxSession], for sessionID: SessionID) -> MuxSession? {
+        if let bound = sessionMuxIDs[sessionID],
+            let match = sessions.first(where: { $0.id == bound })
+        {
+            return match
+        }
+        let attached = sessions.filter(\.isAttached)
+        if attached.count == 1 {
+            sessionMuxIDs[sessionID] = attached[0].id
+            return attached[0]
+        }
+        if sessions.count == 1 {
+            sessionMuxIDs[sessionID] = sessions[0].id
+            return sessions[0]
+        }
+        return nil
     }
 
     func applyWorkspace(_ location: WorkspaceLocation, to sessionID: SessionID) {
