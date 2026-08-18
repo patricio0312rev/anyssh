@@ -9,9 +9,16 @@ public struct MultiplexerPaneListView: View {
     public init(
         adapter: any MultiplexerAdapter,
         writer: (any DisplayWriter)? = nil,
+        onBoundSession: ((MuxSessionID) -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
-        _model = State(wrappedValue: MultiplexerPaneListModel(adapter: adapter, writer: writer))
+        _model = State(
+            wrappedValue: MultiplexerPaneListModel(
+                adapter: adapter,
+                writer: writer,
+                onBoundSession: onBoundSession
+            )
+        )
         self.onDismiss = onDismiss
     }
 
