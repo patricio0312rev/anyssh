@@ -29,7 +29,7 @@ public enum SessionNavbarTitle {
     public static let separator = " • "
     public static let sample = SessionTitleContext(
         sessionName: "build-box",
-        agentSessionTitle: "OC | Mejoras para v0.1.2",
+        agentSessionTitle: "OC | Fixes for v0.1.2",
         agentName: "OpenCode",
         multiplexerName: "herdr"
     )
