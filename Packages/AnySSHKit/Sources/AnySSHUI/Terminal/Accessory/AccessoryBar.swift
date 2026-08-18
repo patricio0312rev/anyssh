@@ -14,6 +14,7 @@ public struct AccessoryBar: View {
     var onOpenSnippets: (() -> Void)?
     var onOpenChanges: (() -> Void)?
     var onOpenFiles: (() -> Void)?
+    var onPaste: (() -> Void)?
     var isDictating = false
     var onImportFile: (() -> Void)?
     var onDictate: (() -> Void)?
@@ -71,6 +72,7 @@ public struct AccessoryBar: View {
         onOpenJumpTo: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
+        onPaste: (() -> Void)? = nil,
         showsKeyStrip: Bool = true
     ) {
         _model = State(wrappedValue: model)
@@ -84,6 +86,7 @@ public struct AccessoryBar: View {
         self.onOpenJumpTo = onOpenJumpTo
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
+        self.onPaste = onPaste
         self.showsKeyStrip = showsKeyStrip
     }
 
@@ -102,6 +105,7 @@ public struct AccessoryBar: View {
         onOpenJumpTo: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
+        onPaste: (() -> Void)? = nil,
         showsKeyStrip: Bool = true
     ) {
         _model = State(
@@ -121,6 +125,7 @@ public struct AccessoryBar: View {
         self.onOpenJumpTo = onOpenJumpTo
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
+        self.onPaste = onPaste
         self.showsKeyStrip = showsKeyStrip
     }
 }
