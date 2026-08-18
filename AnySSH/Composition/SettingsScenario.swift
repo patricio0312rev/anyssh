@@ -6,4 +6,5 @@ enum SettingsScenario: String, Equatable, CaseIterable {
     case privacy = "settings.privacy"
     case about = "settings.about"
     case notice = "settings.about.notice"
+    case title = "settings.title"
 }
