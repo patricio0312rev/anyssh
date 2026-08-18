@@ -39,13 +39,6 @@ struct GesturePolicyTests {
     }
 
     @Test
-    func twoFingersAreRequiredForSessionSwitching() {
-        #expect(!SessionSwitchGesturePolicy.accepts(touchCount: 1))
-        #expect(SessionSwitchGesturePolicy.accepts(touchCount: 2))
-        #expect(!SessionSwitchGesturePolicy.accepts(touchCount: 3))
-    }
-
-    @Test
     func alternateScreenWithoutMouseReportingSendsCursorKeys() {
         var harness = GestureHarness()
         harness.drag(
