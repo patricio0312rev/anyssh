@@ -78,15 +78,26 @@ extension TerminalInteractionCoordinator {
         let point = gesture.location(in: scrollView)
         let route = resolvedRoute(for: gesture)
         if TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled) {
-            emitClick(at: point)
+            if clickArbiter.tapEnded() { emitClick(at: point) }
         } else {
             focusHandler()
         }
     }
 
+    public func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        if gestureRecognizer === tap { clickArbiter.touchBegan() }
+        return true
+    }
+
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if gestureRecognizer === tap || gestureRecognizer === longPress {
             return true
+        }
+        if gestureRecognizer is UITapGestureRecognizer {
+            return resolvedRoute(for: gestureRecognizer) == .scrollback
         }
         guard gestureRecognizer === oneFingerPan else { return true }
         releaseStuckScrollClaim()
@@ -140,9 +151,10 @@ extension TerminalInteractionCoordinator {
     }
 
     private func endOneFinger(route: TerminalGestureRoute, selecting: Bool, at point: CGPoint) {
-        if TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled),
-            !selecting, !remoteMouseHeld
-        {
+        let reportsClick =
+            TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled)
+            && !selecting && !remoteMouseHeld
+        if clickArbiter.panEnded(travelled: wheelTravelled), reportsClick {
             emitClick(at: point)
         }
         releaseRemoteMouse(at: point)
