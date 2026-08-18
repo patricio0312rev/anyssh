@@ -10,8 +10,8 @@ import Testing
     @Test func aFreshDirectoryOpensOnTheShippedDefaults() throws {
         let model = GestureSettingsModel(directory: try Self.directory())
 
-        #expect(model.binding(for: .swipeLeft)?.value == "session.previous")
-        #expect(model.binding(for: .tap) == nil)
+        #expect(model.binding(for: .swipeLeft)?.value == "session.next")
+        #expect(model.binding(for: .swipeRight)?.value == "session.previous")
         #expect(model.saveFailure == nil)
     }
 
@@ -19,11 +19,11 @@ import Testing
         let directory = try Self.directory()
         let model = GestureSettingsModel(directory: directory)
 
-        model.bind(GestureLayout.Binding(kind: .chord, value: "escape"), to: .tripleTap)
+        model.bind(GestureLayout.Binding(kind: .chord, value: "escape"), to: .swipeRight)
 
         let reopened = GestureSettingsModel(directory: directory)
-        #expect(reopened.binding(for: .tripleTap)?.kind == .chord)
-        #expect(reopened.binding(for: .tripleTap)?.value == "escape")
+        #expect(reopened.binding(for: .swipeRight)?.kind == .chord)
+        #expect(reopened.binding(for: .swipeRight)?.value == "escape")
     }
 
     @Test func unbindingRemovesTheSlotFromWhatIsPersisted() throws {
@@ -39,7 +39,7 @@ import Testing
         let directory = try Self.directory()
         let model = GestureSettingsModel(directory: directory)
         model.bind(nil, to: .swipeLeft)
-        model.bind(GestureLayout.Binding(kind: .chord, value: "escape"), to: .tap)
+        model.bind(GestureLayout.Binding(kind: .chord, value: "escape"), to: .swipeRight)
 
         model.reset()
 
