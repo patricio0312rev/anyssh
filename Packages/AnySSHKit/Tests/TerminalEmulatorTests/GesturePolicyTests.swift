@@ -23,9 +23,7 @@ struct GesturePolicyTests {
         #expect(
             !TerminalGesturePolicy.shouldReportClick(route: .remoteApp, didTravel: true)
         )
-        #expect(TerminalGesturePolicy.shouldReportClick(route: .remoteKeys, didTravel: false))
-        #expect(!TerminalGesturePolicy.shouldReportClick(route: .remoteKeys, didTravel: true))
-        for route in [TerminalGestureRoute.scrollback, .selection] {
+        for route in [TerminalGestureRoute.scrollback, .remoteKeys, .selection] {
             #expect(!TerminalGesturePolicy.shouldReportClick(route: route, didTravel: false))
         }
     }
