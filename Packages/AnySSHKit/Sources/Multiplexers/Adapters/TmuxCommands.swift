@@ -7,6 +7,8 @@ enum TmuxCommands {
     static let panesLabel = "tmux.panes"
     static let prefixLabel = "tmux.prefix"
     static let captureLabel = "tmux.capture"
+    static let selectWindowLabel = "tmux.selectWindow"
+    static let selectPaneLabel = "tmux.selectPane"
 
     static let sessionFormat = "#{session_id}\t#{session_name}\t#{session_attached}"
     static let windowFormat =
@@ -53,6 +55,27 @@ enum TmuxCommands {
                 arguments: [binary, "show-options", "-gv", "prefix"]
             )
         ])
+    }
+
+    static func focus(binary: String, group: String?, pane: String?) -> RemoteBatch {
+        var commands = [RemoteCommand]()
+        if let group {
+            commands.append(
+                RemoteCommand(
+                    label: selectWindowLabel,
+                    arguments: [binary, "select-window", "-t", group]
+                )
+            )
+        }
+        if let pane {
+            commands.append(
+                RemoteCommand(
+                    label: selectPaneLabel,
+                    arguments: [binary, "select-pane", "-t", pane]
+                )
+            )
+        }
+        return RemoteBatch(commands: commands)
     }
 
     static func capture(binary: String, pane: String, lines: Int) -> RemoteBatch {
