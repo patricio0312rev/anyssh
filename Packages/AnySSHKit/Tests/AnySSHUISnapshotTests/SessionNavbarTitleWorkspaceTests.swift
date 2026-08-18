@@ -36,9 +36,22 @@ import Testing
     @Test func aGenericPaneLabelDoesNotReplaceAPublishedTitle() throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
-        model.rememberAgentSessionTitle("OC | Fixes for v0.1.2", for: sessionID, replacing: true)
-        model.rememberAgentSessionTitle("agent", for: sessionID)
+        model.rememberAgentSessionTitle(
+            "OC | Fixes for v0.1.2",
+            for: sessionID,
+            replacing: true,
+            published: true
+        )
+        model.rememberAgentSessionTitle("api", for: sessionID, replacing: true)
         #expect(model.navbarTitle(mode: .agentSession) == "OC | Fixes for v0.1.2")
+    }
+
+    @Test func aLaterMuxPaneTitleReplacesAnEarlierOne() throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let sessionID = try #require(model.activeSessionID)
+        model.rememberAgentSessionTitle("api", for: sessionID, replacing: true)
+        model.rememberAgentSessionTitle("web", for: sessionID, replacing: true)
+        #expect(model.navbarTitle(mode: .agentSession) == "web")
     }
 
     @Test func multiplexerFallsBackWhenNoAdapterIsAttached() {
