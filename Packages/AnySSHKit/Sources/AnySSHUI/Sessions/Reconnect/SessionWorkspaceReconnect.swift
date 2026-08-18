@@ -127,6 +127,7 @@ extension SessionWorkspaceModel {
                 on: connection,
                 workspace: registry[sessionID]?.workspace
             )
+            await configureMultiplexer(for: sessionID, connection: connection)
             clearOpenFailure()
             updateTransportState(.connected, for: sessionID)
             presentReattached(for: registry[sessionID]?.title ?? remote.name)
