@@ -26,9 +26,9 @@ import Testing
             with: FixtureMultiplexerAdapter(fixture: .herdrDefault)
         )
         model.sessionAgentKinds[sessionID] = AgentKindCatalog.kinds.first { $0.id == "opencode" }
-        model.rememberAgentSessionTitle("OC | Mejoras para v0.1.2", for: sessionID, replacing: true)
-        #expect(model.navbarTitle(mode: .smart) == "OC | Mejoras para v0.1.2")
-        #expect(model.navbarTitle(mode: .agentSession) == "OC | Mejoras para v0.1.2")
+        model.rememberAgentSessionTitle("OC | Fixes for v0.1.2", for: sessionID, replacing: true)
+        #expect(model.navbarTitle(mode: .smart) == "OC | Fixes for v0.1.2")
+        #expect(model.navbarTitle(mode: .agentSession) == "OC | Fixes for v0.1.2")
         #expect(model.navbarTitle(mode: .activeAgent) == "opencode")
         #expect(model.navbarTitle(mode: .multiplexer) == "herdr")
     }
@@ -36,9 +36,9 @@ import Testing
     @Test func aGenericPaneLabelDoesNotReplaceAPublishedTitle() throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
-        model.rememberAgentSessionTitle("OC | Mejoras para v0.1.2", for: sessionID, replacing: true)
+        model.rememberAgentSessionTitle("OC | Fixes for v0.1.2", for: sessionID, replacing: true)
         model.rememberAgentSessionTitle("agent", for: sessionID)
-        #expect(model.navbarTitle(mode: .agentSession) == "OC | Mejoras para v0.1.2")
+        #expect(model.navbarTitle(mode: .agentSession) == "OC | Fixes for v0.1.2")
     }
 
     @Test func multiplexerFallsBackWhenNoAdapterIsAttached() {
