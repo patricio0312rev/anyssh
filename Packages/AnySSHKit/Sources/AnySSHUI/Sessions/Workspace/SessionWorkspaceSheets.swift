@@ -37,6 +37,7 @@ extension View {
                     MultiplexerPaneListView(
                         adapter: adapter,
                         writer: model.activeSessionID.flatMap { model.connection(for: $0) },
+                        onBoundSession: { [weak model] id in model?.rememberMuxSession(id) },
                         onDismiss: { isMultiplexerPresented.wrappedValue = false }
                     )
                 }
@@ -47,7 +48,8 @@ extension View {
                         model: JumpToModel(
                             adapter: adapter,
                             directory: model.layoutDirectory,
-                            writer: model.activeSessionID.flatMap { model.connection(for: $0) }
+                            writer: model.activeSessionID.flatMap { model.connection(for: $0) },
+                            onBoundSession: { [weak model] id in model?.rememberMuxSession(id) }
                         ),
                         onDismiss: { isJumpToPresented.wrappedValue = false }
                     )
