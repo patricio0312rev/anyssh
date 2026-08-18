@@ -5,12 +5,18 @@ import SwiftUI
 public struct SettingsView: View {
     private let layoutDirectory: URL
     private let snippets: SnippetStore
+    private let titleStore: SessionTitlePreferenceStore
 
     @Environment(\.dismiss) private var dismiss
 
-    public init(layoutDirectory: URL, snippets: SnippetStore = .applicationSupport()) {
+    public init(
+        layoutDirectory: URL,
+        snippets: SnippetStore = .applicationSupport(),
+        titleStore: SessionTitlePreferenceStore = .shared
+    ) {
         self.layoutDirectory = layoutDirectory
         self.snippets = snippets
+        self.titleStore = titleStore
     }
 
     public var body: some View {
@@ -40,6 +46,17 @@ public struct SettingsView: View {
                 )
             }
             .accessibilityIdentifier(UIIdentifier.Settings.gestures)
+            .catalogRowChrome()
+            NavigationLink {
+                SessionTitleSettingsView(store: titleStore)
+            } label: {
+                SettingsRow(
+                    title: "Session title",
+                    subtitle: titleStore.mode.title,
+                    systemImage: "textformat"
+                )
+            }
+            .accessibilityIdentifier(UIIdentifier.Settings.title)
             .catalogRowChrome()
             NavigationLink {
                 SnippetLibraryView(store: snippets)
