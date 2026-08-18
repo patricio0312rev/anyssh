@@ -17,7 +17,7 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        guard let adapter else { return }
+        guard let adapter, adapter.kind == .herdr else { return }
         startStallWatcher(for: sessionID, adapter: adapter)
     }
 
@@ -80,13 +80,10 @@ extension SessionWorkspaceModel {
         }
         if let kind = detector.detect(processNames: probe.processNames) {
             sessionAgentKinds[sessionID] = kind
+        } else if sessionAdapters[sessionID] == nil {
+            sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
         }
-        guard let adapter = sessionAdapters[sessionID] else {
-            if sessionAgentKinds[sessionID] == nil {
-                sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
-            }
-            return
-        }
+        guard let adapter = sessionAdapters[sessionID] else { return }
         await detectAgent(
             detector: detector,
             adapter: adapter,
@@ -105,9 +102,7 @@ extension SessionWorkspaceModel {
             let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first,
             let snapshot = try? await adapter.snapshot(muxSession.id)
         else {
-            if sessionAgentKinds[sessionID] == nil {
-                sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
-            }
+            sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
             return
         }
         let pane = snapshot.panes.first(where: { $0.isActive }) ?? snapshot.panes.first
@@ -119,26 +114,29 @@ extension SessionWorkspaceModel {
         {
             applyWorkspace(location, to: sessionID)
         }
-        rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID)
-        if sessionAgentKinds[sessionID] == nil {
-            sessionAgentKinds[sessionID] = detector.detect(
-                signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
-                    $0
-                }
-            )
-        }
+        rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID, replacing: true)
+        sessionAgentKinds[sessionID] = detector.detect(
+            signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
+                $0
+            }
+        )
     }
 
     func rememberAgentSessionTitle(
         _ title: String?,
         for sessionID: SessionID,
-        replacing: Bool = false
+        replacing: Bool = false,
+        published: Bool = false
     ) {
+        if !published, publishedAgentTitleIDs.contains(sessionID) { return }
         guard replacing || sessionAgentTitles[sessionID] == nil else { return }
         guard let sanitized = title.flatMap(SessionTitle.sanitized),
             SessionNavbarTitle.isUsableAgentSessionTitle(sanitized)
         else { return }
         sessionAgentTitles[sessionID] = sanitized
+        if published {
+            publishedAgentTitleIDs.insert(sessionID)
+        }
     }
 
     func multiplexerName(for sessionID: SessionID) -> String? {
