@@ -33,22 +33,44 @@ extension SessionWorkspaceModel {
 
     func attachPendingPane() {
         guard let pane = pendingPane, let adapter = activeMultiplexerAdapter,
-            let connection = activeSessionID.flatMap({ connections[$0] })
+            let sessionID = activeSessionID, let connection = connections[sessionID]
         else {
             pendingPane = nil
             return
         }
         pendingPane = nil
-        let sessionID = activeSessionID
-        Task { [weak self, adapter, connection, sessionID] in
-            let sessions = (try? await adapter.listSessions()) ?? []
-            guard let sessionID,
-                let session = await MainActor.run(body: {
-                    self?.muxSession(in: sessions, for: sessionID)
-                })
-            else { return }
-            let command = adapter.attachCommand(MuxTarget(session: session.id, pane: pane))
-            try? await connection.sendDisplay(Array((command + "\r").utf8)[...])
+        let navigator = MuxNavigator(
+            adapter: adapter,
+            writer: connection,
+            probe: attachmentProbe(for: sessionID)
+        )
+        Task { [weak self] in
+            await self?.focusPendingPane(pane, of: sessionID, using: adapter, through: navigator)
+        }
+    }
+
+    private func focusPendingPane(
+        _ pane: MuxPaneID,
+        of sessionID: SessionID,
+        using adapter: any MultiplexerAdapter,
+        through navigator: MuxNavigator
+    ) async {
+        do {
+            let sessions = try await adapter.listSessions()
+            guard let session = muxSession(in: sessions, for: sessionID) else {
+                throw ErrorState.mux(.attachTargetVanished)
+            }
+            let outcome = try await navigator.jump(
+                to: MuxTarget(session: session.id, pane: pane)
+            )
+            guard case .focusedElsewhere = outcome else { return }
+            statusToasts?.present(
+                severity: .attention,
+                title: MuxNavigationCopy.focused(in: session.name),
+                body: MuxNavigationCopy.detachToSwitch
+            )
+        } catch {
+            statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
         }
     }
 
