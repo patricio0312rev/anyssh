@@ -13,11 +13,12 @@ public final class JumpToModel {
     public private(set) var expandedSessionIDs = Set<MuxSessionID>()
     public private(set) var jumpingRowID: MuxGroupID?
     public private(set) var jumpFailure: ErrorState?
+    public private(set) var lastOutcome: MuxJumpOutcome?
     public private(set) var lastBytes = [UInt8]()
     public let kind: MultiplexerKind
 
     private let adapter: (any MultiplexerAdapter)?
-    private let writer: (any DisplayWriter)?
+    private let navigator: MuxNavigator?
     private let directory: URL?
     private let onBoundSession: ((MuxSessionID) -> Void)?
 
@@ -25,10 +26,13 @@ public final class JumpToModel {
         adapter: any MultiplexerAdapter,
         directory: URL?,
         writer: (any DisplayWriter)?,
+        probe: MuxNavigator.AttachmentProbe? = nil,
         onBoundSession: ((MuxSessionID) -> Void)? = nil
     ) {
         self.adapter = adapter
-        self.writer = writer
+        navigator = writer.map {
+            MuxNavigator(adapter: adapter, writer: $0, probe: probe ?? { .unknown })
+        }
         self.directory = directory
         self.onBoundSession = onBoundSession
         kind = adapter.kind
@@ -42,7 +46,7 @@ public final class JumpToModel {
     ) {
         self.sessions = sessions
         adapter = nil
-        writer = nil
+        navigator = nil
         directory = nil
         onBoundSession = nil
         self.kind = kind
@@ -102,17 +106,21 @@ public final class JumpToModel {
         guard jumpingRowID == nil else { return false }
         jumpingRowID = row.id
         jumpFailure = nil
+        lastOutcome = nil
         defer { jumpingRowID = nil }
-        guard let adapter, let writer else {
+        guard let navigator else {
             jumpFailure = .mux(.attachTargetVanished)
             return false
         }
         let target = MuxTarget(session: row.sessionID, group: row.group.id)
-        let bytes = Array((adapter.attachCommand(target) + "\r").utf8)
-        lastBytes = bytes
         do {
-            try await writer.send(bytes[...])
-            onBoundSession?(row.sessionID)
+            let outcome = try await navigator.jump(to: target)
+            lastOutcome = outcome
+            lastBytes = outcome == .attached ? navigator.attachBytes(for: target) : []
+            switch outcome {
+            case .focused, .attached: onBoundSession?(row.sessionID)
+            case .focusedElsewhere: break
+            }
             return true
         } catch {
             jumpFailure = (error as? ErrorState) ?? .mux(.attachTargetVanished)
