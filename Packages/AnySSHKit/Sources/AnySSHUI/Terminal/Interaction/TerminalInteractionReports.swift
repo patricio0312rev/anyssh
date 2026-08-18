@@ -30,12 +30,10 @@ extension TerminalInteractionCoordinator {
     func beginWheel(at point: CGPoint) {
         wheelAnchor = point
         wheelTravelled = false
-        didEmitClick = false
+        clickArbiter.panBegan()
     }
 
     func emitClick(at point: CGPoint) {
-        guard !didEmitClick else { return }
-        didEmitClick = true
         lastReportedCell = nil
         emitMouse(at: point, pressed: true)
         lastReportedCell = nil
