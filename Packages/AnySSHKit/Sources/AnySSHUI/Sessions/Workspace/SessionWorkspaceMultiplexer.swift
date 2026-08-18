@@ -72,14 +72,11 @@ extension SessionWorkspaceModel {
         let detector = AgentKindDetector()
         let terminalTitle = sessionAgentTitles[sessionID] ?? registry[sessionID]?.title
         let probe = await probeSession(sessionID)
-        if let directory = probe.directory {
-            registry.setWorkspace(
+        if sessionAdapters[sessionID] == nil, let directory = probe.directory {
+            applyWorkspace(
                 WorkspaceLocation(path: directory, provenance: .process),
-                for: sessionID
+                to: sessionID
             )
-            if let remoteID = record(for: sessionID)?.remoteID {
-                lastDirectories.remember(directory, for: remoteID)
-            }
         }
         if let kind = detector.detect(processNames: probe.processNames) {
             sessionAgentKinds[sessionID] = kind
@@ -117,6 +114,11 @@ extension SessionWorkspaceModel {
         let group =
             snapshot.groups.first(where: { $0.id == pane?.groupID })
             ?? snapshot.groups.first(where: \.isActive)
+        if let record = record(for: sessionID),
+            let location = await resolveMultiplexerWorkspace(adapter: adapter, record: record)
+        {
+            applyWorkspace(location, to: sessionID)
+        }
         rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID)
         if sessionAgentKinds[sessionID] == nil {
             sessionAgentKinds[sessionID] = detector.detect(
