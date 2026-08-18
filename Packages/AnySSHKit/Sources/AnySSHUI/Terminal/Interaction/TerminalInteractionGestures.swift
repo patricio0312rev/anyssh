@@ -31,6 +31,17 @@ extension TerminalInteractionCoordinator {
     }
 
     @objc func handleOneFingerPan(_ gesture: UIPanGestureRecognizer) {
+        if gesture.numberOfTouches >= 2 {
+            twoFingerActive = true
+            cancelRemoteClick()
+        }
+        if twoFingerActive {
+            handleTwoFingerPan(gesture)
+            if gesture.state == .ended || gesture.state == .cancelled || gesture.state == .failed {
+                twoFingerActive = false
+            }
+            return
+        }
         let route = resolvedRoute(for: gesture)
         let selecting = isSelecting
         if gesture.state == .began, !selecting {
@@ -71,10 +82,11 @@ extension TerminalInteractionCoordinator {
     }
 
     @objc func handleTwoFingerPan(_ gesture: UIPanGestureRecognizer) {
-        let count = max(gesture.numberOfTouches, gesture.minimumNumberOfTouches)
-        guard gesture.state == .ended, SessionSwitchGesturePolicy.accepts(touchCount: count) else {
+        if gesture.state == .began {
+            cancelRemoteClick()
             return
         }
+        guard gesture.state == .ended else { return }
         let translation = gesture.translation(in: nil)
         guard
             let direction = SessionSwitchGesturePolicy.direction(
@@ -86,7 +98,30 @@ extension TerminalInteractionCoordinator {
         handleGesture(SessionSwitchGesturePolicy.slot(direction, fingers: 2))
     }
 
+    private func cancelRemoteClick() {
+        remoteMouseHeld = false
+        wheelTravelled = true
+        didEmitClick = true
+        lastReportedCell = nil
+    }
+
+    @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard gesture.state == .ended else { return }
+        let route = resolvedRoute(for: gesture)
+        guard TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled)
+        else { return }
+        guard !isSelecting, !remoteMouseHeld else { return }
+        didEmitClick = false
+        emitClick(at: gesture.location(in: scrollView))
+    }
+
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer === tap {
+            return TerminalGesturePolicy.shouldReportClick(
+                route: resolvedRoute(for: gestureRecognizer),
+                didTravel: false
+            )
+        }
         if gestureRecognizer === longPress || gestureRecognizer === twoFingerPan {
             return true
         }
@@ -101,9 +136,13 @@ extension TerminalInteractionCoordinator {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer
     ) -> Bool {
-        if gestureRecognizer === twoFingerPan { return other === scrollView?.panGestureRecognizer }
+        if gestureRecognizer === twoFingerPan {
+            return other === scrollView?.panGestureRecognizer || other === oneFingerPan
+        }
         if gestureRecognizer === longPress { return other === oneFingerPan }
+        if gestureRecognizer === tap { return other === oneFingerPan }
         if gestureRecognizer === oneFingerPan {
+            if other === twoFingerPan { return true }
             if isSelecting || currentRoute != .scrollback {
                 return other !== scrollView?.panGestureRecognizer
             }
@@ -144,6 +183,7 @@ extension TerminalInteractionCoordinator {
     private func endOneFinger(route: TerminalGestureRoute, selecting: Bool, at point: CGPoint) {
         releaseRemoteMouse(at: point)
         finishSelectionDrag()
+        wheelTravelled = false
     }
 }
 #endif
