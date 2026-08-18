@@ -7,7 +7,7 @@ import UniformTypeIdentifiers
 extension AccessoryBar {
     public var body: some View {
         HStack(spacing: Theme.Space.step1) {
-            keyStrip
+            if showsKeyStrip { keyStrip }
             HStack(spacing: 0) {
                 if !model.input.preview.isEmpty {
                     Text(model.input.preview)
@@ -67,6 +67,18 @@ extension AccessoryBar {
 
     @ViewBuilder
     private var menuContent: some View {
+        if let onPaste {
+            Button("Paste", systemImage: "doc.on.clipboard", action: onPaste)
+                .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.paste)
+        }
+        if let onOpenChanges {
+            Button("Changes", systemImage: "arrow.triangle.branch", action: onOpenChanges)
+                .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.changes)
+        }
+        if let onOpenFiles {
+            Button("Files", systemImage: "folder", action: onOpenFiles)
+                .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.files)
+        }
         if let onOpenMultiplexer {
             Button(
                 "Multiplexer Panels", systemImage: "rectangle.split.3x1",

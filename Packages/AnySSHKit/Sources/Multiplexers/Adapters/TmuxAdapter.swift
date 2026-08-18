@@ -95,6 +95,19 @@ public struct TmuxAdapter: MultiplexerAdapter {
         return MuxKeyBindings(prefix: prefix, chords: [:])
     }
 
+    public func focus(_ target: MuxTarget) async throws {
+        let batch = TmuxCommands.focus(
+            binary: binaryPath,
+            group: target.group?.rawValue,
+            pane: target.pane?.rawValue
+        )
+        guard !batch.commands.isEmpty else { throw ErrorState.mux(.attachTargetVanished) }
+        let response = try await runner.run(batch)
+        for command in batch.commands {
+            _ = try MuxCommandSupport.section(label: command.label, in: response, batch: batch)
+        }
+    }
+
     public func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.tmux(binary: binaryPath, target: target)
     }

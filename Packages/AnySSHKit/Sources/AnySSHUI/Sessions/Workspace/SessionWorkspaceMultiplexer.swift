@@ -10,28 +10,48 @@ extension SessionWorkspaceModel {
             await detectAgent(for: sessionID)
             return
         }
+        replaceMultiplexer(for: sessionID, with: adapter(for: capabilities, connection: connection))
+        await detectAgent(for: sessionID)
+    }
+
+    func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
+        stallWatchers.removeValue(forKey: sessionID)?.cancel()
+        sessionAdapters[sessionID] = adapter
+        if adapter == nil {
+            sessionMuxIDs.removeValue(forKey: sessionID)
+            if !publishedAgentTitleIDs.contains(sessionID) {
+                sessionAgentTitles.removeValue(forKey: sessionID)
+            }
+        }
+        guard let adapter, adapter.kind == .herdr else { return }
+        startStallWatcher(for: sessionID, adapter: adapter)
+    }
+
+    func adapter(
+        for capabilities: HostCapabilities,
+        connection: any RemoteConnection
+    ) -> (any MultiplexerAdapter)? {
         if capabilities.herdr.isProtocolSupported {
-            let adapter = HerdrAdapter(
-                runner: connection,
-                binaryPath: capabilities.herdr.tool.path
-            )
-            sessionAdapters[sessionID] = adapter
-            startStallWatcher(for: sessionID, adapter: adapter)
-        } else if capabilities.tmux.isAvailable {
-            sessionAdapters[sessionID] = TmuxAdapter(
+            return HerdrAdapter(runner: connection, binaryPath: capabilities.herdr.tool.path)
+        }
+        if capabilities.tmux.isAvailable {
+            return TmuxAdapter(
                 runner: connection,
                 binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath
             )
         }
-        await detectAgent(for: sessionID)
+        return nil
     }
 
     func startStallWatcher(for sessionID: SessionID, adapter: any MultiplexerAdapter) {
-        guard let scheduler = jobAlerts, stallWatchers[sessionID] == nil else { return }
+        guard let scheduler = jobAlerts else { return }
         let scope = scopes[sessionID]
-        stallWatchers[sessionID] = Task {
+        stallWatchers[sessionID] = Task { [weak self] in
             let sessions = (try? await adapter.listSessions()) ?? []
-            guard let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first
+            guard
+                let muxSession = await MainActor.run(body: {
+                    self?.muxSession(in: sessions, for: sessionID)
+                })
             else { return }
             let watcher = HerdrStallWatcher(
                 sessionID: sessionID,
@@ -59,34 +79,83 @@ extension SessionWorkspaceModel {
 
     func detectAgent(for sessionID: SessionID) async {
         let detector = AgentKindDetector()
-        let terminalTitle = registry[sessionID]?.title
+        let terminalTitle = sessionAgentTitles[sessionID] ?? registry[sessionID]?.title
         let probe = await probeSession(sessionID)
-        if let directory = probe.directory {
-            registry.setWorkspace(
+        if sessionAdapters[sessionID] == nil, let directory = probe.directory {
+            applyWorkspace(
                 WorkspaceLocation(path: directory, provenance: .process),
-                for: sessionID
+                to: sessionID
             )
-            if let remoteID = record(for: sessionID)?.remoteID {
-                lastDirectories.remember(directory, for: remoteID)
-            }
         }
         if let kind = detector.detect(processNames: probe.processNames) {
             sessionAgentKinds[sessionID] = kind
-            return
+        } else if sessionAdapters[sessionID] == nil {
+            sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
         }
-        guard let adapter = sessionAdapters[sessionID] else {
+        guard let adapter = sessionAdapters[sessionID] else { return }
+        await detectAgent(
+            detector: detector,
+            adapter: adapter,
+            sessionID: sessionID,
+            terminalTitle: terminalTitle
+        )
+    }
+
+    func detectAgent(
+        detector: AgentKindDetector,
+        adapter: any MultiplexerAdapter,
+        sessionID: SessionID,
+        terminalTitle: String?
+    ) async {
+        guard let sessions = try? await adapter.listSessions(),
+            let muxSession = muxSession(in: sessions, for: sessionID),
+            let snapshot = try? await adapter.snapshot(muxSession.id)
+        else {
             sessionAgentKinds[sessionID] = detector.detect(terminalTitle: terminalTitle)
             return
         }
-        guard let sessions = try? await adapter.listSessions(),
-            let muxSession = sessions.first(where: { $0.isAttached }) ?? sessions.first,
-            let snapshot = try? await adapter.snapshot(muxSession.id)
-        else { return }
         let pane = snapshot.panes.first(where: { $0.isActive }) ?? snapshot.panes.first
-        sessionAgentKinds[sessionID] = detector.detect(
-            multiplexerTitle: pane?.title,
-            terminalTitle: terminalTitle
-        )
+        let group =
+            snapshot.groups.first(where: { $0.id == pane?.groupID })
+            ?? snapshot.groups.first(where: \.isActive)
+        if let record = record(for: sessionID),
+            let location = await resolveMultiplexerWorkspace(adapter: adapter, record: record)
+        {
+            applyWorkspace(location, to: sessionID)
+        }
+        rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID, replacing: true)
+        if let kind = detector.detect(
+            signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
+                $0
+            }
+        ) {
+            sessionAgentKinds[sessionID] = kind
+        }
+    }
+
+    func rememberAgentSessionTitle(
+        _ title: String?,
+        for sessionID: SessionID,
+        replacing: Bool = false,
+        published: Bool = false
+    ) {
+        if !published, publishedAgentTitleIDs.contains(sessionID) { return }
+        guard replacing || sessionAgentTitles[sessionID] == nil else { return }
+        guard let sanitized = title.flatMap(SessionTitle.sanitized),
+            SessionNavbarTitle.isUsableAgentSessionTitle(sanitized)
+        else { return }
+        sessionAgentTitles[sessionID] = sanitized
+        if published {
+            publishedAgentTitleIDs.insert(sessionID)
+        }
+    }
+
+    func multiplexerName(for sessionID: SessionID) -> String? {
+        switch sessionAdapters[sessionID]?.kind ?? multiplexerAdapter?.kind {
+        case .herdr: "herdr"
+        case .tmux: "tmux"
+        default: nil
+        }
     }
 
     static let tmuxFallbackPath = "tmux"

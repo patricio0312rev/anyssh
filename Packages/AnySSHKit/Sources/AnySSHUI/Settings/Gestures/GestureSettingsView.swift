@@ -33,7 +33,7 @@ public struct GestureSettingsView: View {
         } header: {
             SectionLabel("Bindings")
         } footer: {
-            SectionCaption("A gesture set to Unbound is passed to the terminal untouched.")
+            SectionCaption("Swipe left or right to switch sessions. Unbound leaves the swipe unused.")
         }
     }
 

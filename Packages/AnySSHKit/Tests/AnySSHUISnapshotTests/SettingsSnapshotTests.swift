@@ -11,7 +11,15 @@ import Testing
         ComponentSnapshot.assert(
             GestureSettingsView(directory: Self.gestureDirectory()),
             named: "settings-gestures",
-            height: 1560
+            height: 420
+        )
+    }
+
+    @Test func sessionTitleListsEveryDisplayMode() {
+        ComponentSnapshot.assert(
+            SessionTitleSettingsView(store: SessionTitlePreferenceStore(defaults: Self.titleDefaults())),
+            named: "settings-session-title",
+            height: 980
         )
     }
 
@@ -25,6 +33,12 @@ import Testing
 
     private static func gestureDirectory() -> URL {
         URL.temporaryDirectory.appending(path: "settings-snapshot-gestures")
+    }
+
+    private static func titleDefaults() -> UserDefaults {
+        let suite = UserDefaults(suiteName: "settings-snapshot-title") ?? .standard
+        suite.removePersistentDomain(forName: "settings-snapshot-title")
+        return suite
     }
 }
 #endif

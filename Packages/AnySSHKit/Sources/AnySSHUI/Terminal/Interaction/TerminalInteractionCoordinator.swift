@@ -17,6 +17,9 @@ public final class TerminalInteractionCoordinator: NSObject,
     public typealias ScrollKeyHandler = (TerminalKey, Int) -> Void
     public typealias CopyHandler = (String) -> Void
     public typealias GestureHandler = (GestureSlot) -> Void
+    public typealias CellLocator = (CGPoint) -> (column: Int, row: Int)
+    public typealias CellSizeProvider = () -> (width: CGFloat, height: CGFloat)
+    public typealias FocusHandler = () -> Void
 
     weak var scrollView: UIScrollView?
     private let modeProvider: ModeProvider
@@ -31,16 +34,21 @@ public final class TerminalInteractionCoordinator: NSObject,
     var sidewaysDrag = false
     private let copyHandler: CopyHandler
     let gestureHandler: GestureHandler
+    let cellAt: CellLocator
+    let cellSize: CellSizeProvider
+    let focusHandler: FocusHandler
     let probe: TerminalSelectionProbe
     let arbitration: TerminalScrollArbitration
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
-    var twoFingerPan: UIPanGestureRecognizer?
     var longPress: UILongPressGestureRecognizer?
+    var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
     var lastReportedCell: (column: Int, row: Int)?
     var wheelAnchor: CGPoint = .zero
+    var wheelTravelled = false
+    var clickArbiter = TerminalClickArbiter()
     var remoteMouseHeld = false
     var selectionDragActive = false
     var claimsScrollForSwipe = false
@@ -61,6 +69,11 @@ public final class TerminalInteractionCoordinator: NSObject,
         scrollKeyHandler: @escaping ScrollKeyHandler = { _, _ in },
         copyHandler: @escaping CopyHandler = { text in SystemClipboardPasteboard().write(text) },
         gestureHandler: @escaping GestureHandler = { _ in },
+        cellAt: @escaping CellLocator = { point in
+            (max(0, Int(point.x / 8)), max(0, Int(point.y / 16)))
+        },
+        cellSize: @escaping CellSizeProvider = { (8, 16) },
+        focusHandler: @escaping FocusHandler = {},
         probe: TerminalSelectionProbe = TerminalSelectionProbe()
     ) {
         self.scrollView = scrollView
@@ -75,6 +88,9 @@ public final class TerminalInteractionCoordinator: NSObject,
         self.scrollKeyHandler = scrollKeyHandler
         self.copyHandler = copyHandler
         self.gestureHandler = gestureHandler
+        self.cellAt = cellAt
+        self.cellSize = cellSize
+        self.focusHandler = focusHandler
         self.probe = probe
         arbitration = TerminalScrollArbitration(scrollView: scrollView)
     }
@@ -91,7 +107,11 @@ public final class TerminalInteractionCoordinator: NSObject,
         scrollView.addInteraction(editMenu)
         editMenuInteraction = editMenu
         oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
-        twoFingerPan = addPan(touches: 2, action: #selector(handleTwoFingerPan))
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tapRecognizer.cancelsTouchesInView = false
+        tapRecognizer.delegate = self
+        scrollView.addGestureRecognizer(tapRecognizer)
+        tap = tapRecognizer
         let press = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         press.minimumPressDuration = 0.45
         press.allowableMovement = 12

@@ -22,11 +22,7 @@ public struct TerminalMouseReport: Hashable, Sendable {
     }
 
     public var sgrBytes: [UInt8] {
-        if isWheel {
-            return Array("\u{1B}[<\(button.rawValue);\(column + 1);\(row + 1)M".utf8)
-        }
-        let action = pressed ? UInt8(button.rawValue) : 3
-        let suffix = pressed ? "M" : "m"
-        return Array("\u{1B}[<\(action);\(column + 1);\(row + 1)\(suffix)".utf8)
+        let suffix = isWheel || pressed ? "M" : "m"
+        return Array("\u{1B}[<\(button.rawValue);\(column + 1);\(row + 1)\(suffix)".utf8)
     }
 }

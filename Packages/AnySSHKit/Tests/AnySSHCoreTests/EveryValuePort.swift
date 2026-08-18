@@ -61,6 +61,7 @@ struct EveryValuePort: RemoteStore, SecretStore, HostKeyStore, ReachabilityProbe
     func snapshot(_ session: MuxSession.ID) async throws -> MuxSnapshot { fatalError() }
     func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String { fatalError() }
     func keyBindings() async throws -> MuxKeyBindings { fatalError() }
+    func focus(_ target: MuxTarget) async throws { fatalError() }
     func attachCommand(_ target: MuxTarget) -> String { fatalError() }
 
     func resolve(_ session: SessionRecord) async -> WorkspaceLocation? { fatalError() }

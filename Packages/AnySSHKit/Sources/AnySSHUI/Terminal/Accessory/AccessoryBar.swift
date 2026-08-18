@@ -12,9 +12,13 @@ public struct AccessoryBar: View {
     var onOpenMultiplexer: (() -> Void)?
     var onOpenJumpTo: (() -> Void)?
     var onOpenSnippets: (() -> Void)?
+    var onOpenChanges: (() -> Void)?
+    var onOpenFiles: (() -> Void)?
+    var onPaste: (() -> Void)?
     var isDictating = false
     var onImportFile: (() -> Void)?
     var onDictate: (() -> Void)?
+    var showsKeyStrip = true
 
     public init(
         layout: AccessoryLayout = .defaults,
@@ -65,7 +69,11 @@ public struct AccessoryBar: View {
         onImportFile: (() -> Void)? = nil,
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
-        onOpenJumpTo: (() -> Void)? = nil
+        onOpenJumpTo: (() -> Void)? = nil,
+        onOpenChanges: (() -> Void)? = nil,
+        onOpenFiles: (() -> Void)? = nil,
+        onPaste: (() -> Void)? = nil,
+        showsKeyStrip: Bool = true
     ) {
         _model = State(wrappedValue: model)
         _reorderMode = State(initialValue: reorderMode)
@@ -76,6 +84,10 @@ public struct AccessoryBar: View {
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenChanges = onOpenChanges
+        self.onOpenFiles = onOpenFiles
+        self.onPaste = onPaste
+        self.showsKeyStrip = showsKeyStrip
     }
 
     public init(
@@ -90,7 +102,11 @@ public struct AccessoryBar: View {
         onImportFile: (() -> Void)? = nil,
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
-        onOpenJumpTo: (() -> Void)? = nil
+        onOpenJumpTo: (() -> Void)? = nil,
+        onOpenChanges: (() -> Void)? = nil,
+        onOpenFiles: (() -> Void)? = nil,
+        onPaste: (() -> Void)? = nil,
+        showsKeyStrip: Bool = true
     ) {
         _model = State(
             wrappedValue: AccessoryBarModel(
@@ -107,5 +123,9 @@ public struct AccessoryBar: View {
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenChanges = onOpenChanges
+        self.onOpenFiles = onOpenFiles
+        self.onPaste = onPaste
+        self.showsKeyStrip = showsKeyStrip
     }
 }

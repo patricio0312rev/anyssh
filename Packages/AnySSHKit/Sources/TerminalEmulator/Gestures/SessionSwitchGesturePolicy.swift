@@ -12,10 +12,6 @@ public enum SessionSwitchGesturePolicy {
 
     public static let axisMargin: Double = 1.6
 
-    public static func accepts(touchCount: Int) -> Bool {
-        touchCount == 2
-    }
-
     public static func direction(dx: Double, dy: Double) -> SwipeDirection? {
         let horizontal = abs(dx)
         let vertical = abs(dy)
@@ -32,16 +28,11 @@ public enum SessionSwitchGesturePolicy {
         abs(velocityX) > abs(velocityY) * axisMargin
     }
 
-    public static func slot(_ direction: SwipeDirection, fingers: Int) -> GestureSlot {
-        switch (direction, fingers) {
-        case (.up, 1): return .swipeUp
-        case (.down, 1): return .swipeDown
-        case (.left, 1): return .swipeLeft
-        case (.right, 1): return .swipeRight
-        case (.up, _): return .twoFingerSwipeUp
-        case (.down, _): return .twoFingerSwipeDown
-        case (.left, _): return .twoFingerSwipeLeft
-        case (.right, _): return .twoFingerSwipeRight
+    public static func slot(_ direction: SwipeDirection) -> GestureSlot? {
+        switch direction {
+        case .left: .swipeLeft
+        case .right: .swipeRight
+        case .up, .down: nil
         }
     }
 }

@@ -22,4 +22,19 @@ import Testing
     @Test func anAgentInsideAMultiplexerOutranksIt() {
         #expect(detector.detect(processNames: ["herdr", "claude"])?.id == "claude-code")
     }
+
+    @Test func aMultiplexerAloneIsNotAnAgent() {
+        #expect(detector.detect(processNames: ["herdr", "zsh"]) == nil)
+        #expect(detector.detect(multiplexerTitle: "tmux") == nil)
+    }
+
+    @Test func aPaneTitleInsideTmuxIsAnAgent() {
+        #expect(detector.detect(multiplexerTitle: "codex", terminalTitle: "tmux")?.id == "codex")
+    }
+
+    @Test func theFirstNonMultiplexerSignalWins() {
+        #expect(
+            detector.detect(signals: ["herdr", "nvim", "claude"])?.id == "claude-code"
+        )
+    }
 }

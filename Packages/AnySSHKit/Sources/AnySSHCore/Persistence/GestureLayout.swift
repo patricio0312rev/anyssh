@@ -32,16 +32,8 @@ public struct GestureLayout: Codable, Hashable, Sendable {
     }
 
     public static let defaults = GestureLayout(bindings: [
-        "doubleTap": Binding(kind: .appCommand, value: "paste"),
-        "swipeLeft": Binding(kind: .appCommand, value: "session.previous"),
-        "swipeRight": Binding(kind: .appCommand, value: "session.next"),
-        "swipeUp": Binding(kind: .appCommand, value: "view.terminal"),
-        "swipeDown": Binding(kind: .appCommand, value: "view.changes"),
-        "twoFingerSwipeLeft": Binding(kind: .multiplexer, value: "previous_pane"),
-        "twoFingerSwipeRight": Binding(kind: .multiplexer, value: "next_pane"),
-        "twoFingerSwipeUp": Binding(kind: .appCommand, value: "open_changes"),
-        "twoFingerSwipeDown": Binding(kind: .appCommand, value: "close_changes"),
-        "pinch": Binding(kind: .appCommand, value: "change_font_size"),
+        "swipeLeft": Binding(kind: .appCommand, value: "session.next"),
+        "swipeRight": Binding(kind: .appCommand, value: "session.previous"),
     ])
 
     public static func load(from directory: URL) -> Self {

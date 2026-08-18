@@ -27,7 +27,13 @@ import Testing
         let up = TerminalMouseReport(button: .primary, column: 2, row: 3, pressed: false)
 
         #expect(String(decoding: down.sgrBytes, as: UTF8.self) == "\u{1B}[<0;3;4M")
-        #expect(String(decoding: up.sgrBytes, as: UTF8.self) == "\u{1B}[<3;3;4m")
+        #expect(String(decoding: up.sgrBytes, as: UTF8.self) == "\u{1B}[<0;3;4m")
         #expect(!down.isWheel)
+    }
+
+    @Test func aReleaseCarriesThePressedButtonNumber() {
+        let release = TerminalMouseReport(button: .primary, column: 0, row: 0, pressed: false)
+
+        #expect(String(decoding: release.sgrBytes, as: UTF8.self) == "\u{1B}[<0;1;1m")
     }
 }

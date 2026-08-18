@@ -13,9 +13,20 @@ extension UIIdentifier {
         public static let about = "settings.about"
         public static let privacy = "settings.privacy"
         public static let privacyScreen = "settings.privacy.screen"
+        public static let title = "settings.title"
+        public static let titleScreen = "settings.title.screen"
+        public static let titlePreviewBar = "settings.title.preview"
 
         public static func gestureRow(_ slot: String) -> String {
             "settings.gestures.row.\(slot)"
+        }
+
+        public static func titleMode(_ mode: String) -> String {
+            "settings.title.mode.\(mode)"
+        }
+
+        public static func titlePreview(_ mode: String) -> String {
+            "settings.title.preview.\(mode)"
         }
     }
 }
