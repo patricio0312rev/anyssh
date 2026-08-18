@@ -13,10 +13,16 @@ public final class MultiplexerPaneListModel {
 
     private let adapter: any MultiplexerAdapter
     private let writer: (any DisplayWriter)?
+    private let onBoundSession: ((MuxSessionID) -> Void)?
 
-    public init(adapter: any MultiplexerAdapter, writer: (any DisplayWriter)? = nil) {
+    public init(
+        adapter: any MultiplexerAdapter,
+        writer: (any DisplayWriter)? = nil,
+        onBoundSession: ((MuxSessionID) -> Void)? = nil
+    ) {
         self.adapter = adapter
         self.writer = writer
+        self.onBoundSession = onBoundSession
     }
 
     public var isAttaching: Bool { attachingPaneID != nil }
@@ -53,6 +59,7 @@ public final class MultiplexerPaneListModel {
         }
         do {
             try await writer.send(Array((command + "\r").utf8)[...])
+            onBoundSession?(session)
             return true
         } catch {
             attachFailure = (error as? ErrorState) ?? .mux(.attachTargetVanished)
