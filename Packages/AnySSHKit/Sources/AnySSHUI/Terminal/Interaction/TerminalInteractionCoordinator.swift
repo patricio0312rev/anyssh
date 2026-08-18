@@ -42,7 +42,6 @@ public final class TerminalInteractionCoordinator: NSObject,
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
-    var twoFingerSwipeUp: UISwipeGestureRecognizer?
     var longPress: UILongPressGestureRecognizer?
     var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
@@ -108,13 +107,6 @@ public final class TerminalInteractionCoordinator: NSObject,
         scrollView.addInteraction(editMenu)
         editMenuInteraction = editMenu
         oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
-        let swipeUp = UISwipeGestureRecognizer(target: self, action: #selector(handleTwoFingerSwipeUp))
-        swipeUp.numberOfTouchesRequired = 2
-        swipeUp.direction = .up
-        swipeUp.delegate = self
-        swipeUp.cancelsTouchesInView = false
-        scrollView.addGestureRecognizer(swipeUp)
-        twoFingerSwipeUp = swipeUp
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapRecognizer.cancelsTouchesInView = false
         tapRecognizer.delegate = self
