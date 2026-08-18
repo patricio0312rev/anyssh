@@ -39,7 +39,7 @@ extension SessionWorkspaceModel {
 
     private func deliverMetadata(_ metadata: TerminalMetadata, for sessionID: SessionID) {
         if let title = metadata.title {
-            registry.rename(sessionID, to: title)
+            rememberAgentSessionTitle(title, for: sessionID, replacing: true)
             Task { await detectAgent(for: sessionID) }
         }
         updateActivity(for: sessionID)
