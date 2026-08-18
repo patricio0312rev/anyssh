@@ -10,7 +10,7 @@ import Testing
     @Test func agentSessionUsesThePublishedTitle() {
         #expect(
             SessionNavbarTitle.resolve(.agentSession, context: Self.full)
-                == "OC | Mejoras para v0.1.2"
+                == "OC | Fixes for v0.1.2"
         )
     }
 
@@ -24,7 +24,7 @@ import Testing
 
     @Test func smartTitlePrefersThePublishedAgentSession() {
         #expect(
-            SessionNavbarTitle.resolve(.smart, context: Self.full) == "OC | Mejoras para v0.1.2"
+            SessionNavbarTitle.resolve(.smart, context: Self.full) == "OC | Fixes for v0.1.2"
         )
     }
 
@@ -56,21 +56,21 @@ import Testing
 
     @Test func previewsMatchTheSampleContext() {
         #expect(SessionNavbarTitle.preview(for: .sessionName) == "build-box")
-        #expect(SessionNavbarTitle.preview(for: .agentSession) == "OC | Mejoras para v0.1.2")
+        #expect(SessionNavbarTitle.preview(for: .agentSession) == "OC | Fixes for v0.1.2")
         #expect(SessionNavbarTitle.preview(for: .activeAgent) == "OpenCode")
         #expect(SessionNavbarTitle.preview(for: .multiplexer) == "herdr")
-        #expect(SessionNavbarTitle.preview(for: .smart) == "OC | Mejoras para v0.1.2")
+        #expect(SessionNavbarTitle.preview(for: .smart) == "OC | Fixes for v0.1.2")
     }
 
     @Test func genericPaneLabelsAreNotAgentSessionTitles() {
         #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("agent"))
         #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("nvim"))
-        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("OC | Mejoras para v0.1.2"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("OC | Fixes for v0.1.2"))
     }
 
     private static let full = SessionTitleContext(
         sessionName: "build-box",
-        agentSessionTitle: "OC | Mejoras para v0.1.2",
+        agentSessionTitle: "OC | Fixes for v0.1.2",
         agentName: "OpenCode",
         multiplexerName: "herdr"
     )
