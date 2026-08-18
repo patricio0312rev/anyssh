@@ -74,6 +74,17 @@ public final class TerminalGestureBridge {
             gestureHandler: { [weak self] slot in
                 self?.onGesture?(slot)
             },
+            cellAt: { [weak self] point in
+                let hit = self?.cell(at: point) ?? Position(col: 0, row: 0)
+                return (hit.col, hit.row)
+            },
+            cellSize: { [weak self] in
+                let size = self?.view.caretFrame.size ?? .zero
+                return (max(size.width, 1), max(size.height, 1))
+            },
+            focusHandler: { [weak self] in
+                self?.view.becomeFirstResponder()
+            },
             probe: probe
         )
         coordinator.install()
