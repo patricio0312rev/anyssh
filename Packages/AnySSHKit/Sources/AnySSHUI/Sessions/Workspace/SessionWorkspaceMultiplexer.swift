@@ -118,11 +118,13 @@ extension SessionWorkspaceModel {
             applyWorkspace(location, to: sessionID)
         }
         rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID, replacing: true)
-        sessionAgentKinds[sessionID] = detector.detect(
+        if let kind = detector.detect(
             signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
                 $0
             }
-        )
+        ) {
+            sessionAgentKinds[sessionID] = kind
+        }
     }
 
     func rememberAgentSessionTitle(
