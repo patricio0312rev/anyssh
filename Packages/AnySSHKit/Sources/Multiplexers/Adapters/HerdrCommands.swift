@@ -6,6 +6,8 @@ enum HerdrCommands {
     static let snapshotLabel = "herdr.snapshot"
     static let paneReadLabel = "herdr.paneRead"
     static let configLabel = "herdr.config"
+    static let focusAgentLabel = "herdr.focusAgent"
+    static let focusTabLabel = "herdr.focusTab"
     static let supportedProtocol = 19
 
     static func detect(binary: String? = nil) -> RemoteBatch {
@@ -35,21 +37,31 @@ enum HerdrCommands {
     }
 
     static func snapshot(binary: String, session: String?) -> RemoteBatch {
-        var arguments = [binary]
-        if let session, !session.isEmpty, session != "default" {
-            arguments += ["--session", session]
-        }
+        var arguments = scoped(binary: binary, session: session)
         arguments += ["api", "snapshot"]
         return RemoteBatch(commands: [
             RemoteCommand(label: snapshotLabel, arguments: arguments)
         ])
     }
 
+    static func focusAgent(binary: String, session: String?, pane: String) -> RemoteBatch {
+        var arguments = scoped(binary: binary, session: session)
+        arguments += ["agent", "focus", pane]
+        return RemoteBatch(commands: [
+            RemoteCommand(label: focusAgentLabel, arguments: arguments)
+        ])
+    }
+
+    static func focusTab(binary: String, session: String?, group: String) -> RemoteBatch {
+        var arguments = scoped(binary: binary, session: session)
+        arguments += ["tab", "focus", group]
+        return RemoteBatch(commands: [
+            RemoteCommand(label: focusTabLabel, arguments: arguments)
+        ])
+    }
+
     static func paneRead(binary: String, pane: String, lines: Int, session: String?) -> RemoteBatch {
-        var arguments = [binary]
-        if let session, !session.isEmpty, session != "default" {
-            arguments += ["--session", session]
-        }
+        var arguments = scoped(binary: binary, session: session)
         arguments += [
             "pane", "read", pane,
             "--source", "recent-unwrapped",
@@ -80,6 +92,13 @@ enum HerdrCommands {
             )
         ])
     }
+
+    private static func scoped(binary: String, session: String?) -> [String] {
+        guard let session, !session.isEmpty, session != defaultSessionName else { return [binary] }
+        return [binary, "--session", session]
+    }
+
+    private static let defaultSessionName = "default"
 
     private static let detectScript = """
         h="$HOME/.local/bin/herdr"
