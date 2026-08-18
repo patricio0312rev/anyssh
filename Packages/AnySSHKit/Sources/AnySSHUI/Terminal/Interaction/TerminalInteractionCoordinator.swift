@@ -44,6 +44,7 @@ public final class TerminalInteractionCoordinator: NSObject,
     var oneFingerPan: UIPanGestureRecognizer?
     var twoFingerPan: UIPanGestureRecognizer?
     var longPress: UILongPressGestureRecognizer?
+    var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
     var lastReportedCell: (column: Int, row: Int)?
     var wheelAnchor: CGPoint = .zero
@@ -108,6 +109,11 @@ public final class TerminalInteractionCoordinator: NSObject,
         editMenuInteraction = editMenu
         oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
         twoFingerPan = addPan(touches: 2, action: #selector(handleTwoFingerPan))
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tapRecognizer.cancelsTouchesInView = false
+        tapRecognizer.delegate = self
+        scrollView.addGestureRecognizer(tapRecognizer)
+        tap = tapRecognizer
         let press = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         press.minimumPressDuration = 0.45
         press.allowableMovement = 12
