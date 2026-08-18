@@ -44,6 +44,7 @@ extension SessionWorkspaceView {
                 onOpenJumpTo: model.showsMultiplexer ? { isJumpToPresented = true } : nil,
                 onOpenChanges: { presentedBrowser = .changes },
                 onOpenFiles: { presentedBrowser = .files },
+                onPaste: { commandRegistry.run(id: "app.paste") },
                 showsKeyStrip: showsKeyStrip
             )
             .id(id)
