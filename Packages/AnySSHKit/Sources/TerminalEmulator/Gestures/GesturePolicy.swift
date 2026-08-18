@@ -43,6 +43,6 @@ public enum TerminalGesturePolicy {
     }
 
     public static func shouldReportClick(route: TerminalGestureRoute, didTravel: Bool) -> Bool {
-        route == .remoteApp && !didTravel
+        (route == .remoteApp || route == .remoteKeys) && !didTravel
     }
 }
