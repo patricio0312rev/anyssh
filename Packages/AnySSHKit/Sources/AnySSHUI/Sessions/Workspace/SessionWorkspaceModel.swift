@@ -26,6 +26,7 @@ public final class SessionWorkspaceModel {
     let reconnectCoordinator: ReconnectCoordinator
     let activityCoordinator: SessionActivityCoordinator?
     let jobAlertSettings: JobAlertSettings
+    let titlePreference: SessionTitlePreferenceStore
     private(set) var jobAlerts: (any NotificationScheduler)?
     #if canImport(UIKit)
     let backgroundTask = SessionBackgroundTask()
@@ -78,6 +79,7 @@ public final class SessionWorkspaceModel {
         activityCoordinator: SessionActivityCoordinator? = nil,
         jobAlertScheduler: (any NotificationScheduler)? = nil,
         jobAlertSettings: JobAlertSettings = JobAlertSettings(),
+        titlePreference: SessionTitlePreferenceStore = .shared,
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {
@@ -89,6 +91,7 @@ public final class SessionWorkspaceModel {
         self.reconnectCoordinator = reconnectCoordinator
         self.activityCoordinator = activityCoordinator
         self.jobAlertSettings = jobAlertSettings
+        self.titlePreference = titlePreference
         self.registry = registry
         self.remotes = Dictionary(uniqueKeysWithValues: remotes.map { ($0.id, $0) })
         self.activeSessionID = activeSessionID
@@ -179,6 +182,19 @@ extension SessionWorkspaceModel: SessionSwitcherPresenting {
 
     public func agentKind(for id: SessionID) -> AgentKind? {
         sessionAgentKinds[id]
+    }
+
+    public func navbarTitle(mode: SessionTitleDisplayMode? = nil) -> String {
+        guard let record = activeRecord else { return "Sessions" }
+        let mode = mode ?? titlePreference.mode
+        return SessionNavbarTitle.resolve(
+            mode,
+            context: SessionTitleContext(
+                sessionName: record.title,
+                agentName: agentKind(for: record.id)?.name,
+                multiplexerName: multiplexerName(for: record.id)
+            )
+        )
     }
 
     public func uptime(for id: SessionID) -> String {
