@@ -46,7 +46,9 @@ extension TerminalInteractionCoordinator {
                 if let direction = SessionSwitchGesturePolicy.direction(
                     dx: translation.x, dy: translation.y
                 ) {
-                    handleGesture(SessionSwitchGesturePolicy.slot(direction, fingers: 1))
+                    if let slot = SessionSwitchGesturePolicy.slot(direction) {
+                        handleGesture(slot)
+                    }
                 }
             }
             if gesture.state == .ended || gesture.state == .cancelled || gesture.state == .failed {
