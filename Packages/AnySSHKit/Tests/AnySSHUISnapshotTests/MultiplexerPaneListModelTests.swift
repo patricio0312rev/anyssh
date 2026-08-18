@@ -5,11 +5,64 @@ import Testing
 @testable import AnySSHUI
 
 @Suite @MainActor struct MultiplexerPaneListModelTests {
+    @Test func aDetachedTerminalTypesTheAttachCommandForThePane() async throws {
+        let connection = MockRemoteConnection()
+        let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
+        let model = MultiplexerPaneListModel(
+            adapter: adapter,
+            writer: connection,
+            probe: { .detached }
+        )
+        await model.load()
+        let session = try #require(model.sessions.first)
+        let pane = try #require(model.snapshot(for: session.id)?.panes.first)
+        #expect(await model.attach(to: session.id, from: pane.id))
+        #expect(model.lastOutcome == .attached)
+        #expect(
+            await connection.displayWrites == [
+                Array(("'tmux' attach-session -t '$1' \\; select-pane -t '%1'\r").utf8)
+            ]
+        )
+        #expect(await adapter.focusLog.targets.first?.pane == pane.id)
+    }
+
+    @Test func anAttachedTerminalOnlyFocusesThePane() async throws {
+        let connection = MockRemoteConnection()
+        let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
+        let model = MultiplexerPaneListModel(
+            adapter: adapter,
+            writer: connection,
+            probe: { .attached(MuxSessionID(rawValue: "$1")) }
+        )
+        await model.load()
+        let session = try #require(model.sessions.first)
+        let pane = try #require(model.snapshot(for: session.id)?.panes.first)
+        #expect(await model.attach(to: session.id, from: pane.id))
+        #expect(model.lastOutcome == .focused)
+        #expect(await connection.displayWrites.isEmpty)
+        #expect(await adapter.focusLog.targets.count == 1)
+    }
+
+    @Test func anUnreadableTerminalNeverGetsTheAttachCommand() async throws {
+        let connection = MockRemoteConnection()
+        let model = MultiplexerPaneListModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
+            writer: connection
+        )
+        await model.load()
+        let session = try #require(model.sessions.first)
+        let pane = try #require(model.snapshot(for: session.id)?.panes.first)
+        #expect(await model.attach(to: session.id, from: pane.id))
+        #expect(model.lastOutcome == .focused)
+        #expect(await connection.displayWrites.isEmpty)
+    }
+
     @Test func attachIgnoresFurtherTapsWhileOneIsInFlight() async throws {
         let writer = GatedDisplayWriter()
         let model = MultiplexerPaneListModel(
             adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
-            writer: writer
+            writer: writer,
+            probe: { .detached }
         )
         await model.load()
         let session = try #require(model.sessions.first)

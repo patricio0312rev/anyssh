@@ -41,4 +41,8 @@ public enum TerminalGesturePolicy {
     public static func dragShouldBegin(route: TerminalGestureRoute, selectionActive: Bool) -> Bool {
         true
     }
+
+    public static func shouldReportClick(route: TerminalGestureRoute, didTravel: Bool) -> Bool {
+        route == .remoteApp && !didTravel
+    }
 }

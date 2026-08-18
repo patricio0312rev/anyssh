@@ -68,6 +68,8 @@ struct StoppedSessionMuxAdapter: MultiplexerAdapter {
         MuxKeyBindings(prefix: "ctrl+a", chords: [:])
     }
 
+    func focus(_ target: MuxTarget) async throws {}
+
     func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.herdr(binary: "herdr", target: target)
     }
@@ -97,6 +99,8 @@ struct EveryStoppedMuxAdapter: MultiplexerAdapter {
     func keyBindings() async throws -> MuxKeyBindings {
         MuxKeyBindings(prefix: "ctrl+a", chords: [:])
     }
+
+    func focus(_ target: MuxTarget) async throws {}
 
     func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.herdr(binary: "herdr", target: target)

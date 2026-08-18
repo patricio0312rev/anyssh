@@ -24,14 +24,7 @@ struct SessionWorkspaceToolbar: ToolbarContent {
         }
         ToolbarItem(placement: .principal) {
             Button(action: onToggleSwitcher) {
-                VStack(spacing: Theme.Space.step1) {
-                    Text(title)
-                        .font(Theme.Text.sectionHeader)
-                        .foregroundStyle(Theme.text.primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    SessionConnectionStatusLabel(state: transportState)
-                }
+                SessionNavbarChrome(title: title, transportState: transportState)
             }
             .accessibilityLabel("Switch session, \(title)")
             .accessibilityIdentifier(SessionSwitcherIdentifier.title)

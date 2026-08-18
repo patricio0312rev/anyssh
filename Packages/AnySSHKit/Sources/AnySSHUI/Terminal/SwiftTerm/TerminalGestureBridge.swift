@@ -10,6 +10,7 @@ public final class TerminalGestureBridge {
     public var onKeyBytes: (([UInt8]) -> Void)?
     public var onCopy: ((String) -> Void)?
     public var onGesture: ((GestureSlot) -> Void)?
+    public var onFocus: (() -> Void)?
     public var touchMode = false {
         didSet { view.allowMouseReporting = !touchMode }
     }
@@ -29,6 +30,7 @@ public final class TerminalGestureBridge {
 
     public func install() {
         guard coordinator == nil else { return }
+        let inherited = view.gestureRecognizers ?? []
         let coordinator = TerminalInteractionCoordinator(
             scrollView: view,
             modeProvider: { [weak self] shiftHeld in
@@ -74,14 +76,43 @@ public final class TerminalGestureBridge {
             gestureHandler: { [weak self] slot in
                 self?.onGesture?(slot)
             },
+            cellAt: { [weak self] point in
+                self?.screenCell(at: point) ?? (0, 0)
+            },
+            cellSize: { [weak self] in
+                self?.cellMetrics() ?? (1, 1)
+            },
+            focusHandler: { [weak self] in
+                self?.onFocus?()
+                _ = self?.view.becomeFirstResponder()
+            },
             probe: probe
         )
         coordinator.install()
+        yieldMenuGestures(in: inherited, to: coordinator)
         self.coordinator = coordinator
     }
 
     public func dismissKeyboard() {
         coordinator?.dismissKeyboard()
+    }
+
+    private func yieldMenuGestures(
+        in recognizers: [UIGestureRecognizer],
+        to coordinator: TerminalInteractionCoordinator
+    ) {
+        for recognizer in recognizers {
+            if recognizer is UILongPressGestureRecognizer {
+                recognizer.isEnabled = false
+                continue
+            }
+            guard let tap = recognizer as? UITapGestureRecognizer else { continue }
+            if tap.numberOfTapsRequired == 1 {
+                tap.isEnabled = false
+            } else if tap.delegate == nil {
+                tap.delegate = coordinator
+            }
+        }
     }
 
     private func mode(shiftHeld: Bool) -> TerminalGestureMode {
@@ -109,12 +140,37 @@ public final class TerminalGestureBridge {
     }
 
     private func cell(at point: CGPoint) -> Position {
-        let cell = view.caretFrame.size
-        let width = max(cell.width, 1)
-        let height = max(cell.height, 1)
-        let col = max(0, Int((point.x + view.contentOffset.x) / width))
-        let row = max(0, Int((point.y + view.contentOffset.y) / height))
+        let cell = cellMetrics()
+        let col = max(0, Int(point.x / cell.width))
+        let row = max(0, Int(point.y / cell.height))
         return Position(col: col, row: row)
+    }
+
+    private func screenCell(at point: CGPoint) -> (column: Int, row: Int) {
+        let hit = cell(at: point)
+        let terminal = view.getTerminal()
+        let column = min(hit.col, max(terminal.cols - 1, 0))
+        let row = min(max(hit.row - terminal.buffer.yDisp, 0), max(terminal.rows - 1, 0))
+        return (column, row)
+    }
+
+    private func cellMetrics() -> (width: CGFloat, height: CGFloat) {
+        guard let scale = view.window?.contentScaleFactor, scale > 0,
+            let pixels = view.cellSizeInPixels(source: view.getTerminal())
+        else {
+            return fallbackCellMetrics()
+        }
+        return (
+            max(CGFloat(pixels.width) / scale, 1),
+            max(CGFloat(pixels.height) / scale, 1)
+        )
+    }
+
+    private func fallbackCellMetrics() -> (width: CGFloat, height: CGFloat) {
+        let advance = "W".size(withAttributes: [.font: view.font]).width
+        let scale = max(view.contentScaleFactor, 1)
+        let snapped = (advance * scale).rounded() / scale
+        return (max(snapped, 1), max(view.caretFrame.height, 1))
     }
 
     private func geometry() -> (endColumn: Int, endRow: Int, menuRect: CGRect) {
@@ -123,9 +179,9 @@ public final class TerminalGestureBridge {
         }
         let end = selection.end
         let start = selection.start
-        let cell = view.caretFrame.size
-        let cellWidth = max(cell.width, 1)
-        let cellHeight = max(cell.height, 1)
+        let cell = cellMetrics()
+        let cellWidth = cell.width
+        let cellHeight = cell.height
         let width =
             selection.isMultiLine
             ? view.bounds.width

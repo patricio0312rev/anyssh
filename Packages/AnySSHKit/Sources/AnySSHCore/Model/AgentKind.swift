@@ -40,4 +40,12 @@ public enum AgentKindCatalog {
         AgentKind(id: "herdr", name: "herdr", monogram: "H", accentToken: "textPrimary", aliases: ["herdr"]),
         AgentKind(id: "tmux", name: "tmux", monogram: "T", accentToken: "textPrimary", aliases: ["tmux"]),
     ]
+
+    public static let multiplexerIDs: Set<String> = ["herdr", "tmux"]
+}
+
+extension AgentKind {
+    public var isMultiplexer: Bool {
+        AgentKindCatalog.multiplexerIDs.contains(id)
+    }
 }

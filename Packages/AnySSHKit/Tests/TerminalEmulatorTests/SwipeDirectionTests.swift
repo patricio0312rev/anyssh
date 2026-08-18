@@ -25,9 +25,10 @@ import Testing
         #expect(!SessionSwitchGesturePolicy.isSideways(velocityX: 300, velocityY: 260))
     }
 
-    @Test func fingerCountPicksTheSlot() {
-        #expect(SessionSwitchGesturePolicy.slot(.left, fingers: 1) == .swipeLeft)
-        #expect(SessionSwitchGesturePolicy.slot(.left, fingers: 2) == .twoFingerSwipeLeft)
-        #expect(SessionSwitchGesturePolicy.slot(.up, fingers: 2) == .twoFingerSwipeUp)
+    @Test func aHorizontalSwipePicksTheSlot() {
+        #expect(SessionSwitchGesturePolicy.slot(.left) == .swipeLeft)
+        #expect(SessionSwitchGesturePolicy.slot(.right) == .swipeRight)
+        #expect(SessionSwitchGesturePolicy.slot(.up) == nil)
+        #expect(SessionSwitchGesturePolicy.slot(.down) == nil)
     }
 }

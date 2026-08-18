@@ -393,7 +393,8 @@ Wi-Fi to cellular transitions; it is a standalone monitor and is never used to c
 connection itself, because tunnelled Tailscale traffic egresses on a `utun` that reports as
 `.other` and any `requiredInterfaceType` silently breaks every 100.x connection.
 
-Backgrounding is a `beginBackgroundTask` window of roughly 30 seconds and no more. No audio
+Backgrounding is a `beginBackgroundTask` window that iOS estimates around 30 seconds. That
+duration is not a contract and can end earlier. No audio
 trick, no VoIP, and no background location mode in MVP. The location toggle is what the
 incumbents ship and it does work, but it is a product decision with a battery cost and a review
 conversation attached, so it is deliberately deferred rather than discovered late as the only
@@ -858,7 +859,7 @@ mosh swap, is unaffected.
 minutes. Doc 01 §5.1 puts it at roughly 30 seconds, citing Apple DTS, and corroborates with
 La Terminal's and Termius's own documentation. **Doc 01 wins.** The three-minute figure comes
 from a 2016 forum thread and the old three-minute and ten-minute allowances are gone. Decision 9
-already encodes 30 seconds; the UI copy in section 6 follows it.
+already encodes that estimate; the UI copy in section 6 follows it.
 
 **6. Round-trip latency, and therefore the value of batching.** Doc 04 §A.0 justifies batching
 with 200 to 900 ms DERP-relayed round trips. Doc 08 measured 149 ms on a first ICMP packet over a

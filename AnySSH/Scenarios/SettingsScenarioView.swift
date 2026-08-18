@@ -26,6 +26,8 @@ struct SettingsScenarioView: View {
             pushed { AboutView(version: AppRelease.version, build: AppRelease.build) }
         case .notice:
             pushed { NoticeDetailView(notice: ThirdPartyNotices.all.sorted()[0]) }
+        case .title:
+            pushed { SessionTitleSettingsView(store: .shared) }
         }
     }
 

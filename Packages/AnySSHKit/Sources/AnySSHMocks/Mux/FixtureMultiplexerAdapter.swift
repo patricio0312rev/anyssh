@@ -12,6 +12,8 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     private let paneText: String
     private let detectError: ErrorState?
 
+    public let focusLog = MuxFocusLog()
+
     public init(fixture: MuxFixture) {
         kind = fixture.kind
         capabilities = fixture.capabilities
@@ -89,6 +91,11 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     public func keyBindings() async throws -> MuxKeyBindings {
         if let detectError { throw detectError }
         return bindings
+    }
+
+    public func focus(_ target: MuxTarget) async throws {
+        if let detectError { throw detectError }
+        await focusLog.record(target)
     }
 
     public func attachCommand(_ target: MuxTarget) -> String {

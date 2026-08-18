@@ -90,6 +90,9 @@ extension TerminalHostController {
         bridge.onCopy = { text in
             SystemClipboardPasteboard().write(text)
         }
+        bridge.onFocus = { [weak swiftTerm] in
+            swiftTerm?.wantsKeyboard = true
+        }
         gestureBridge = bridge
         didInstallInteraction = true
     }

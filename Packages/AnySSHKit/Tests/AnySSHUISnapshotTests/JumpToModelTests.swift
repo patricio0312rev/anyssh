@@ -88,7 +88,62 @@ import Testing
         #expect(JumpLayoutPreference.load(from: directory) == .list)
     }
 
-    @Test func jumpWritesTheAdaptersAttachCommand() async throws {
+    @Test func aDetachedJumpWritesTheAdaptersAttachCommand() async throws {
+        let connection = MockRemoteConnection(connectionID: ConnectionID(rawValue: "jump"))
+        let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
+        let model = JumpToModel(
+            adapter: adapter,
+            directory: nil,
+            writer: connection,
+            probe: { .detached }
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        let sent = await model.jump(to: row)
+        #expect(sent)
+        #expect(model.lastOutcome == .attached)
+        let writes = await connection.displayWrites
+        let expected = Array(
+            ("'tmux' attach-session -t '$1' \\; select-window -t '@1'\r").utf8
+        )
+        #expect(writes.last == expected)
+        #expect(await adapter.focusLog.targets.count == 1)
+    }
+
+    @Test func anAttachedJumpOnlyFocusesTheTarget() async throws {
+        let connection = MockRemoteConnection(connectionID: ConnectionID(rawValue: "jump"))
+        let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
+        let model = JumpToModel(
+            adapter: adapter,
+            directory: nil,
+            writer: connection,
+            probe: { .attached(MuxSessionID(rawValue: "$1")) }
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        #expect(await model.jump(to: row))
+        #expect(model.lastOutcome == .focused)
+        #expect(model.lastBytes.isEmpty)
+        #expect(await connection.displayWrites.isEmpty)
+        #expect(await adapter.focusLog.targets.first?.group == row.group.id)
+    }
+
+    @Test func aJumpIntoAnotherSessionIsReportedToTheSheet() async throws {
+        let connection = MockRemoteConnection(connectionID: ConnectionID(rawValue: "jump"))
+        let model = JumpToModel(
+            adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
+            directory: nil,
+            writer: connection,
+            probe: { .attached(MuxSessionID(rawValue: "$9")) }
+        )
+        await model.load()
+        let row = try #require(model.sessions.first?.groups.first)
+        #expect(await model.jump(to: row))
+        #expect(model.lastOutcome == .focusedElsewhere(row.sessionID))
+        #expect(await connection.displayWrites.isEmpty)
+    }
+
+    @Test func anUnreadableTerminalNeverGetsTheAttachCommand() async throws {
         let connection = MockRemoteConnection(connectionID: ConnectionID(rawValue: "jump"))
         let model = JumpToModel(
             adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
@@ -97,13 +152,9 @@ import Testing
         )
         await model.load()
         let row = try #require(model.sessions.first?.groups.first)
-        let sent = await model.jump(to: row)
-        #expect(sent)
-        let writes = await connection.displayWrites
-        let expected = Array(
-            ("'tmux' attach-session -t '$1' \\; select-window -t '@1'\r").utf8
-        )
-        #expect(writes.last == expected)
+        #expect(await model.jump(to: row))
+        #expect(model.lastOutcome == .focused)
+        #expect(await connection.displayWrites.isEmpty)
     }
 
     @Test func jumpIgnoresFurtherTapsWhileOneIsInFlight() async throws {
@@ -111,7 +162,8 @@ import Testing
         let model = JumpToModel(
             adapter: FixtureMultiplexerAdapter(fixture: .tmuxMain),
             directory: nil,
-            writer: writer
+            writer: writer,
+            probe: { .detached }
         )
         await model.load()
         let row = try #require(model.sessions.first?.groups.first)

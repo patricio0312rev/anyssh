@@ -33,21 +33,29 @@ extension View {
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: isMultiplexerPresented) {
-                if let adapter = model.activeMultiplexerAdapter {
+                if let adapter = model.activeMultiplexerAdapter,
+                    let sessionID = model.activeSessionID
+                {
                     MultiplexerPaneListView(
                         adapter: adapter,
-                        writer: model.activeSessionID.flatMap { model.connection(for: $0) },
+                        writer: model.connection(for: sessionID),
+                        probe: model.attachmentProbe(for: sessionID),
+                        onBoundSession: { [weak model] id in model?.rememberMuxSession(id) },
                         onDismiss: { isMultiplexerPresented.wrappedValue = false }
                     )
                 }
             }
             .sheet(isPresented: isJumpToPresented) {
-                if let adapter = model.activeMultiplexerAdapter {
+                if let adapter = model.activeMultiplexerAdapter,
+                    let sessionID = model.activeSessionID
+                {
                     JumpToSheet(
                         model: JumpToModel(
                             adapter: adapter,
                             directory: model.layoutDirectory,
-                            writer: model.activeSessionID.flatMap { model.connection(for: $0) }
+                            writer: model.connection(for: sessionID),
+                            probe: model.attachmentProbe(for: sessionID),
+                            onBoundSession: { [weak model] id in model?.rememberMuxSession(id) }
                         ),
                         onDismiss: { isJumpToPresented.wrappedValue = false }
                     )
