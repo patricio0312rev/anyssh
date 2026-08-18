@@ -44,13 +44,11 @@ public final class TerminalInteractionCoordinator: NSObject,
     var oneFingerPan: UIPanGestureRecognizer?
     var twoFingerPan: UIPanGestureRecognizer?
     var longPress: UILongPressGestureRecognizer?
-    var tap: UITapGestureRecognizer?
     var activeRoute: TerminalGestureRoute = .scrollback
     var lastReportedCell: (column: Int, row: Int)?
     var wheelAnchor: CGPoint = .zero
     var wheelTravelled = false
     var didEmitClick = false
-    var twoFingerActive = false
     var remoteMouseHeld = false
     var selectionDragActive = false
     var claimsScrollForSwipe = false
@@ -108,16 +106,8 @@ public final class TerminalInteractionCoordinator: NSObject,
         let editMenu = UIEditMenuInteraction(delegate: self)
         scrollView.addInteraction(editMenu)
         editMenuInteraction = editMenu
-        oneFingerPan = addPan(touches: 1, maximum: 2, action: #selector(handleOneFingerPan))
+        oneFingerPan = addPan(touches: 1, action: #selector(handleOneFingerPan))
         twoFingerPan = addPan(touches: 2, action: #selector(handleTwoFingerPan))
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        tapRecognizer.cancelsTouchesInView = false
-        tapRecognizer.delegate = self
-        if let twoFingerPan {
-            tapRecognizer.require(toFail: twoFingerPan)
-        }
-        scrollView.addGestureRecognizer(tapRecognizer)
-        tap = tapRecognizer
         let press = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         press.minimumPressDuration = 0.45
         press.allowableMovement = 12
@@ -176,14 +166,10 @@ public final class TerminalInteractionCoordinator: NSObject,
         return rect == .zero ? (scrollView?.bounds ?? .zero) : rect
     }
 
-    private func addPan(
-        touches: Int,
-        maximum: Int? = nil,
-        action: Selector
-    ) -> UIPanGestureRecognizer {
+    private func addPan(touches: Int, action: Selector) -> UIPanGestureRecognizer {
         let pan = UIPanGestureRecognizer(target: self, action: action)
         pan.minimumNumberOfTouches = touches
-        pan.maximumNumberOfTouches = maximum ?? touches
+        pan.maximumNumberOfTouches = touches
         pan.delegate = self
         pan.cancelsTouchesInView = false
         scrollView?.addGestureRecognizer(pan)
