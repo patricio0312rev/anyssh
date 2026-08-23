@@ -69,7 +69,6 @@ extension SessionWorkspaceModel {
     func rememberMuxSession(_ muxID: MuxSessionID, for sessionID: SessionID? = nil) {
         guard let sessionID = sessionID ?? activeSessionID else { return }
         sessionMuxIDs[sessionID] = muxID
-        muxSwipeRefusedSessionIDs.remove(sessionID)
     }
 
     func muxSession(in sessions: [MuxSession], for sessionID: SessionID) -> MuxSession? {
