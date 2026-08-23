@@ -95,8 +95,11 @@ import Testing
         #expect(model.sessionMuxIDs[sessionID] == Self.herdrDefault)
         #expect(await adapter.switchLog.switches.isEmpty)
         #expect(toasts.items.map(\.severity) == [.attention])
-        #expect(model.swipeTarget(.forward) == .appSession(model.registry.ids[1]))
-        #expect(model.swipeTarget(.backward) == .appSession(model.registry.ids[3]))
+        #expect(model.swipeTarget(.forward, skippingMux: true) == .appSession(model.registry.ids[1]))
+        #expect(
+            model.swipeTarget(.backward, skippingMux: true) == .appSession(model.registry.ids[3])
+        )
+        #expect(model.swipeTarget(.forward) == .muxSession(Self.ops))
     }
 
     private func walk(
