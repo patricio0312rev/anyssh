@@ -87,6 +87,11 @@ extension SessionWorkspaceModel {
     }
 
     private func resume(_ id: SessionID) async {
+        await activateResumed(id)
+        await resumeReconnect(for: id)
+    }
+
+    private func activateResumed(_ id: SessionID) async {
         if id == activeSessionID {
             store.surface(for: id)?.startDraining()
             registry.touch(id, at: Date.now)
