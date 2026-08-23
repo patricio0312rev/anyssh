@@ -33,11 +33,49 @@ public struct MuxNavigator: Sendable {
         }
     }
 
+    public func jump(
+        toSession target: MuxSessionID,
+        from known: MuxSessionID?
+    ) async throws -> MuxJumpOutcome {
+        switch await probe() {
+        case .attached(let bound):
+            guard let source = bound ?? known else { return .skipped(target) }
+            guard source != target else { return .focused }
+            return try await switching(to: target, from: source, whenRefused: .skipped(target))
+        case .detached:
+            let bytes = attachBytes(for: MuxTarget(session: target))
+            guard !bytes.isEmpty else { throw ErrorState.mux(.attachTargetVanished) }
+            try await writer.send(bytes[...])
+            return .attached
+        case .unknown:
+            guard let known, known != target else { return .focused }
+            return try await switching(to: target, from: known, whenRefused: .focused)
+        }
+    }
+
     public func attachBytes(for target: MuxTarget) -> [UInt8] {
         let command = adapter.attachCommand(target)
         guard !command.isEmpty else { return [] }
         return Array((command + Self.submit).utf8)
     }
+
+    private func switching(
+        to target: MuxSessionID,
+        from source: MuxSessionID,
+        whenRefused refused: MuxJumpOutcome
+    ) async throws -> MuxJumpOutcome {
+        do {
+            try await adapter.switchSession(to: target, from: source)
+            return .attached
+        } catch let state as ErrorState where Self.refusals.contains(state) {
+            return refused
+        }
+    }
+
+    private static let refusals: Set<ErrorState> = [
+        .mux(.sessionSwitchUnsupported),
+        .mux(.attachTargetVanished),
+    ]
 
     private static let submit = "\r"
 }
