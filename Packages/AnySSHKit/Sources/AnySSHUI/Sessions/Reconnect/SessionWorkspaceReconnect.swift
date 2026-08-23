@@ -8,9 +8,20 @@ extension SessionWorkspaceModel {
             candidates: { [weak self] in
                 self?.registry.sessions ?? []
             },
+            attention: { [weak self] in
+                self?.reconnectAttention ?? .dismissed
+            },
             onReconnect: { [weak self] id in
                 await self?.reconnect(id)
             }
+        )
+    }
+
+    var reconnectAttention: ReconnectAttention {
+        ReconnectAttention(
+            isWorkspacePresented: isWorkspacePresented(),
+            activeSessionID: activeSessionID,
+            engagedSessionIDs: store.drainingSessionIDs
         )
     }
 
@@ -44,6 +55,14 @@ extension SessionWorkspaceModel {
             try? await Task.sleep(for: plan.delay)
         }
         await performReconnect(id, remote: remote, attempt: plan.attempt)
+    }
+
+    func resumeReconnect(for id: SessionID) async {
+        guard let record = registry[id] else { return }
+        guard case .disconnected(let reason) = record.state, reason != .closedByUser else {
+            return
+        }
+        await reconnect(id, forced: true)
     }
 
     private func reconnectPlan(
