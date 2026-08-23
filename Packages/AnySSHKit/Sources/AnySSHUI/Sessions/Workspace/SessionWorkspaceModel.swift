@@ -54,7 +54,9 @@ public final class SessionWorkspaceModel {
     public weak var statusToasts: StatusToastCenter?
 
     let lastDirectories = LastDirectoryStore.applicationSupport()
+    let muxSessionCache = SessionMuxSessionCache()
 
+    var isHoppingMuxSession = false
     var scopes = [SessionID: SessionActivityScope]()
     var connections = [SessionID: any RemoteConnection]()
     var authBridges = [SessionID: SessionAuthBridge]()
