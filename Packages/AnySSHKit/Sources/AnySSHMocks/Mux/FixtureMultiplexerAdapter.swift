@@ -13,6 +13,7 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     private let detectError: ErrorState?
 
     public let focusLog = MuxFocusLog()
+    public let switchLog = MuxSwitchLog()
 
     public init(fixture: MuxFixture) {
         kind = fixture.kind
@@ -96,6 +97,12 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     public func focus(_ target: MuxTarget) async throws {
         if let detectError { throw detectError }
         await focusLog.record(target)
+    }
+
+    public func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        if let detectError { throw detectError }
+        guard kind == .tmux else { throw ErrorState.mux(.sessionSwitchUnsupported) }
+        await switchLog.record(target: target, source: current)
     }
 
     public func attachCommand(_ target: MuxTarget) -> String {
