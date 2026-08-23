@@ -33,7 +33,12 @@ public struct GestureSettingsView: View {
         } header: {
             SectionLabel("Bindings")
         } footer: {
-            SectionCaption("Swipe left or right to switch sessions. Unbound leaves the swipe unused.")
+            SectionCaption(
+                """
+                Swipe left or right to walk the multiplexer sessions on this host first, \
+                then the other connections. Unbound leaves the swipe unused.
+                """
+            )
         }
     }
 
