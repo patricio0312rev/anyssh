@@ -33,10 +33,7 @@ public struct MuxNavigator: Sendable {
         }
     }
 
-    public func jump(
-        toSession target: MuxSessionID,
-        from known: MuxSessionID?
-    ) async throws -> MuxJumpOutcome {
+    public func jump(toSession target: MuxSessionID) async throws -> MuxJumpOutcome {
         switch await probe() {
         case .attached(let bound):
             guard let source = bound else { return .skipped(target) }
@@ -48,7 +45,6 @@ public struct MuxNavigator: Sendable {
             try await writer.send(bytes[...])
             return .attached
         case .unknown:
-            guard let known, known != target else { return .focused }
             return .skipped(target)
         }
     }
