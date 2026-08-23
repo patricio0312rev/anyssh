@@ -5,11 +5,13 @@ import Sessions
 @MainActor
 public final class ReconnectCoordinator {
     public typealias CandidatesProvider = @MainActor () -> [SessionRecord]
+    public typealias AttentionProvider = @MainActor () -> ReconnectAttention
     public typealias ReconnectHandler = @MainActor (SessionID) async -> Void
 
     private let policy: ReconnectPolicy
     private let pathSignal: any ReconnectPathSignaling
     private var candidates: CandidatesProvider?
+    private var attention: AttentionProvider?
     private var onReconnect: ReconnectHandler?
     private var isStarted = false
     private var inFlight = Set<SessionID>()
@@ -29,11 +31,13 @@ public final class ReconnectCoordinator {
 
     public func start(
         candidates: @escaping CandidatesProvider,
+        attention: AttentionProvider? = nil,
         onReconnect: @escaping ReconnectHandler
     ) {
         guard !isStarted else { return }
         isStarted = true
         self.candidates = candidates
+        self.attention = attention
         self.onReconnect = onReconnect
         pathSignal.start { [weak self] in
             Task { @MainActor in
@@ -45,6 +49,7 @@ public final class ReconnectCoordinator {
     public func stop() {
         pathSignal.cancel()
         candidates = nil
+        attention = nil
         onReconnect = nil
         isStarted = false
         inFlight.removeAll()
@@ -73,7 +78,7 @@ public final class ReconnectCoordinator {
 
     public func requestReconnects() async {
         guard let candidates, let onReconnect else { return }
-        let records = candidates().filter { decision(for: $0).shouldDial }
+        let records = scoped(candidates().filter { decision(for: $0).shouldDial })
         lastTriggeredSessionIDs = records.map(\.id)
         for record in records {
             guard !inFlight.contains(record.id) else { continue }
@@ -81,5 +86,10 @@ public final class ReconnectCoordinator {
             await onReconnect(record.id)
             inFlight.remove(record.id)
         }
+    }
+
+    private func scoped(_ records: [SessionRecord]) -> [SessionRecord] {
+        guard let attention else { return records }
+        return attention().scoped(records)
     }
 }
