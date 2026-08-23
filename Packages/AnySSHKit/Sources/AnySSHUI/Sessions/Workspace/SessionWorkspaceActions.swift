@@ -19,7 +19,11 @@ extension SessionWorkspaceView {
         switch target {
         case .muxSession(let muxSessionID):
             model.hop(toMuxSession: muxSessionID) {
-                swipe(direction, edge: edge, command: command)
+                guard case .appSession = model.swipeTarget(direction, skippingMux: true) else {
+                    return
+                }
+                switchEdge = edge
+                commandRegistry.run(id: command)
             }
         case .appSession:
             switchEdge = edge
