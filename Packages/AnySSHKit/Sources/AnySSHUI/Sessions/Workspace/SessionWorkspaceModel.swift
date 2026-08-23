@@ -57,7 +57,6 @@ public final class SessionWorkspaceModel {
     let muxSessionCache = SessionMuxSessionCache()
 
     var isHoppingMuxSession = false
-    var muxSwipeRefusedSessionIDs = Set<SessionID>()
     var scopes = [SessionID: SessionActivityScope]()
     var connections = [SessionID: any RemoteConnection]()
     var authBridges = [SessionID: SessionAuthBridge]()
