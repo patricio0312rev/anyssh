@@ -7,6 +7,9 @@ import UIKit
 
 @MainActor
 public enum AppCommandBinding {
+    public static let nextSession = "session.next"
+    public static let previousSession = "session.previous"
+
     public static func workspaceCommands(
         model: SessionWorkspaceModel,
         onNewConnection: @escaping () -> Void,
@@ -50,7 +53,7 @@ public enum AppCommandBinding {
                 }
             ),
             AppCommand(
-                id: "session.next",
+                id: nextSession,
                 title: "Next Session",
                 keyEquivalent: nil,
                 isEnabled: { model.registry.count > 1 },
@@ -58,7 +61,7 @@ public enum AppCommandBinding {
                 handler: { step(model, by: 1) }
             ),
             AppCommand(
-                id: "session.previous",
+                id: previousSession,
                 title: "Previous Session",
                 keyEquivalent: nil,
                 isEnabled: { model.registry.count > 1 },
