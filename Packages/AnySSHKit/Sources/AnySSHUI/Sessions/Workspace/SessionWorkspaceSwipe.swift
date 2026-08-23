@@ -4,8 +4,11 @@ import Sessions
 extension SessionWorkspaceModel {
     func swipeTarget(_ direction: SessionSwipeRing.Direction) -> SessionSwipeRing.Target? {
         guard let activeSessionID else { return nil }
+        let muxSessions =
+            muxSwipeRefusedSessionIDs.contains(activeSessionID)
+            ? [] : muxSessionCache.sessions(for: activeSessionID)
         let ring = SessionSwipeRing(
-            muxSessions: muxSessionCache.sessions(for: activeSessionID),
+            muxSessions: muxSessions,
             boundMuxSession: sessionMuxIDs[activeSessionID],
             appSessionIDs: registry.ids,
             activeSessionID: activeSessionID
@@ -13,7 +16,7 @@ extension SessionWorkspaceModel {
         return ring.step(direction)
     }
 
-    func hop(toMuxSession target: MuxSessionID) {
+    func hop(toMuxSession target: MuxSessionID, onSkip: @escaping @MainActor () -> Void = {}) {
         guard !isHoppingMuxSession,
             let sessionID = activeSessionID,
             let adapter = activeMultiplexerAdapter,
@@ -26,7 +29,13 @@ extension SessionWorkspaceModel {
             probe: attachmentProbe(for: sessionID)
         )
         Task { [weak self] in
-            await self?.hop(to: target, of: sessionID, using: adapter, through: navigator)
+            await self?.hop(
+                to: target,
+                of: sessionID,
+                using: adapter,
+                through: navigator,
+                onSkip: onSkip
+            )
         }
     }
 
@@ -51,18 +60,24 @@ extension SessionWorkspaceModel {
         to target: MuxSessionID,
         of sessionID: SessionID,
         using adapter: any MultiplexerAdapter,
-        through navigator: MuxNavigator
+        through navigator: MuxNavigator,
+        onSkip: @MainActor () -> Void
     ) async {
+        var skipped = false
         do {
             let outcome = try await navigator.jump(
                 toSession: target,
                 from: sessionMuxIDs[sessionID]
             )
-            announce(outcome, target: target, of: sessionID)
+            skipped = announce(outcome, target: target, of: sessionID)
         } catch {
             statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
         }
         isHoppingMuxSession = false
+        if skipped {
+            muxSwipeRefusedSessionIDs.insert(sessionID)
+            onSkip()
+        }
         await refreshMuxSessions(for: sessionID, using: adapter)
     }
 
@@ -70,20 +85,23 @@ extension SessionWorkspaceModel {
         _ outcome: MuxJumpOutcome,
         target: MuxSessionID,
         of sessionID: SessionID
-    ) {
+    ) -> Bool {
         switch outcome {
         case .attached, .focused:
             rememberMuxSession(target, for: sessionID)
             statusToasts?.present(
                 severity: .success,
-                title: MuxNavigationCopy.switched(to: name(of: target, in: sessionID))
+                title: MuxNavigationCopy.switched(to: name(of: target, in: sessionID)),
+                accessibilityIdentifier: UIIdentifier.Session.muxSwitchToast
             )
+            return false
         case .focusedElsewhere, .skipped:
             statusToasts?.present(
                 severity: .attention,
                 title: MuxNavigationCopy.focused(in: boundName(in: sessionID)),
                 body: MuxNavigationCopy.detachToSwitch
             )
+            return true
         }
     }
 
