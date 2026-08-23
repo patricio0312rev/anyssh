@@ -17,13 +17,18 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        if adapter == nil {
+        guard let adapter else {
             sessionMuxIDs.removeValue(forKey: sessionID)
+            muxSessionCache.clear(for: sessionID)
             if !publishedAgentTitleIDs.contains(sessionID) {
                 sessionAgentTitles.removeValue(forKey: sessionID)
             }
+            return
         }
-        guard let adapter, adapter.kind == .herdr else { return }
+        Task { [weak self] in
+            await self?.refreshMuxSessions(for: sessionID, using: adapter)
+        }
+        guard adapter.kind == .herdr else { return }
         startStallWatcher(for: sessionID, adapter: adapter)
     }
 
