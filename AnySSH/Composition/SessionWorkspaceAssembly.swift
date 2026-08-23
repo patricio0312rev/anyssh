@@ -118,6 +118,12 @@ enum SessionWorkspaceAssembly {
                 MuxKeyBindings(prefix: "C-a", chords: [:]),
                 FixtureMultiplexerAdapter(fixture: .tmuxMain)
             )
+        case .tmuxCluster:
+            (
+                .tmux,
+                MuxKeyBindings(prefix: "C-a", chords: [:]),
+                FixtureMultiplexerAdapter(fixture: .tmuxCluster)
+            )
         case .herdr:
             (
                 .herdr,
