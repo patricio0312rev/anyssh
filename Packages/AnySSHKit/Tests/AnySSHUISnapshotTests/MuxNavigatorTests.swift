@@ -61,7 +61,7 @@ import Testing
             .attached(MuxSessionID(rawValue: "$1"))
         }
 
-        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$1"), from: nil)
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$1"))
 
         #expect(outcome == .focused)
         #expect(await adapter.switchLog.switches.isEmpty)
@@ -75,7 +75,7 @@ import Testing
             .attached(MuxSessionID(rawValue: "$1"))
         }
 
-        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"), from: nil)
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"))
 
         #expect(outcome == .attached)
         #expect(
@@ -94,7 +94,7 @@ import Testing
         let connection = MockRemoteConnection()
         let navigator = MuxNavigator(adapter: adapter, writer: connection) { .attached(nil) }
 
-        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"), from: nil)
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"))
 
         #expect(outcome == .skipped(MuxSessionID(rawValue: "$2")))
         #expect(await adapter.switchLog.switches.isEmpty)
@@ -108,10 +108,7 @@ import Testing
             .attached(MuxSessionID(rawValue: "default"))
         }
 
-        let outcome = try await navigator.jump(
-            toSession: MuxSessionID(rawValue: "review"),
-            from: nil
-        )
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "review"))
 
         #expect(outcome == .skipped(MuxSessionID(rawValue: "review")))
         #expect(await connection.displayWrites.isEmpty)
@@ -122,7 +119,7 @@ import Testing
         let connection = MockRemoteConnection()
         let navigator = MuxNavigator(adapter: adapter, writer: connection) { .detached }
 
-        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"), from: nil)
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"))
 
         #expect(outcome == .attached)
         #expect(await adapter.switchLog.switches.isEmpty)
@@ -138,24 +135,9 @@ import Testing
         let connection = MockRemoteConnection()
         let navigator = MuxNavigator(adapter: adapter, writer: connection) { .unknown }
 
-        let outcome = try await navigator.jump(
-            toSession: MuxSessionID(rawValue: "$2"),
-            from: MuxSessionID(rawValue: "$1")
-        )
+        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"))
 
         #expect(outcome == .skipped(MuxSessionID(rawValue: "$2")))
-        #expect(await adapter.switchLog.switches.isEmpty)
-        #expect(await connection.displayWrites.isEmpty)
-    }
-
-    @Test func anUnknownAttachmentWithNoBindingNeverTypes() async throws {
-        let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
-        let connection = MockRemoteConnection()
-        let navigator = MuxNavigator(adapter: adapter, writer: connection) { .unknown }
-
-        let outcome = try await navigator.jump(toSession: MuxSessionID(rawValue: "$2"), from: nil)
-
-        #expect(outcome == .focused)
         #expect(await adapter.switchLog.switches.isEmpty)
         #expect(await connection.displayWrites.isEmpty)
     }
