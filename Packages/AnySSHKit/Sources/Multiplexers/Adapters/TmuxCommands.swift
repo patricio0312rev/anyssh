@@ -9,8 +9,11 @@ enum TmuxCommands {
     static let captureLabel = "tmux.capture"
     static let selectWindowLabel = "tmux.selectWindow"
     static let selectPaneLabel = "tmux.selectPane"
+    static let clientsLabel = "tmux.clients"
+    static let switchClientLabel = "tmux.switchClient"
 
     static let sessionFormat = "#{session_id}\t#{session_name}\t#{session_attached}"
+    static let clientFormat = "#{client_name}\t#{session_id}\t#{session_name}"
     static let windowFormat =
         "#{session_id}\t#{window_id}\t#{window_name}\t#{window_active}"
     static let paneFormat =
@@ -76,6 +79,24 @@ enum TmuxCommands {
             )
         }
         return RemoteBatch(commands: commands)
+    }
+
+    static func clients(binary: String) -> RemoteBatch {
+        RemoteBatch(commands: [
+            RemoteCommand(
+                label: clientsLabel,
+                arguments: [binary, "list-clients", "-F", clientFormat]
+            )
+        ])
+    }
+
+    static func switchClient(binary: String, client: String, session: String) -> RemoteBatch {
+        RemoteBatch(commands: [
+            RemoteCommand(
+                label: switchClientLabel,
+                arguments: [binary, "switch-client", "-c", client, "-t", session]
+            )
+        ])
     }
 
     static func capture(binary: String, pane: String, lines: Int) -> RemoteBatch {
