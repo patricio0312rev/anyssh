@@ -8,13 +8,20 @@ extension SessionWorkspaceView {
     func handleGesture(_ slot: GestureSlot) {
         switch slot {
         case .swipeLeft:
-            guard model.registry.count > 1 else { return }
-            switchEdge = .trailing
-            commandRegistry.run(id: "session.next")
+            swipe(.forward, edge: .trailing, command: AppCommandBinding.nextSession)
         case .swipeRight:
-            guard model.registry.count > 1 else { return }
-            switchEdge = .leading
-            commandRegistry.run(id: "session.previous")
+            swipe(.backward, edge: .leading, command: AppCommandBinding.previousSession)
+        }
+    }
+
+    private func swipe(_ direction: SessionSwipeRing.Direction, edge: Edge, command: String) {
+        guard let target = model.swipeTarget(direction) else { return }
+        switch target {
+        case .muxSession(let muxSessionID):
+            model.hop(toMuxSession: muxSessionID)
+        case .appSession:
+            switchEdge = edge
+            commandRegistry.run(id: command)
         }
     }
 
