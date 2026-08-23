@@ -133,7 +133,7 @@ import Testing
         )
     }
 
-    @Test func anUnknownAttachmentNeverTypesAndFallsBackToTheSwitch() async throws {
+    @Test func anUnknownAttachmentNeverSwitchesAnotherClient() async throws {
         let adapter = FixtureMultiplexerAdapter(fixture: .tmuxMain)
         let connection = MockRemoteConnection()
         let navigator = MuxNavigator(adapter: adapter, writer: connection) { .unknown }
@@ -143,21 +143,8 @@ import Testing
             from: MuxSessionID(rawValue: "$1")
         )
 
-        #expect(outcome == .attached)
-        #expect(await connection.displayWrites.isEmpty)
-    }
-
-    @Test func anUnknownAttachmentWithARefusedSwitchIsLeftAlone() async throws {
-        let adapter = FixtureMultiplexerAdapter(fixture: .herdrDefault)
-        let connection = MockRemoteConnection()
-        let navigator = MuxNavigator(adapter: adapter, writer: connection) { .unknown }
-
-        let outcome = try await navigator.jump(
-            toSession: MuxSessionID(rawValue: "review"),
-            from: MuxSessionID(rawValue: "default")
-        )
-
-        #expect(outcome == .focused)
+        #expect(outcome == .skipped(MuxSessionID(rawValue: "$2")))
+        #expect(await adapter.switchLog.switches.isEmpty)
         #expect(await connection.displayWrites.isEmpty)
     }
 
