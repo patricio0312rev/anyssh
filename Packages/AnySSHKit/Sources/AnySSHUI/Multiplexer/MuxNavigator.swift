@@ -49,7 +49,7 @@ public struct MuxNavigator: Sendable {
             return .attached
         case .unknown:
             guard let known, known != target else { return .focused }
-            return try await switching(to: target, from: known, whenRefused: .focused)
+            return .skipped(target)
         }
     }
 
