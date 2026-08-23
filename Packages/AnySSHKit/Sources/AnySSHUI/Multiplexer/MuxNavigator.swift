@@ -39,7 +39,7 @@ public struct MuxNavigator: Sendable {
     ) async throws -> MuxJumpOutcome {
         switch await probe() {
         case .attached(let bound):
-            guard let source = bound ?? known else { return .skipped(target) }
+            guard let source = bound else { return .skipped(target) }
             guard source != target else { return .focused }
             return try await switching(to: target, from: source, whenRefused: .skipped(target))
         case .detached:
