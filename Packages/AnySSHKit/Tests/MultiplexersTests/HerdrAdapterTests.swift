@@ -172,6 +172,19 @@ import Testing
         }
     }
 
+    @Test func switchingSessionsOnAnAttachedTerminalIsRefused() async throws {
+        let runner = try focusRunner()
+        let adapter = HerdrAdapter(runner: runner)
+
+        await #expect(throws: ErrorState.mux(.sessionSwitchUnsupported)) {
+            try await adapter.switchSession(
+                to: MuxSessionID(rawValue: "anyssh-test"),
+                from: MuxSessionID(rawValue: "default")
+            )
+        }
+        #expect(runner.batches.isEmpty)
+    }
+
     private func focusRunner(agentExitCode: Int32 = 0) throws -> ScriptedMuxRunner {
         ScriptedMuxRunner(
             sections: [
