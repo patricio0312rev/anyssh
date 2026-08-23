@@ -19,16 +19,8 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
         kind = fixture.kind
         capabilities = fixture.capabilities
         switch fixture {
-        case .tmuxMain:
-            let built = Self.tmuxFixture()
-            info = built.info
-            sessions = built.sessions
-            snapshots = built.snapshots
-            bindings = built.bindings
-            paneText = built.paneText
-            detectError = nil
-        case .herdrDefault:
-            let built = Self.herdrFixture()
+        case .tmuxMain, .tmuxCluster, .herdrDefault, .herdrCluster:
+            let built = Self.tree(for: fixture)
             info = built.info
             sessions = built.sessions
             snapshots = built.snapshots
