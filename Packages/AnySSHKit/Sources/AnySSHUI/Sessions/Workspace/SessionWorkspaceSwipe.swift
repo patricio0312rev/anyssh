@@ -2,13 +2,13 @@ import AnySSHCore
 import Sessions
 
 extension SessionWorkspaceModel {
-    func swipeTarget(_ direction: SessionSwipeRing.Direction) -> SessionSwipeRing.Target? {
+    func swipeTarget(
+        _ direction: SessionSwipeRing.Direction,
+        skippingMux: Bool = false
+    ) -> SessionSwipeRing.Target? {
         guard let activeSessionID else { return nil }
-        let muxSessions =
-            muxSwipeRefusedSessionIDs.contains(activeSessionID)
-            ? [] : muxSessionCache.sessions(for: activeSessionID)
         let ring = SessionSwipeRing(
-            muxSessions: muxSessions,
+            muxSessions: skippingMux ? [] : muxSessionCache.sessions(for: activeSessionID),
             boundMuxSession: sessionMuxIDs[activeSessionID],
             appSessionIDs: registry.ids,
             activeSessionID: activeSessionID
@@ -70,19 +70,13 @@ extension SessionWorkspaceModel {
     ) async {
         var skipped = false
         do {
-            let outcome = try await navigator.jump(
-                toSession: target,
-                from: sessionMuxIDs[sessionID]
-            )
+            let outcome = try await navigator.jump(toSession: target)
             skipped = announce(outcome, target: target, of: sessionID)
         } catch {
             statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
         }
         isHoppingMuxSession = false
-        if skipped {
-            muxSwipeRefusedSessionIDs.insert(sessionID)
-            onSkip()
-        }
+        if skipped { onSkip() }
         await refreshMuxSessions(for: sessionID, using: adapter)
     }
 
