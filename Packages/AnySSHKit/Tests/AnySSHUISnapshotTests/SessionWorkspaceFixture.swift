@@ -20,4 +20,14 @@ enum SessionWorkspaceFixture {
             makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) }
         )
     }
+
+    static func attachedConnection(running process: String) -> MockRemoteConnection {
+        MockRemoteConnection(
+            connectionID: ConnectionID(rawValue: "attached"),
+            script: .foreground(process: process),
+            clientPort: attachedClientPort
+        )
+    }
+
+    private static let attachedClientPort = 51234
 }
