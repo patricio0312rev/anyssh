@@ -65,6 +65,20 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
         self == .notifyForeground || self == .notifyBackground
     }
 
+    var controlScript: MockControlScript {
+        guard let foregroundProcess else { return MockControlScript() }
+        return .foreground(process: foregroundProcess)
+    }
+
+    var clientPort: Int? {
+        foregroundProcess == nil ? nil : Self.mockClientPort
+    }
+
+    private var foregroundProcess: String? {
+        self == .tmuxCluster ? "tmux" : nil
+    }
+
+    private static let mockClientPort = 51234
     private static let osc9Alert = "\u{1b}]9;Backup finished\u{7}"
 
     var isMultiplexed: Bool {
