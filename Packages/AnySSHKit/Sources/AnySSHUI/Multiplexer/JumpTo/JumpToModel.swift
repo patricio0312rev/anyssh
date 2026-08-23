@@ -119,7 +119,7 @@ public final class JumpToModel {
             lastBytes = outcome == .attached ? navigator.attachBytes(for: target) : []
             switch outcome {
             case .focused, .attached: onBoundSession?(row.sessionID)
-            case .focusedElsewhere: break
+            case .focusedElsewhere, .skipped: break
             }
             return true
         } catch {
