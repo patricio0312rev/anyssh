@@ -16,8 +16,10 @@ public final class SessionWorkspaceModel {
     public typealias BrowserServices = (git: any GitService, files: any RemoteFileBrowser)
     public typealias BrowserServiceFactory =
         @MainActor (any RemoteConnection, RemoteID) -> BrowserServices
+    public typealias PresentationPredicate = @MainActor () -> Bool
 
     let store: TerminalSurfaceStore
+    let isWorkspacePresented: PresentationPredicate
     let makeConnection: SessionConnectionFactory?
     let makeBrowserServices: BrowserServiceFactory
     let secrets: (any SecretStore)?
@@ -83,10 +85,12 @@ public final class SessionWorkspaceModel {
         jobAlertScheduler: (any NotificationScheduler)? = nil,
         jobAlertSettings: JobAlertSettings = JobAlertSettings(),
         titlePreference: SessionTitlePreferenceStore = .shared,
+        isWorkspacePresented: @escaping PresentationPredicate = { true },
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {
         store = TerminalSurfaceStore(configuration: .default, makeEngine: makeEngine)
+        self.isWorkspacePresented = isWorkspacePresented
         self.makeConnection = makeConnection
         self.makeBrowserServices = makeBrowserServices
         self.secrets = secrets
