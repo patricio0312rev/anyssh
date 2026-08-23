@@ -54,22 +54,23 @@ extension SessionWorkspaceModel {
 
     func tearDown(_ id: SessionID, reason: DisconnectReason) async {
         if pendingSwitch?.id == id { clearPendingSwitch() }
-        if let scope = scopes.removeValue(forKey: id) {
-            await scope.cancelAll(reason: reason)
-        }
+        registry.update(id, state: .disconnected(.closedByUser), at: Date.now)
+        _ = registry.close(id)
+        let scope = scopes.removeValue(forKey: id)
         connections.removeValue(forKey: id)
         sessionAdapters.removeValue(forKey: id)
         sessionAgentKinds.removeValue(forKey: id)
         sessionAgentTitles.removeValue(forKey: id)
         sessionMuxIDs.removeValue(forKey: id)
+        muxSessionCache.clear(for: id)
         publishedAgentTitleIDs.remove(id)
         agentStates.removeValue(forKey: id)
         barModels.removeValue(forKey: id)
         stallWatchers.removeValue(forKey: id)?.cancel()
         authBridges.removeValue(forKey: id)?.discardTypedPassword()
+        await scope?.cancelAll(reason: reason)
         await store.close(id, reason: reason)
         await activityCoordinator?.close(id)
-        _ = registry.close(id)
     }
 
     func promoteNextSession() {
