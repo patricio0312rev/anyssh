@@ -7,6 +7,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     case empty = "sessions.workspace.empty"
     case tmux = "sessions.workspace.tmux"
     case herdr = "sessions.workspace.herdr"
+    case tmuxCluster = "sessions.workspace.tmuxCluster"
     case agent = "sessions.workspace.agent"
     case accessory = "sessions.workspace.accessory"
     case compact = "sessions.workspace.compact"
@@ -67,7 +68,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     private static let osc9Alert = "\u{1b}]9;Backup finished\u{7}"
 
     var isMultiplexed: Bool {
-        self == .tmux || self == .herdr
+        self == .tmux || self == .herdr || self == .tmuxCluster
     }
 
     var fitsTranscriptToGrid: Bool {
@@ -77,7 +78,7 @@ enum WorkspaceScenario: String, Equatable, CaseIterable {
     func transcript(columns: Int, rows: Int) -> [UInt8] {
         switch self {
         case .agent: OpenCodeHomeTranscript.home(columns: columns, rows: rows)
-        case .tmux, .herdr: Array(WorkspaceScenarioTranscript.multiplexed.utf8)
+        case .tmux, .herdr, .tmuxCluster: Array(WorkspaceScenarioTranscript.multiplexed.utf8)
         default: Array(WorkspaceScenarioTranscript.shell.utf8)
         }
     }
