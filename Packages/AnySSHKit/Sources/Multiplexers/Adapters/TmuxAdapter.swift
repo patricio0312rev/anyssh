@@ -108,6 +108,31 @@ public struct TmuxAdapter: MultiplexerAdapter {
         }
     }
 
+    public func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        let listing = TmuxCommands.clients(binary: binaryPath)
+        let listingResponse = try await runner.run(listing)
+        let clients = try MuxCommandSupport.section(
+            label: TmuxCommands.clientsLabel,
+            in: listingResponse,
+            batch: listing
+        )
+        guard let client = parser.client(attachedTo: current, in: MuxCommandSupport.text(clients))
+        else {
+            throw ErrorState.mux(.attachTargetVanished)
+        }
+        let batch = TmuxCommands.switchClient(
+            binary: binaryPath,
+            client: client,
+            session: target.rawValue
+        )
+        let response = try await runner.run(batch)
+        _ = try MuxCommandSupport.section(
+            label: TmuxCommands.switchClientLabel,
+            in: response,
+            batch: batch
+        )
+    }
+
     public func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.tmux(binary: binaryPath, target: target)
     }
