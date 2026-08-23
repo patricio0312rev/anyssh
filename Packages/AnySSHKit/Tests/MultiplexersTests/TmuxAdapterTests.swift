@@ -179,6 +179,23 @@ import Testing
         )
     }
 
+    @Test func switchingSessionsWithTwoClientsOnTheBoundSessionIsRefused() async {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: Data(
+                "/dev/ttys002\t$1\tmain\n/dev/ttys004\t$1\tmain\n".utf8
+            )
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.switchSession(
+                to: MuxSessionID(rawValue: "$2"),
+                from: MuxSessionID(rawValue: "$1")
+            )
+        }
+        #expect(runner.batches.count == 1)
+    }
+
     @Test func switchingSessionsWithNoClientOnTheBoundSessionIsRefused() async {
         let runner = ScriptedMuxRunner(sections: [
             TmuxCommands.clientsLabel: Data("/dev/ttys002\t$2\tagents\n".utf8)
