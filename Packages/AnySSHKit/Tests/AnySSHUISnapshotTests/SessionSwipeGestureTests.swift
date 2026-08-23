@@ -1,6 +1,5 @@
 import AnySSHCore
 import AnySSHMocks
-import Foundation
 import Sessions
 import Testing
 
@@ -12,6 +11,7 @@ import Testing
         let toasts = StatusToastCenter()
         model.statusToasts = toasts
         let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
         let adapter = SwipeRingMuxAdapter(names: ["alpha", "beta"])
         try await install(adapter, on: model, for: sessionID)
         model.rememberMuxSession(Self.alpha, for: sessionID)
@@ -45,7 +45,7 @@ import Testing
         let toasts = StatusToastCenter()
         model.statusToasts = toasts
         let sessionID = try #require(model.activeSessionID)
-        model.connections[sessionID] = Self.attachedConnection()
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "herdr")
         let adapter = SwipeRingMuxAdapter(
             names: ["alpha", "beta"],
             kind: .herdr,
@@ -65,6 +65,7 @@ import Testing
     @Test func aSwipeDuringAHopIsDropped() async throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
         let adapter = SwipeRingMuxAdapter(names: ["alpha", "beta", "gamma"])
         try await install(adapter, on: model, for: sessionID)
         model.rememberMuxSession(Self.alpha, for: sessionID)
@@ -107,17 +108,6 @@ import Testing
     ) async throws {
         model.replaceMultiplexer(for: sessionID, with: adapter)
         try await waitUntil { !model.muxSessionCache.sessions(for: sessionID).isEmpty }
-    }
-
-    private static func attachedConnection() -> MockRemoteConnection {
-        MockRemoteConnection(
-            connectionID: ConnectionID(rawValue: "attached"),
-            script: MockControlScript(
-                duration: .zero,
-                sections: ["foreground": Data("P tmux\n".utf8)]
-            ),
-            clientPort: 51234
-        )
     }
 
     private static let alpha = MuxSessionID(rawValue: "alpha")
