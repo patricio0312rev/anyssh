@@ -49,15 +49,17 @@ public struct TmuxParser: Sendable {
     }
 
     public func client(attachedTo session: MuxSessionID, in text: String) -> String? {
-        for line in nonEmptyLines(text) {
+        let matches = nonEmptyLines(text).compactMap { line -> String? in
             let columns = line.split(separator: "\t", omittingEmptySubsequences: false)
                 .map(String.init)
-            guard columns.count >= 3, !columns[0].isEmpty else { continue }
-            if columns[1] == session.rawValue || columns[2] == session.rawValue {
-                return columns[0]
+            guard columns.count >= 3, !columns[0].isEmpty else { return nil }
+            guard columns[1] == session.rawValue || columns[2] == session.rawValue else {
+                return nil
             }
+            return columns[0]
         }
-        return nil
+        guard matches.count == 1 else { return nil }
+        return matches[0]
     }
 
     public func prefix(from text: String) -> String {
