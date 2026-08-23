@@ -1,6 +1,5 @@
 import AnySSHCore
 import AnySSHMocks
-import Foundation
 import Sessions
 import Testing
 
@@ -10,6 +9,7 @@ import Testing
     @Test func aForwardWalkVisitsEveryMuxSessionThenTheNextAppSession() async throws {
         let model = SessionWorkspaceFixture.model()
         let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
         let adapter = FixtureMultiplexerAdapter(fixture: .tmuxCluster)
         try await install(adapter, on: model, for: sessionID)
 
@@ -26,6 +26,7 @@ import Testing
         #expect(model.sessionMuxIDs[sessionID] == Self.main)
         #expect(
             await adapter.switchLog.switches == [
+                MuxSessionSwitch(target: Self.api, source: Self.main),
                 MuxSessionSwitch(target: Self.infra, source: Self.api),
                 MuxSessionSwitch(target: Self.main, source: Self.infra),
             ]
@@ -35,6 +36,7 @@ import Testing
     @Test func aBackwardWalkVisitsEveryMuxSessionAndWrapsOnALoneAppSession() async throws {
         let model = SessionWorkspaceFixture.model("single")
         let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
         try await install(
             FixtureMultiplexerAdapter(fixture: .tmuxCluster),
             on: model,
@@ -56,6 +58,7 @@ import Testing
     @Test func aBindingMissingFromTheListReentersTheRingAsUnbound() async throws {
         let model = SessionWorkspaceFixture.model()
         let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
         try await install(
             FixtureMultiplexerAdapter(fixture: .tmuxCluster),
             on: model,
@@ -77,7 +80,7 @@ import Testing
         let toasts = StatusToastCenter()
         model.statusToasts = toasts
         let sessionID = try #require(model.activeSessionID)
-        model.connections[sessionID] = Self.attachedHerdrConnection()
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "herdr")
         let adapter = FixtureMultiplexerAdapter(fixture: .herdrCluster)
         try await install(adapter, on: model, for: sessionID)
         model.rememberMuxSession(Self.herdrDefault, for: sessionID)
@@ -119,17 +122,6 @@ import Testing
     ) async throws {
         model.replaceMultiplexer(for: sessionID, with: adapter)
         try await waitUntil { model.muxSessionCache.sessions(for: sessionID).count > 1 }
-    }
-
-    private static func attachedHerdrConnection() -> MockRemoteConnection {
-        MockRemoteConnection(
-            connectionID: ConnectionID(rawValue: "attached"),
-            script: MockControlScript(
-                duration: .zero,
-                sections: ["foreground": Data("P herdr\n".utf8)]
-            ),
-            clientPort: 51234
-        )
     }
 
     private static let main = MuxSessionID(rawValue: "$1")
