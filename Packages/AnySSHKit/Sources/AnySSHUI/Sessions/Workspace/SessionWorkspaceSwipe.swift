@@ -47,13 +47,18 @@ extension SessionWorkspaceModel {
     }
 
     func refreshMuxSessions(for sessionID: SessionID, using adapter: any MultiplexerAdapter) async {
+        let generation = muxSessionCache.generation(for: sessionID)
         guard let sessions = try? await adapter.listSessions() else { return }
-        muxSessionCache.store(sessions, for: sessionID)
+        muxSessionCache.store(sessions, for: sessionID, generation: generation)
     }
 
     func cacheMuxSessions(_ sessions: [MuxSession]) {
         guard let activeSessionID else { return }
-        muxSessionCache.store(sessions, for: activeSessionID)
+        muxSessionCache.store(
+            sessions,
+            for: activeSessionID,
+            generation: muxSessionCache.generation(for: activeSessionID)
+        )
     }
 
     private func hop(
