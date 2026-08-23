@@ -17,7 +17,6 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        muxSwipeRefusedSessionIDs.remove(sessionID)
         muxSessionCache.clear(for: sessionID)
         guard let adapter else {
             sessionMuxIDs.removeValue(forKey: sessionID)
