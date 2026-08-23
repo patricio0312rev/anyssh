@@ -48,6 +48,18 @@ public struct TmuxParser: Sendable {
         return MuxSnapshot(session: session, groups: groups, panes: panes)
     }
 
+    public func client(attachedTo session: MuxSessionID, in text: String) -> String? {
+        for line in nonEmptyLines(text) {
+            let columns = line.split(separator: "\t", omittingEmptySubsequences: false)
+                .map(String.init)
+            guard columns.count >= 3, !columns[0].isEmpty else { continue }
+            if columns[1] == session.rawValue || columns[2] == session.rawValue {
+                return columns[0]
+            }
+        }
+        return nil
+    }
+
     public func prefix(from text: String) -> String {
         text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
