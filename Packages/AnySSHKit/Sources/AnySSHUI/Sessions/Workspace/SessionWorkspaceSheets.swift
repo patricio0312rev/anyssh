@@ -55,7 +55,10 @@ extension View {
                             directory: model.layoutDirectory,
                             writer: model.connection(for: sessionID),
                             probe: model.attachmentProbe(for: sessionID),
-                            onBoundSession: { [weak model] id in model?.rememberMuxSession(id) }
+                            onBoundSession: { [weak model] id in model?.rememberMuxSession(id) },
+                            onSessions: { [weak model] sessions in
+                                model?.cacheMuxSessions(sessions)
+                            }
                         ),
                         onDismiss: { isJumpToPresented.wrappedValue = false }
                     )
