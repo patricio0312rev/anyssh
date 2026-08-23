@@ -69,6 +69,79 @@ extension FixtureMultiplexerAdapter {
         )
     }
 
+    static func tree(for fixture: MuxFixture) -> FixtureMultiplexerTrees.Built {
+        switch fixture {
+        case .tmuxMain: tmuxFixture()
+        case .tmuxCluster: tmuxClusterFixture()
+        case .herdrCluster: herdrClusterFixture()
+        case .herdrDefault, .herdrProtocolMismatch, .absent: herdrFixture()
+        }
+    }
+
+    static func tmuxClusterFixture() -> FixtureMultiplexerTrees.Built {
+        cluster(
+            around: tmuxFixture(),
+            adding: [
+                detached(id: "$2", name: "api", repository: "api"),
+                detached(id: "$3", name: "infra", repository: "infra"),
+            ]
+        )
+    }
+
+    static func herdrClusterFixture() -> FixtureMultiplexerTrees.Built {
+        cluster(
+            around: herdrFixture(),
+            adding: [
+                detached(id: "review", name: "review", repository: "web"),
+                detached(id: "ops", name: "ops", repository: "infra"),
+            ]
+        )
+    }
+
+    private struct DetachedSession {
+        var session: MuxSession
+        var snapshot: MuxSnapshot
+    }
+
+    private static func cluster(
+        around base: FixtureMultiplexerTrees.Built,
+        adding extras: [DetachedSession]
+    ) -> FixtureMultiplexerTrees.Built {
+        var built = base
+        built.sessions += extras.map(\.session)
+        for extra in extras {
+            built.snapshots[extra.session.id] = extra.snapshot
+        }
+        return built
+    }
+
+    private static func detached(
+        id: String,
+        name: String,
+        repository: String
+    ) -> DetachedSession {
+        let session = MuxSession(id: MuxSessionID(rawValue: id), name: name, isAttached: false)
+        let group = MuxGroup(
+            id: MuxGroupID(rawValue: "\(id):@1"),
+            sessionID: session.id,
+            title: repository,
+            isActive: true
+        )
+        let pane = MuxPane(
+            id: MuxPaneID(rawValue: "\(id):%1"),
+            groupID: group.id,
+            title: "shell",
+            workingDirectory: "\(FixtureMultiplexerTrees.source)/\(repository)",
+            isActive: true,
+            agentStatus: nil,
+            repositoryRoot: "\(FixtureMultiplexerTrees.source)/\(repository)"
+        )
+        return DetachedSession(
+            session: session,
+            snapshot: MuxSnapshot(session: session, groups: [group], panes: [pane])
+        )
+    }
+
     private struct HerdrTab {
         var group: MuxGroup
         var panes: [MuxPane]
