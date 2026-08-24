@@ -6,14 +6,25 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     nonisolated let capabilities: MultiplexerCapabilities
 
     let switchLog = MuxSwitchLog()
+    let focusLog = MuxFocusLog()
 
     private let names: [String]
     private let refusesSwitch: Bool
+    private let refusesFocus: Bool
+    private let groupTitles: [String]
 
-    init(names: [String], kind: MultiplexerKind = .tmux, refusesSwitch: Bool = false) {
+    init(
+        names: [String],
+        kind: MultiplexerKind = .tmux,
+        refusesSwitch: Bool = false,
+        refusesFocus: Bool = false,
+        groupTitles: [String] = ["window"]
+    ) {
         self.names = names
         self.kind = kind
         self.refusesSwitch = refusesSwitch
+        self.refusesFocus = refusesFocus
+        self.groupTitles = groupTitles
         capabilities = kind == .herdr ? .herdr : .tmux
     }
 
@@ -26,7 +37,19 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     }
 
     func snapshot(_ session: MuxSession.ID) async throws -> MuxSnapshot {
-        throw ErrorState.command(.failed)
+        let sessions = try await listSessions()
+        guard let match = sessions.first(where: { $0.id == session }) else {
+            throw ErrorState.mux(.attachTargetVanished)
+        }
+        let groups = groupTitles.enumerated().map { index, title in
+            MuxGroup(
+                id: MuxGroupID(rawValue: "\(session.rawValue):\(title)"),
+                sessionID: session,
+                title: title,
+                isActive: index == 0
+            )
+        }
+        return MuxSnapshot(session: match, groups: groups, panes: [])
     }
 
     func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String { "" }
@@ -35,7 +58,10 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
         MuxKeyBindings(prefix: "C-b", chords: [:])
     }
 
-    func focus(_ target: MuxTarget) async throws {}
+    func focus(_ target: MuxTarget) async throws {
+        guard !refusesFocus else { throw ErrorState.mux(.attachTargetVanished) }
+        await focusLog.record(target)
+    }
 
     func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
         guard !refusesSwitch else { throw ErrorState.mux(.sessionSwitchUnsupported) }
