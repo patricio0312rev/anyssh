@@ -7,9 +7,15 @@ extension SessionWorkspaceModel {
         skippingMux: Bool = false
     ) -> SessionSwipeRing.Target? {
         guard let activeSessionID else { return nil }
+        let topology =
+            skippingMux
+            ? SessionMuxTopologyCache.Topology()
+            : muxTopologyCache.topology(for: activeSessionID)
         let ring = SessionSwipeRing(
-            muxSessions: skippingMux ? [] : muxSessionCache.sessions(for: activeSessionID),
+            muxSessions: topology.sessions,
             boundMuxSession: sessionMuxIDs[activeSessionID],
+            boundGroups: topology.groups,
+            focusedGroup: sessionMuxGroupIDs[activeSessionID],
             appSessionIDs: registry.ids,
             activeSessionID: activeSessionID
         )
@@ -17,70 +23,120 @@ extension SessionWorkspaceModel {
     }
 
     func hop(toMuxSession target: MuxSessionID, onSkip: @escaping @MainActor () -> Void = {}) {
+        guard let context = hopContext() else { return }
+        isHoppingMuxSession = true
+        Task { [weak self] in
+            await self?.hop(toMuxSession: target, in: context, onSkip: onSkip)
+        }
+    }
+
+    func hop(toMuxGroup target: MuxGroupID, onSkip: @escaping @MainActor () -> Void = {}) {
+        guard let context = hopContext(), let bound = sessionMuxIDs[context.sessionID] else {
+            return
+        }
+        isHoppingMuxSession = true
+        Task { [weak self] in
+            await self?.hop(toMuxGroup: target, of: bound, in: context, onSkip: onSkip)
+        }
+    }
+
+    func primeMuxTopology() async {
+        guard let sessionID = activeSessionID, let adapter = activeMultiplexerAdapter else {
+            return
+        }
+        await refreshMuxTopology(for: sessionID, using: adapter)
+    }
+
+    func scheduleMuxTopologyRefresh(for sessionID: SessionID) {
+        guard let adapter = sessionAdapters[sessionID] ?? multiplexerAdapter else { return }
+        Task { [weak self] in
+            await self?.refreshMuxTopology(for: sessionID, using: adapter)
+        }
+    }
+
+    func refreshMuxTopology(for sessionID: SessionID, using adapter: any MultiplexerAdapter) async {
+        let generation = muxTopologyCache.generation(for: sessionID)
+        do {
+            let sessions = try await adapter.listSessions()
+            let groups = try await boundGroups(for: sessionID, in: sessions, using: adapter)
+            muxTopologyCache.store(
+                SessionMuxTopologyCache.Topology(sessions: sessions, groups: groups),
+                for: sessionID,
+                generation: generation
+            )
+        } catch {
+            muxTopologyCache.clear(for: sessionID)
+        }
+    }
+
+    private func boundGroups(
+        for sessionID: SessionID,
+        in sessions: [MuxSession],
+        using adapter: any MultiplexerAdapter
+    ) async throws -> [MuxGroup] {
+        guard let bound = sessionMuxIDs[sessionID], sessions.contains(where: { $0.id == bound })
+        else { return [] }
+        return try await adapter.snapshot(bound).groups
+    }
+
+    private func hopContext() -> HopContext? {
         guard !isHoppingMuxSession,
             let sessionID = activeSessionID,
             let adapter = activeMultiplexerAdapter,
             let connection = connections[sessionID]
-        else { return }
-        isHoppingMuxSession = true
-        let navigator = MuxNavigator(
+        else { return nil }
+        return HopContext(
+            sessionID: sessionID,
             adapter: adapter,
-            writer: connection,
-            probe: attachmentProbe(for: sessionID)
-        )
-        Task { [weak self] in
-            await self?.hop(
-                to: target,
-                of: sessionID,
-                using: adapter,
-                through: navigator,
-                onSkip: onSkip
+            navigator: MuxNavigator(
+                adapter: adapter,
+                writer: connection,
+                probe: attachmentProbe(for: sessionID)
             )
-        }
-    }
-
-    func primeMuxSessions() async {
-        guard let sessionID = activeSessionID, let adapter = activeMultiplexerAdapter else {
-            return
-        }
-        await refreshMuxSessions(for: sessionID, using: adapter)
-    }
-
-    func refreshMuxSessions(for sessionID: SessionID, using adapter: any MultiplexerAdapter) async {
-        let generation = muxSessionCache.generation(for: sessionID)
-        do {
-            let sessions = try await adapter.listSessions()
-            muxSessionCache.store(sessions, for: sessionID, generation: generation)
-        } catch {
-            muxSessionCache.clear(for: sessionID)
-        }
-    }
-
-    func cacheMuxSessions(_ sessions: [MuxSession], for sessionID: SessionID) {
-        muxSessionCache.store(
-            sessions,
-            for: sessionID,
-            generation: muxSessionCache.generation(for: sessionID)
         )
     }
 
     private func hop(
-        to target: MuxSessionID,
-        of sessionID: SessionID,
-        using adapter: any MultiplexerAdapter,
-        through navigator: MuxNavigator,
+        toMuxSession target: MuxSessionID,
+        in context: HopContext,
         onSkip: @MainActor () -> Void
     ) async {
         var skipped = false
         do {
-            let outcome = try await navigator.jump(toSession: target)
-            skipped = announce(outcome, target: target, of: sessionID)
+            let outcome = try await context.navigator.jump(toSession: target)
+            skipped = announce(outcome, target: target, of: context.sessionID)
         } catch {
-            statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
+            announceFailure(error)
         }
+        await settle(skipped: skipped, in: context, onSkip: onSkip)
+    }
+
+    private func hop(
+        toMuxGroup target: MuxGroupID,
+        of bound: MuxSessionID,
+        in context: HopContext,
+        onSkip: @MainActor () -> Void
+    ) async {
+        var skipped = false
+        do {
+            let outcome = try await context.navigator.jump(
+                toGroup: MuxTarget(session: bound, group: target)
+            )
+            skipped = announce(outcome, group: target, of: context.sessionID)
+        } catch {
+            announceFailure(error)
+        }
+        await settle(skipped: skipped, in: context, onSkip: onSkip)
+    }
+
+    private func settle(
+        skipped: Bool,
+        in context: HopContext,
+        onSkip: @MainActor () -> Void
+    ) async {
         isHoppingMuxSession = false
         if skipped { onSkip() }
-        await refreshMuxSessions(for: sessionID, using: adapter)
+        await refreshMuxTopology(for: context.sessionID, using: context.adapter)
     }
 
     private func announce(
@@ -91,28 +147,66 @@ extension SessionWorkspaceModel {
         switch outcome {
         case .attached, .focused:
             rememberMuxSession(target, for: sessionID)
-            statusToasts?.present(
-                severity: .success,
-                title: MuxNavigationCopy.switched(to: name(of: target, in: sessionID)),
-                accessibilityIdentifier: UIIdentifier.Session.muxSwitchToast
-            )
+            announceSwitch(to: name(of: target, in: sessionID))
             return false
         case .focusedElsewhere, .skipped:
-            statusToasts?.present(
-                severity: .attention,
-                title: MuxNavigationCopy.focused(in: boundName(in: sessionID)),
-                body: MuxNavigationCopy.detachToSwitch
-            )
+            announceRefusal(in: sessionID)
             return true
         }
     }
 
+    private func announce(
+        _ outcome: MuxJumpOutcome,
+        group target: MuxGroupID,
+        of sessionID: SessionID
+    ) -> Bool {
+        switch outcome {
+        case .attached, .focused:
+            rememberMuxGroup(target, for: sessionID)
+            announceSwitch(to: title(of: target, in: sessionID))
+            return false
+        case .focusedElsewhere, .skipped:
+            announceRefusal(in: sessionID)
+            return true
+        }
+    }
+
+    private func announceFailure(_ error: any Error) {
+        statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
+    }
+
+    private func announceSwitch(to name: String) {
+        statusToasts?.present(
+            severity: .success,
+            title: MuxNavigationCopy.switched(to: name),
+            accessibilityIdentifier: UIIdentifier.Session.muxSwitchToast
+        )
+    }
+
+    private func announceRefusal(in sessionID: SessionID) {
+        statusToasts?.present(
+            severity: .attention,
+            title: MuxNavigationCopy.focused(in: boundName(in: sessionID)),
+            body: MuxNavigationCopy.detachToSwitch
+        )
+    }
+
     private func name(of target: MuxSessionID, in sessionID: SessionID) -> String {
-        muxSessionCache.sessions(for: sessionID).first { $0.id == target }?.name ?? target.rawValue
+        muxTopologyCache.sessions(for: sessionID).first { $0.id == target }?.name ?? target.rawValue
+    }
+
+    private func title(of group: MuxGroupID, in sessionID: SessionID) -> String {
+        muxTopologyCache.groups(for: sessionID).first { $0.id == group }?.title ?? group.rawValue
     }
 
     private func boundName(in sessionID: SessionID) -> String {
         guard let bound = sessionMuxIDs[sessionID] else { return MuxNavigationCopy.currentSession }
         return name(of: bound, in: sessionID)
     }
+}
+
+private struct HopContext: Sendable {
+    let sessionID: SessionID
+    let adapter: any MultiplexerAdapter
+    let navigator: MuxNavigator
 }
