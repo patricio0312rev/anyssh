@@ -6,4 +6,8 @@ enum MuxNavigationCopy {
     static let detachToSwitch = "Detach to switch sessions."
 
     static let currentSession = "this session"
+
+    static let switchedSession = "Switched session"
+
+    static let switchedTab = "Switched tab"
 }
