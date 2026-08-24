@@ -35,8 +35,9 @@ public struct GestureSettingsView: View {
         } footer: {
             SectionCaption(
                 """
-                Swipe left or right to walk the multiplexer sessions on this host first, \
-                then the other connections. Unbound leaves the swipe unused.
+                Swipe left or right to walk the tabs of the current multiplexer session first, \
+                then its other sessions, then the other connections. Unbound leaves the swipe \
+                unused.
                 """
             )
         }
