@@ -129,7 +129,9 @@ extension SessionWorkspaceModel {
         {
             applyWorkspace(location, to: sessionID)
         }
-        rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID, replacing: true)
+        let paneTitle = pane.flatMap { $0.title == $0.id.rawValue ? nil : $0.title }
+        let groupTitle = group.flatMap { $0.title == $0.id.rawValue ? nil : $0.title }
+        rememberAgentSessionTitle(paneTitle ?? groupTitle, for: sessionID, replacing: true)
         if let kind = detector.detect(
             signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
                 $0
