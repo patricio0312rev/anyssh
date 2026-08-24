@@ -107,7 +107,7 @@ import Testing
         for sessionID: SessionID
     ) async throws {
         model.replaceMultiplexer(for: sessionID, with: adapter)
-        try await waitUntil { !model.muxSessionCache.sessions(for: sessionID).isEmpty }
+        try await waitUntil { !model.muxTopologyCache.sessions(for: sessionID).isEmpty }
     }
 
     private static let alpha = MuxSessionID(rawValue: "alpha")
