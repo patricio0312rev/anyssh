@@ -6,7 +6,7 @@ import Testing
 @testable import AnySSHUI
 
 @Suite @MainActor struct SessionSwipeRingWalkTests {
-    @Test func aForwardWalkVisitsEveryMuxSessionThenTheNextAppSession() async throws {
+    @Test func aForwardWalkVisitsEveryMuxSessionThenTheTabsOfTheLastOne() async throws {
         let model = SessionWorkspaceFixture.model()
         let sessionID = try #require(model.activeSessionID)
         model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
@@ -20,7 +20,7 @@ import Testing
                 .muxSession(Self.api),
                 .muxSession(Self.infra),
                 .muxSession(Self.main),
-                .appSession(model.registry.ids[1]),
+                .muxGroup(Self.tests),
             ]
         )
         #expect(model.sessionMuxIDs[sessionID] == Self.main)
@@ -99,7 +99,10 @@ import Testing
         #expect(
             model.swipeTarget(.backward, skippingMux: true) == .appSession(model.registry.ids[3])
         )
-        #expect(model.swipeTarget(.forward) == .muxSession(Self.ops))
+
+        try await settle(model, for: sessionID)
+
+        #expect(model.swipeTarget(.forward) == .muxGroup(Self.herdrWeb))
     }
 
     private func walk(
@@ -107,15 +110,27 @@ import Testing
         steps: Int,
         on model: SessionWorkspaceModel
     ) async throws -> [SessionSwipeRing.Target] {
+        guard let sessionID = model.activeSessionID else { return [] }
         var visited = [SessionSwipeRing.Target]()
         for _ in 0..<steps {
             guard let target = model.swipeTarget(direction) else { break }
             visited.append(target)
-            guard case .muxSession(let muxSessionID) = target else { break }
-            model.hop(toMuxSession: muxSessionID)
-            try await waitUntil { !model.isHoppingMuxSession }
+            switch target {
+            case .muxGroup(let muxGroupID): model.hop(toMuxGroup: muxGroupID)
+            case .muxSession(let muxSessionID): model.hop(toMuxSession: muxSessionID)
+            case .appSession: return visited
+            }
+            try await settle(model, for: sessionID)
         }
         return visited
+    }
+
+    private func settle(_ model: SessionWorkspaceModel, for sessionID: SessionID) async throws {
+        try await waitUntil { !model.isHoppingMuxSession }
+        guard let bound = model.sessionMuxIDs[sessionID] else { return }
+        try await waitUntil {
+            model.muxTopologyCache.groups(for: sessionID).first?.sessionID == bound
+        }
     }
 
     private func install(
@@ -124,21 +139,15 @@ import Testing
         for sessionID: SessionID
     ) async throws {
         model.replaceMultiplexer(for: sessionID, with: adapter)
-        try await waitUntil { model.muxSessionCache.sessions(for: sessionID).count > 1 }
+        try await waitUntil { model.muxTopologyCache.sessions(for: sessionID).count > 1 }
     }
 
     private static let main = MuxSessionID(rawValue: "$1")
     private static let api = MuxSessionID(rawValue: "$2")
     private static let infra = MuxSessionID(rawValue: "$3")
+    private static let tests = MuxGroupID(rawValue: "@2")
     private static let vanished = MuxSessionID(rawValue: "$9")
     private static let herdrDefault = MuxSessionID(rawValue: "default")
     private static let ops = MuxSessionID(rawValue: "ops")
-}
-
-@MainActor private final class SkipRecorder {
-    private(set) var count = 0
-
-    func record() {
-        count += 1
-    }
+    private static let herdrWeb = MuxGroupID(rawValue: "w1:t2")
 }
