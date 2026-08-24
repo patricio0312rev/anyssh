@@ -57,13 +57,12 @@ extension View {
                             probe: model.attachmentProbe(for: sessionID),
                             onBoundSession: { [weak model] id in
                                 model?.rememberMuxSession(id, for: sessionID)
-                            },
-                            onSessions: { [weak model] sessions in
-                                model?.cacheMuxSessions(sessions, for: sessionID)
+                                model?.scheduleMuxTopologyRefresh(for: sessionID)
                             }
                         ),
                         onDismiss: { isJumpToPresented.wrappedValue = false }
                     )
+                    .task { await model.refreshMuxTopology(for: sessionID, using: adapter) }
                 }
             }
     }
