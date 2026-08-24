@@ -137,6 +137,8 @@ extension SessionWorkspaceModel {
         isHoppingMuxSession = false
         if skipped { onSkip() }
         await refreshMuxTopology(for: context.sessionID, using: context.adapter)
+        guard !skipped else { return }
+        await detectAgent(for: context.sessionID)
     }
 
     private func announce(
@@ -147,7 +149,10 @@ extension SessionWorkspaceModel {
         switch outcome {
         case .attached, .focused:
             rememberMuxSession(target, for: sessionID)
-            announceSwitch(to: name(of: target, in: sessionID))
+            announceSwitch(
+                name(of: target, in: sessionID).map(MuxNavigationCopy.switched(to:))
+                    ?? MuxNavigationCopy.switchedSession
+            )
             return false
         case .focusedElsewhere, .skipped:
             announceRefusal(in: sessionID)
@@ -163,7 +168,10 @@ extension SessionWorkspaceModel {
         switch outcome {
         case .attached, .focused:
             rememberMuxGroup(target, for: sessionID)
-            announceSwitch(to: title(of: target, in: sessionID))
+            announceSwitch(
+                title(of: target, in: sessionID).map(MuxNavigationCopy.switched(to:))
+                    ?? MuxNavigationCopy.switchedTab
+            )
             return false
         case .focusedElsewhere, .skipped:
             announceRefusal(in: sessionID)
@@ -175,10 +183,10 @@ extension SessionWorkspaceModel {
         statusToasts?.present(state: (error as? ErrorState) ?? .mux(.attachTargetVanished))
     }
 
-    private func announceSwitch(to name: String) {
+    private func announceSwitch(_ title: String) {
         statusToasts?.present(
             severity: .success,
-            title: MuxNavigationCopy.switched(to: name),
+            title: title,
             accessibilityIdentifier: UIIdentifier.Session.muxSwitchToast
         )
     }
@@ -191,17 +199,20 @@ extension SessionWorkspaceModel {
         )
     }
 
-    private func name(of target: MuxSessionID, in sessionID: SessionID) -> String {
-        muxTopologyCache.sessions(for: sessionID).first { $0.id == target }?.name ?? target.rawValue
+    private func name(of target: MuxSessionID, in sessionID: SessionID) -> String? {
+        muxTopologyCache.sessions(for: sessionID).first { $0.id == target }?.name
     }
 
-    private func title(of group: MuxGroupID, in sessionID: SessionID) -> String {
-        muxTopologyCache.groups(for: sessionID).first { $0.id == group }?.title ?? group.rawValue
+    private func title(of group: MuxGroupID, in sessionID: SessionID) -> String? {
+        let title = muxTopologyCache.groups(for: sessionID).first { $0.id == group }?.title
+        return title == group.rawValue ? nil : title
     }
 
     private func boundName(in sessionID: SessionID) -> String {
-        guard let bound = sessionMuxIDs[sessionID] else { return MuxNavigationCopy.currentSession }
-        return name(of: bound, in: sessionID)
+        guard let bound = sessionMuxIDs[sessionID],
+            let name = name(of: bound, in: sessionID)
+        else { return MuxNavigationCopy.currentSession }
+        return name
     }
 }
 
