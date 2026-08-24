@@ -17,7 +17,8 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        muxSessionCache.clear(for: sessionID)
+        muxTopologyCache.clear(for: sessionID)
+        sessionMuxGroupIDs.removeValue(forKey: sessionID)
         guard let adapter else {
             sessionMuxIDs.removeValue(forKey: sessionID)
             if !publishedAgentTitleIDs.contains(sessionID) {
@@ -26,7 +27,7 @@ extension SessionWorkspaceModel {
             return
         }
         Task { [weak self] in
-            await self?.refreshMuxSessions(for: sessionID, using: adapter)
+            await self?.refreshMuxTopology(for: sessionID, using: adapter)
         }
         guard adapter.kind == .herdr else { return }
         startStallWatcher(for: sessionID, adapter: adapter)
