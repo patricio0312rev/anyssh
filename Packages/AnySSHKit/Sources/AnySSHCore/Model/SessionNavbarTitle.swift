@@ -55,7 +55,13 @@ public enum SessionNavbarTitle {
     }
 
     public static func isUsableAgentSessionTitle(_ title: String) -> Bool {
-        !genericPaneTitles.contains(title.lowercased())
+        guard !genericPaneTitles.contains(title.lowercased()) else { return false }
+        return !isMuxIdentifier(title)
+    }
+
+    private static func isMuxIdentifier(_ title: String) -> Bool {
+        if title.wholeMatch(of: /[%@$]\d+/) != nil { return true }
+        return title.wholeMatch(of: /\S+:[pt]\d+/) != nil
     }
 
     private static let genericPaneTitles: Set<String> = [
