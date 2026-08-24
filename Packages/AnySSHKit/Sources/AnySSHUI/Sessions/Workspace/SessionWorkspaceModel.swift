@@ -54,7 +54,7 @@ public final class SessionWorkspaceModel {
     public weak var statusToasts: StatusToastCenter?
 
     let lastDirectories = LastDirectoryStore.applicationSupport()
-    let muxSessionCache = SessionMuxSessionCache()
+    let muxTopologyCache = SessionMuxTopologyCache()
 
     var isHoppingMuxSession = false
     var scopes = [SessionID: SessionActivityScope]()
@@ -65,6 +65,7 @@ public final class SessionWorkspaceModel {
     var sessionAgentKinds = [SessionID: AgentKind]()
     var sessionAgentTitles = [SessionID: String]()
     var sessionMuxIDs = [SessionID: MuxSessionID]()
+    var sessionMuxGroupIDs = [SessionID: MuxGroupID]()
     var publishedAgentTitleIDs = Set<SessionID>()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
