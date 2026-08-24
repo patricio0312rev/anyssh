@@ -21,15 +21,13 @@ public final class JumpToModel {
     private let navigator: MuxNavigator?
     private let directory: URL?
     private let onBoundSession: ((MuxSessionID) -> Void)?
-    private let onSessions: (([MuxSession]) -> Void)?
 
     public init(
         adapter: any MultiplexerAdapter,
         directory: URL?,
         writer: (any DisplayWriter)?,
         probe: MuxNavigator.AttachmentProbe? = nil,
-        onBoundSession: ((MuxSessionID) -> Void)? = nil,
-        onSessions: (([MuxSession]) -> Void)? = nil
+        onBoundSession: ((MuxSessionID) -> Void)? = nil
     ) {
         self.adapter = adapter
         navigator = writer.map {
@@ -37,7 +35,6 @@ public final class JumpToModel {
         }
         self.directory = directory
         self.onBoundSession = onBoundSession
-        self.onSessions = onSessions
         kind = adapter.kind
         layout = JumpLayoutPreference.load(from: directory)
     }
@@ -52,7 +49,6 @@ public final class JumpToModel {
         navigator = nil
         directory = nil
         onBoundSession = nil
-        onSessions = nil
         self.kind = kind
         self.layout = layout
     }
@@ -79,7 +75,6 @@ public final class JumpToModel {
         defer { isLoading = false }
         do {
             let listed = try await adapter.listSessions()
-            onSessions?(listed)
             let collected = await MuxSnapshotLoader.collect(sessions: listed, using: adapter)
             if collected.isEmpty, let failure = collected.failure { throw failure }
             sessions = JumpTreeBuilder.build(
