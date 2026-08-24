@@ -49,10 +49,40 @@ public struct MuxNavigator: Sendable {
         }
     }
 
+    public func jump(toGroup target: MuxTarget) async throws -> MuxJumpOutcome {
+        let refused = MuxJumpOutcome.skipped(target.session)
+        switch await probe() {
+        case .attached(let bound):
+            guard bound == target.session else { return refused }
+            return try await focusing(target, whenRefused: refused)
+        case .detached:
+            let bytes = attachBytes(for: target)
+            guard !bytes.isEmpty else { throw ErrorState.mux(.attachTargetVanished) }
+            let outcome = try await focusing(target, whenRefused: refused)
+            guard outcome == .focused else { return refused }
+            try await writer.send(bytes[...])
+            return .attached
+        case .unknown:
+            return refused
+        }
+    }
+
     public func attachBytes(for target: MuxTarget) -> [UInt8] {
         let command = adapter.attachCommand(target)
         guard !command.isEmpty else { return [] }
         return Array((command + Self.submit).utf8)
+    }
+
+    private func focusing(
+        _ target: MuxTarget,
+        whenRefused refused: MuxJumpOutcome
+    ) async throws -> MuxJumpOutcome {
+        do {
+            try await adapter.focus(target)
+            return .focused
+        } catch let state as ErrorState where Self.refusals.contains(state) {
+            return refused
+        }
     }
 
     private func switching(
