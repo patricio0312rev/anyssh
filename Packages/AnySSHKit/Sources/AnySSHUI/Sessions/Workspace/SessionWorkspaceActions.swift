@@ -17,18 +17,24 @@ extension SessionWorkspaceView {
     private func swipe(_ direction: SessionSwipeRing.Direction, edge: Edge, command: String) {
         guard let target = model.swipeTarget(direction) else { return }
         switch target {
+        case .muxGroup(let muxGroupID):
+            model.hop(toMuxGroup: muxGroupID) { fallBackToAppSession(direction, edge, command) }
         case .muxSession(let muxSessionID):
-            model.hop(toMuxSession: muxSessionID) {
-                guard case .appSession = model.swipeTarget(direction, skippingMux: true) else {
-                    return
-                }
-                switchEdge = edge
-                commandRegistry.run(id: command)
-            }
+            model.hop(toMuxSession: muxSessionID) { fallBackToAppSession(direction, edge, command) }
         case .appSession:
             switchEdge = edge
             commandRegistry.run(id: command)
         }
+    }
+
+    private func fallBackToAppSession(
+        _ direction: SessionSwipeRing.Direction,
+        _ edge: Edge,
+        _ command: String
+    ) {
+        guard case .appSession = model.swipeTarget(direction, skippingMux: true) else { return }
+        switchEdge = edge
+        commandRegistry.run(id: command)
     }
 
     func send(_ text: String) {
