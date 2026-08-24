@@ -79,13 +79,25 @@ extension FixtureMultiplexerAdapter {
     }
 
     static func tmuxClusterFixture() -> FixtureMultiplexerTrees.Built {
-        cluster(
+        var built = cluster(
             around: tmuxFixture(),
             adding: [
                 detached(id: "$2", name: "api", repository: "api"),
                 detached(id: "$3", name: "infra", repository: "infra"),
             ]
         )
+        let main = MuxSession(id: MuxSessionID(rawValue: "$1"), name: "main", isAttached: true)
+        let windows = [
+            window(in: main.id, id: "@1", title: "code", isActive: true),
+            window(in: main.id, id: "@2", title: "tests", isActive: false),
+            window(in: main.id, id: "@3", title: "logs", isActive: false),
+        ]
+        built.snapshots[main.id] = MuxSnapshot(
+            session: main,
+            groups: windows.map(\.group),
+            panes: windows.map(\.pane)
+        )
+        return built
     }
 
     static func herdrClusterFixture() -> FixtureMultiplexerTrees.Built {
@@ -95,6 +107,37 @@ extension FixtureMultiplexerAdapter {
                 detached(id: "review", name: "review", repository: "web"),
                 detached(id: "ops", name: "ops", repository: "infra"),
             ]
+        )
+    }
+
+    private struct Window {
+        var group: MuxGroup
+        var pane: MuxPane
+    }
+
+    private static func window(
+        in session: MuxSessionID,
+        id: String,
+        title: String,
+        isActive: Bool
+    ) -> Window {
+        let group = MuxGroup(
+            id: MuxGroupID(rawValue: id),
+            sessionID: session,
+            title: title,
+            isActive: isActive
+        )
+        return Window(
+            group: group,
+            pane: MuxPane(
+                id: MuxPaneID(rawValue: "%\(id.dropFirst())"),
+                groupID: group.id,
+                title: title,
+                workingDirectory: "\(FixtureMultiplexerTrees.source)/\(title)",
+                isActive: isActive,
+                agentStatus: nil,
+                repositoryRoot: nil
+            )
         )
     }
 
