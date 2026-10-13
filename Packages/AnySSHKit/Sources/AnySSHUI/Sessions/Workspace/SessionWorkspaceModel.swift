@@ -67,6 +67,7 @@ public final class SessionWorkspaceModel {
     var sessionAgentTitles = [SessionID: String]()
     var sessionMuxIDs = [SessionID: MuxSessionID]()
     var sessionMuxGroupIDs = [SessionID: MuxGroupID]()
+    var sessionsInsideMux = Set<SessionID>()
     var publishedAgentTitleIDs = Set<SessionID>()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
