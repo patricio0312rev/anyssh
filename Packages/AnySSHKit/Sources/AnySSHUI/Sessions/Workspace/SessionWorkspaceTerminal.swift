@@ -9,7 +9,8 @@ extension SessionWorkspaceView {
                 engine: surface.engine,
                 onSessionSwitch: presentSwitcher,
                 onGesture: handleGesture,
-                commandRegistry: commandRegistry
+                commandRegistry: commandRegistry,
+                keyboardLock: model.keyboardLock
             )
             .onAppear { model.firstFramePresented(for: surface.sessionID) }
             VStack(spacing: 0) {
