@@ -88,6 +88,7 @@ extension SessionWorkspaceModel {
         let detector = AgentKindDetector()
         let terminalTitle = sessionAgentTitles[sessionID] ?? registry[sessionID]?.title
         let probe = await probeSession(sessionID)
+        noteForeground(probe.processNames, for: sessionID)
         if sessionAdapters[sessionID] == nil, let directory = probe.directory {
             applyWorkspace(
                 WorkspaceLocation(path: directory, provenance: .process),
