@@ -78,7 +78,8 @@ struct SessionSwipeRing: Sendable {
     }
 
     private static func anchor(in groups: [MuxGroup], focused: MuxGroupID?) -> Int {
+        if let index = groups.firstIndex(where: \.isActive) { return index }
         if let focused, let index = groups.firstIndex(where: { $0.id == focused }) { return index }
-        return groups.firstIndex(where: \.isActive) ?? 0
+        return 0
     }
 }
