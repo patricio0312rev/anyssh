@@ -46,16 +46,22 @@ extension SessionWorkspaceModel {
         state: ErrorState
     ) async {
         recordOpenFailure(state, remoteID: remoteID)
-        let wasActive = activeSessionID == sessionID
         await tearDown(sessionID, reason: .failed(stateID: state.stateID))
-        guard wasActive else { return }
-        promoteNextSession()
     }
 
     func tearDown(_ id: SessionID, reason: DisconnectReason) async {
         if pendingSwitch?.id == id { clearPendingSwitch() }
         registry.update(id, state: .disconnected(.closedByUser), at: Date.now)
         _ = registry.close(id)
+        let scope = discardState(of: id)
+        if activeSessionID == id { promoteNextSession() }
+        await scope?.cancelAll(reason: reason)
+        await store.close(id, reason: reason)
+        await activityCoordinator?.close(id)
+    }
+
+    @discardableResult
+    func discardState(of id: SessionID) -> SessionActivityScope? {
         let scope = scopes.removeValue(forKey: id)
         connections.removeValue(forKey: id)
         sessionAdapters.removeValue(forKey: id)
@@ -69,9 +75,7 @@ extension SessionWorkspaceModel {
         barModels.removeValue(forKey: id)
         stallWatchers.removeValue(forKey: id)?.cancel()
         authBridges.removeValue(forKey: id)?.discardTypedPassword()
-        await scope?.cancelAll(reason: reason)
-        await store.close(id, reason: reason)
-        await activityCoordinator?.close(id)
+        return scope
     }
 
     func promoteNextSession() {
