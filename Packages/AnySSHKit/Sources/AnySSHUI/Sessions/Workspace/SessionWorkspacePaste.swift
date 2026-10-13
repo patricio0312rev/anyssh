@@ -10,7 +10,7 @@ extension SessionWorkspaceView {
         case .text(let text):
             emitPaste(text, into: surface)
         case .image(let image):
-            pasteImage(image, into: id)
+            uploadAndPaste(into: id) { await imagePaste.upload(image, over: $0) }
         case .empty:
             toasts.present(
                 severity: .attention,
@@ -28,7 +28,10 @@ extension SessionWorkspaceView {
         surface.engine.emitInput(ArraySlice(PastePayload(text).bytes(mode: mode)))
     }
 
-    private func pasteImage(_ image: PastedImage, into id: SessionID) {
+    func uploadAndPaste(
+        into id: SessionID,
+        upload: @escaping @MainActor (any RemoteConnection) async -> String?
+    ) {
         guard let connection = model.connection(for: id) else {
             toasts.present(state: .files(.fetchFailed))
             return
@@ -40,7 +43,7 @@ extension SessionWorkspaceView {
             accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageUploading
         )
         Task {
-            let path = await imagePaste.upload(image, over: connection)
+            let path = await upload(connection)
             toasts.retract(progress)
             guard let path else {
                 if case .failed(let failure) = imagePaste.outcome {
@@ -82,6 +85,13 @@ extension SessionWorkspaceView {
                 severity: .error,
                 title: ImagePasteCopy.tooLargeTitle,
                 body: ImagePasteCopy.tooLargeBody,
+                accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageFailed
+            )
+        case .photoUnavailable:
+            toasts.present(
+                severity: .error,
+                title: ImagePasteCopy.photoUnavailableTitle,
+                body: ImagePasteCopy.photoUnavailableBody,
                 accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageFailed
             )
         }
