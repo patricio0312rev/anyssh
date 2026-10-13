@@ -17,7 +17,8 @@ enum SessionWorkspaceFixture {
             remotes: RemoteFixtures.scenario("mixed"),
             activeSessionID: records.first?.id,
             connections: connections,
-            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) }
+            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) },
+            isWorkspacePresented: { true }
         )
     }
 
