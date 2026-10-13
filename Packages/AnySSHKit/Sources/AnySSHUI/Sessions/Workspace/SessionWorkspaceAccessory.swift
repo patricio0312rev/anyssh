@@ -45,7 +45,7 @@ extension SessionWorkspaceView {
                 onOpenAgents: model.showsMultiplexer ? { isAgentsPresented = true } : nil,
                 onOpenChanges: { presentedBrowser = .changes },
                 onOpenFiles: { presentedBrowser = .files },
-                onPaste: { commandRegistry.run(id: "app.paste") },
+                onPaste: { commandRegistry.run(id: AppCommandBinding.paste) },
                 showsKeyStrip: showsKeyStrip
             )
             .id(id)
