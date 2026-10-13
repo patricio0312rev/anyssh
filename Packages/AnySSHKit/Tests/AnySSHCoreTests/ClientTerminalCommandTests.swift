@@ -23,6 +23,24 @@ import Testing
         )
     }
 
+    @Test func theShellLookupSkipsPaddedNoTerminalChildrenAndWalksDown() throws {
+        let fakeProcessTable = """
+            ps() {
+              case "$*" in
+                "-axo pid=,ppid=") printf '  200   100\\n  201   100\\n  300   200\\n  400   999\\n' ;;
+                "-o tty= -p 200") printf '??      \\n' ;;
+                "-o tty= -p 201") printf '?\\n' ;;
+                "-o tty= -p 300") printf 'ttys007 \\n' ;;
+                "-o tty= -p 400") printf 'ttys999\\n' ;;
+              esac
+            }
+            pid=100
+            """
+        let script = fakeProcessTable + "\n" + ClientTerminalCommand.interactiveShellLookup + "\nprintf %s \"$shell\""
+        let outcome = try CommandsSubprocess.run("/bin/sh", ["-s"], stdin: Data(script.utf8))
+        #expect(String(decoding: outcome.stdout, as: UTF8.self) == "300")
+    }
+
     #if os(macOS)
     @Test func bothProbeScriptsParseUnderTheMacOSSystemShell() throws {
         for script in [
