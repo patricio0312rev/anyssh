@@ -86,6 +86,7 @@ extension SessionController {
             layoutDirectory: layoutDirectory,
             activityCoordinator: activityCoordinator,
             jobAlertScheduler: jobAlertScheduler,
+            isWorkspacePresented: { [weak self] in self?.isPresentingWorkspace ?? false },
             makeBrowserServices: browserServiceFactory
         )
     }

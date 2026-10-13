@@ -128,6 +128,89 @@ import Testing
         )
     }
 
+    @Test func listSessionsKeepsTheOrderTheHostPrinted() async throws {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.sessionsLabel: Data("$3\tzeta\t0\n$1\talpha\t1\n$2\tmid\t0\n".utf8)
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        let sessions = try await adapter.listSessions()
+
+        #expect(sessions.map(\.name) == ["zeta", "alpha", "mid"])
+        #expect(sessions.map(\.id.rawValue) == ["$3", "$1", "$2"])
+    }
+
+    @Test func switchingSessionsMovesTheClientAttachedToTheBoundSession() async throws {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: Data(
+                "/dev/ttys002\t$2\tagents\n/dev/ttys004\t$1\tmain\n".utf8
+            )
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        try await adapter.switchSession(
+            to: MuxSessionID(rawValue: "$2"),
+            from: MuxSessionID(rawValue: "$1")
+        )
+
+        #expect(
+            runner.batches.map { $0.commands.map(\.arguments) } == [
+                [["tmux", "list-clients", "-F", TmuxCommands.clientFormat]],
+                [["tmux", "switch-client", "-c", "/dev/ttys004", "-t", "$2"]],
+            ]
+        )
+    }
+
+    @Test func switchingSessionsResolvesTheClientByNameToo() async throws {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: Data("/dev/ttys004\t$1\tmain\n".utf8)
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        try await adapter.switchSession(
+            to: MuxSessionID(rawValue: "agents"),
+            from: MuxSessionID(rawValue: "main")
+        )
+
+        #expect(
+            runner.batches.last?.commands.map(\.arguments) == [
+                ["tmux", "switch-client", "-c", "/dev/ttys004", "-t", "agents"]
+            ]
+        )
+    }
+
+    @Test func switchingSessionsWithTwoClientsOnTheBoundSessionIsRefused() async {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: Data(
+                "/dev/ttys002\t$1\tmain\n/dev/ttys004\t$1\tmain\n".utf8
+            )
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.switchSession(
+                to: MuxSessionID(rawValue: "$2"),
+                from: MuxSessionID(rawValue: "$1")
+            )
+        }
+        #expect(runner.batches.count == 1)
+    }
+
+    @Test func switchingSessionsWithNoClientOnTheBoundSessionIsRefused() async {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: Data("/dev/ttys002\t$2\tagents\n".utf8)
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.switchSession(
+                to: MuxSessionID(rawValue: "$3"),
+                from: MuxSessionID(rawValue: "$1")
+            )
+        }
+        #expect(runner.batches.count == 1)
+    }
+
     @Test func focusingASessionWithoutAWindowOrPaneIsRefused() async {
         let runner = ScriptedMuxRunner(sections: [:])
         let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")

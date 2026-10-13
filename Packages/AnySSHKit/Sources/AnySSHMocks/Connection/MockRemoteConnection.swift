@@ -11,7 +11,7 @@ public actor MockRemoteConnection: RemoteConnection {
 
     public private(set) var displayState = TransportState.idle
     public private(set) var controlState = TransportState.idle
-    public var clientPort: Int? { nil }
+    public private(set) var clientPort: Int?
     public private(set) var openChannelCount = 0
     public private(set) var peakChannelCount = 0
     public private(set) var completedRuns = 0
@@ -29,11 +29,13 @@ public actor MockRemoteConnection: RemoteConnection {
     public init(
         connectionID: ConnectionID = ConnectionID(rawValue: "mock"),
         script: MockControlScript = MockControlScript(),
-        displayScript: MockDisplayScript = MockDisplayScript()
+        displayScript: MockDisplayScript = MockDisplayScript(),
+        clientPort: Int? = nil
     ) {
         self.connectionID = connectionID
         self.script = script
         self.displayScript = displayScript
+        self.clientPort = clientPort
     }
 
     public func setScript(_ script: MockControlScript) {

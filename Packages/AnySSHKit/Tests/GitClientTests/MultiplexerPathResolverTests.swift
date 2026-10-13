@@ -110,5 +110,6 @@ private struct SnapshotAdapter: MultiplexerAdapter {
     }
 
     func focus(_ target: MuxTarget) async throws {}
+    func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {}
     func attachCommand(_ target: MuxTarget) -> String { "" }
 }

@@ -70,6 +70,10 @@ struct StoppedSessionMuxAdapter: MultiplexerAdapter {
 
     func focus(_ target: MuxTarget) async throws {}
 
+    func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        throw ErrorState.mux(.sessionSwitchUnsupported)
+    }
+
     func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.herdr(binary: "herdr", target: target)
     }
@@ -101,6 +105,10 @@ struct EveryStoppedMuxAdapter: MultiplexerAdapter {
     }
 
     func focus(_ target: MuxTarget) async throws {}
+
+    func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        throw ErrorState.mux(.sessionSwitchUnsupported)
+    }
 
     func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.herdr(binary: "herdr", target: target)

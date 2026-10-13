@@ -35,6 +35,10 @@ public final class TerminalSurfaceStore {
         Set(surfaces.keys)
     }
 
+    public var drainingSessionIDs: Set<SessionID> {
+        Set(surfaces.filter { $0.value.isDraining }.keys)
+    }
+
     public func surface(for id: SessionID) -> TerminalSurface? {
         surfaces[id]
     }

@@ -68,6 +68,16 @@ import Testing
         #expect(SessionNavbarTitle.isUsableAgentSessionTitle("OC | Fixes for v0.1.2"))
     }
 
+    @Test func muxIdentifiersAreNotAgentSessionTitles() {
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("q1Q:p1"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w1:t2"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("%1"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("@3"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("$2"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("deploy: phase 1"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("api:v2"))
+    }
+
     private static let full = SessionTitleContext(
         sessionName: "build-box",
         agentSessionTitle: "OC | Fixes for v0.1.2",

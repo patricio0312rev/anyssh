@@ -2,6 +2,7 @@ public enum MuxErrorState: String, ErrorStateMember {
     case absent
     case protocolMismatch
     case attachTargetVanished
+    case sessionSwitchUnsupported
     case detachFailed
 
     public static let group = ErrorStateGroup.mux
@@ -29,6 +30,13 @@ public enum MuxErrorState: String, ErrorStateMember {
                     + "is still running.",
                 recoveryLabel: "Refresh"
             )
+        case .sessionSwitchUnsupported:
+            ErrorStateCopy(
+                title: "Session stays where it is",
+                body: "Herdr cannot move an attached terminal to another session. Detach first, then "
+                    + "attach to the session you want.",
+                recoveryLabel: "Dismiss"
+            )
         case .detachFailed:
             ErrorStateCopy(
                 title: "Could not detach",
@@ -42,6 +50,7 @@ public enum MuxErrorState: String, ErrorStateMember {
         switch self {
         case .absent, .protocolMismatch: 39
         case .attachTargetVanished: 40
+        case .sessionSwitchUnsupported: 61
         case .detachFailed: 52
         }
     }

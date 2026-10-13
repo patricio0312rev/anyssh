@@ -16,8 +16,10 @@ public final class SessionWorkspaceModel {
     public typealias BrowserServices = (git: any GitService, files: any RemoteFileBrowser)
     public typealias BrowserServiceFactory =
         @MainActor (any RemoteConnection, RemoteID) -> BrowserServices
+    public typealias PresentationPredicate = @MainActor () -> Bool
 
     let store: TerminalSurfaceStore
+    let isWorkspacePresented: PresentationPredicate
     let makeConnection: SessionConnectionFactory?
     let makeBrowserServices: BrowserServiceFactory
     let secrets: (any SecretStore)?
@@ -52,7 +54,9 @@ public final class SessionWorkspaceModel {
     public weak var statusToasts: StatusToastCenter?
 
     let lastDirectories = LastDirectoryStore.applicationSupport()
+    let muxTopologyCache = SessionMuxTopologyCache()
 
+    var isHoppingMuxSession = false
     var scopes = [SessionID: SessionActivityScope]()
     var connections = [SessionID: any RemoteConnection]()
     var authBridges = [SessionID: SessionAuthBridge]()
@@ -61,6 +65,7 @@ public final class SessionWorkspaceModel {
     var sessionAgentKinds = [SessionID: AgentKind]()
     var sessionAgentTitles = [SessionID: String]()
     var sessionMuxIDs = [SessionID: MuxSessionID]()
+    var sessionMuxGroupIDs = [SessionID: MuxGroupID]()
     var publishedAgentTitleIDs = Set<SessionID>()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
@@ -83,10 +88,12 @@ public final class SessionWorkspaceModel {
         jobAlertScheduler: (any NotificationScheduler)? = nil,
         jobAlertSettings: JobAlertSettings = JobAlertSettings(),
         titlePreference: SessionTitlePreferenceStore = .shared,
+        isWorkspacePresented: @escaping PresentationPredicate = { true },
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {
         store = TerminalSurfaceStore(configuration: .default, makeEngine: makeEngine)
+        self.isWorkspacePresented = isWorkspacePresented
         self.makeConnection = makeConnection
         self.makeBrowserServices = makeBrowserServices
         self.secrets = secrets

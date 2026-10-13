@@ -107,6 +107,7 @@ public struct SessionWorkspaceView: View {
             .task {
                 installCommands()
                 if let initialSurface { present(initialSurface) }
+                await model.primeMuxTopology()
             }
             .onChange(of: model.shouldPresentSwitcher) { _, wants in
                 guard wants else { return }

@@ -69,6 +69,11 @@ extension SessionWorkspaceModel {
     func rememberMuxSession(_ muxID: MuxSessionID, for sessionID: SessionID? = nil) {
         guard let sessionID = sessionID ?? activeSessionID else { return }
         sessionMuxIDs[sessionID] = muxID
+        sessionMuxGroupIDs.removeValue(forKey: sessionID)
+    }
+
+    func rememberMuxGroup(_ groupID: MuxGroupID, for sessionID: SessionID) {
+        sessionMuxGroupIDs[sessionID] = groupID
     }
 
     func muxSession(in sessions: [MuxSession], for sessionID: SessionID) -> MuxSession? {
@@ -79,11 +84,11 @@ extension SessionWorkspaceModel {
         }
         let attached = sessions.filter(\.isAttached)
         if attached.count == 1 {
-            sessionMuxIDs[sessionID] = attached[0].id
+            rememberMuxSession(attached[0].id, for: sessionID)
             return attached[0]
         }
         if sessions.count == 1 {
-            sessionMuxIDs[sessionID] = sessions[0].id
+            rememberMuxSession(sessions[0].id, for: sessionID)
             return sessions[0]
         }
         return nil

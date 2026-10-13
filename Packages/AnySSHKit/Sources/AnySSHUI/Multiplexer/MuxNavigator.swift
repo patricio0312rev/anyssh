@@ -33,11 +33,75 @@ public struct MuxNavigator: Sendable {
         }
     }
 
+    public func jump(toSession target: MuxSessionID) async throws -> MuxJumpOutcome {
+        switch await probe() {
+        case .attached(let bound):
+            guard let source = bound else { return .skipped(target) }
+            guard source != target else { return .focused }
+            return try await switching(to: target, from: source, whenRefused: .skipped(target))
+        case .detached:
+            let bytes = attachBytes(for: MuxTarget(session: target))
+            guard !bytes.isEmpty else { throw ErrorState.mux(.attachTargetVanished) }
+            try await writer.send(bytes[...])
+            return .attached
+        case .unknown:
+            return .skipped(target)
+        }
+    }
+
+    public func jump(toGroup target: MuxTarget) async throws -> MuxJumpOutcome {
+        let refused = MuxJumpOutcome.skipped(target.session)
+        switch await probe() {
+        case .attached(let bound):
+            guard bound == target.session else { return refused }
+            return try await focusing(target, whenRefused: refused)
+        case .detached:
+            let bytes = attachBytes(for: target)
+            guard !bytes.isEmpty else { throw ErrorState.mux(.attachTargetVanished) }
+            let outcome = try await focusing(target, whenRefused: refused)
+            guard outcome == .focused else { return refused }
+            try await writer.send(bytes[...])
+            return .attached
+        case .unknown:
+            return refused
+        }
+    }
+
     public func attachBytes(for target: MuxTarget) -> [UInt8] {
         let command = adapter.attachCommand(target)
         guard !command.isEmpty else { return [] }
         return Array((command + Self.submit).utf8)
     }
+
+    private func focusing(
+        _ target: MuxTarget,
+        whenRefused refused: MuxJumpOutcome
+    ) async throws -> MuxJumpOutcome {
+        do {
+            try await adapter.focus(target)
+            return .focused
+        } catch let state as ErrorState where Self.refusals.contains(state) {
+            return refused
+        }
+    }
+
+    private func switching(
+        to target: MuxSessionID,
+        from source: MuxSessionID,
+        whenRefused refused: MuxJumpOutcome
+    ) async throws -> MuxJumpOutcome {
+        do {
+            try await adapter.switchSession(to: target, from: source)
+            return .attached
+        } catch let state as ErrorState where Self.refusals.contains(state) {
+            return refused
+        }
+    }
+
+    private static let refusals: Set<ErrorState> = [
+        .mux(.sessionSwitchUnsupported),
+        .mux(.attachTargetVanished),
+    ]
 
     private static let submit = "\r"
 }
