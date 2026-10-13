@@ -78,6 +78,13 @@ import Testing
         #expect(SessionNavbarTitle.isUsableAgentSessionTitle("api:v2"))
     }
 
+    @Test func herdrBaseThirtySixIdentifiersAreNotAgentSessionTitles() {
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:p6C"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:t4W"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:p8A"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("db:p2p"))
+    }
+
     private static let full = SessionTitleContext(
         sessionName: "build-box",
         agentSessionTitle: "OC | Fixes for v0.1.2",
