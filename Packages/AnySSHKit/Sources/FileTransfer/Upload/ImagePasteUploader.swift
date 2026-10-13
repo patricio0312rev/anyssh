@@ -19,6 +19,10 @@ public actor ImagePasteUploader {
         self.now = now
     }
 
+    public func upload(contentsOf data: Data) async throws -> String {
+        try await upload(ImagePasteEncoder.image(from: data))
+    }
+
     public func upload(_ pasted: PastedImage) async throws -> String {
         let image = try ImagePasteEncoder.fit(pasted, limits: limits)
         let name = ImagePasteDestination.fileName(at: now(), format: image.format)
