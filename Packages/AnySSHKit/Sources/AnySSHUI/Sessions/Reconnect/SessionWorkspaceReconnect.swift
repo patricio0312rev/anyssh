@@ -9,7 +9,7 @@ extension SessionWorkspaceModel {
                 self?.registry.sessions ?? []
             },
             attention: { [weak self] in
-                self?.reconnectAttention ?? .dismissed
+                await self?.reconnectAttention() ?? .dismissed
             },
             onReconnect: { [weak self] id in
                 await self?.reconnect(id)
@@ -17,12 +17,26 @@ extension SessionWorkspaceModel {
         )
     }
 
-    var reconnectAttention: ReconnectAttention {
-        ReconnectAttention(
+    func reconnectAttention() async -> ReconnectAttention {
+        let silent = await silentSessionIDs()
+        return ReconnectAttention(
             isWorkspacePresented: isWorkspacePresented(),
             activeSessionID: activeSessionID,
-            engagedSessionIDs: store.drainingSessionIDs
+            engagedSessionIDs: store.drainingSessionIDs,
+            silentSessionIDs: silent
         )
+    }
+
+    private func silentSessionIDs() async -> Set<SessionID> {
+        guard let secrets else { return [] }
+        var silent = Set<SessionID>()
+        for record in registry.sessions {
+            guard let remote = remotes[record.remoteID] else { continue }
+            if await SilentReconnectDial.dialsWithoutPrompt(remote, secrets: secrets) {
+                silent.insert(record.id)
+            }
+        }
+        return silent
     }
 
     public func stopReconnectMonitoring() {
@@ -115,6 +129,7 @@ extension SessionWorkspaceModel {
         remote: Remote,
         attempt: Int
     ) async {
+        guard registry[sessionID] != nil else { return }
         guard let makeConnection else {
             updateTransportState(
                 .disconnected(.failed(stateID: ErrorState.transport(.connectionRefused).stateID)),
@@ -125,6 +140,7 @@ extension SessionWorkspaceModel {
         if let old = connections.removeValue(forKey: sessionID) {
             await old.close(reason: .backgrounded)
         }
+        guard registry[sessionID] != nil else { return }
         scopes.removeValue(forKey: sessionID)
         let bridge = makeAuthBridge(for: remote)
         let connection = makeConnection(remote, bridge)
@@ -140,31 +156,53 @@ extension SessionWorkspaceModel {
             if let bridge {
                 await connection.setDisplayDelegate(bridge.delegate)
             }
+            try requireRegistered(sessionID)
             try await connection.attachDisplay(sink: surface.pump, size: surface.engine.size)
+            try requireRegistered(sessionID)
             try await StartupCommandSender().send(on: connection, remote: remote)
+            try requireRegistered(sessionID)
             try? await WorkingDirectoryRestorer().send(
                 on: connection,
                 workspace: registry[sessionID]?.workspace
             )
+            try requireRegistered(sessionID)
             await configureMultiplexer(for: sessionID, connection: connection)
+            try requireRegistered(sessionID)
             clearOpenFailure()
             updateTransportState(.connected, for: sessionID)
             presentReattached(for: registry[sessionID]?.title ?? remote.name)
             surface.startDraining()
-        } catch let error as any UserFacingError {
-            let state = ErrorState(stateID: error.stateID) ?? .transport(.connectionRefused)
-            let stateID =
-                ReconnectBackoff.standard.nextAttempt(after: attempt) == nil
-                ? ErrorState.session(.reconnectExhausted).stateID
-                : state.stateID
-            updateTransportState(.disconnected(.failed(stateID: stateID)), for: sessionID)
         } catch {
+            guard registry[sessionID] != nil else {
+                await abandonReconnect(sessionID, closing: connection)
+                return
+            }
             updateTransportState(
-                .disconnected(
-                    .failed(stateID: ErrorState.transport(.connectionRefused).stateID)
-                ),
+                .disconnected(.failed(stateID: failureStateID(for: error, attempt: attempt))),
                 for: sessionID
             )
         }
+    }
+
+    private func requireRegistered(_ sessionID: SessionID) throws {
+        guard registry[sessionID] != nil else { throw CancellationError() }
+    }
+
+    private func abandonReconnect(
+        _ sessionID: SessionID,
+        closing connection: any RemoteConnection
+    ) async {
+        await discardState(of: sessionID)?.cancelAll(reason: .closedByUser)
+        await connection.close(reason: .closedByUser)
+    }
+
+    private func failureStateID(for error: any Error, attempt: Int) -> String {
+        guard let error = error as? any UserFacingError else {
+            return ErrorState.transport(.connectionRefused).stateID
+        }
+        let state = ErrorState(stateID: error.stateID) ?? .transport(.connectionRefused)
+        return ReconnectBackoff.standard.nextAttempt(after: attempt) == nil
+            ? ErrorState.session(.reconnectExhausted).stateID
+            : state.stateID
     }
 }
