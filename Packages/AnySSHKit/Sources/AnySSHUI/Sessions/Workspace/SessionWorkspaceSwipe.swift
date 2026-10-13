@@ -65,6 +65,7 @@ extension SessionWorkspaceModel {
         } catch {
             return
         }
+        guard registry[sessionID] != nil else { return }
         muxTopologyCache.store(topology, for: sessionID, request: request)
     }
 
@@ -115,7 +116,7 @@ extension SessionWorkspaceModel {
     ) async {
         let outcome = await attempt(destination, with: context.navigator, within: limit)
         let skipped = outcome.map { announce($0, for: destination, of: context.sessionID) } ?? false
-        await settle(skipped: skipped, in: context, onSkip: onSkip)
+        await settle(skipped: skipped, in: context, within: limit, onSkip: onSkip)
     }
 
     private func attempt(
@@ -138,13 +139,28 @@ extension SessionWorkspaceModel {
     private func settle(
         skipped: Bool,
         in context: HopContext,
+        within limit: Duration,
         onSkip: @MainActor () -> Void
     ) async {
+        guard !skipped else {
+            isHoppingMuxSession = false
+            onSkip()
+            await refreshMuxTopology(for: context.sessionID, using: context.adapter)
+            return
+        }
+        await refreshAfterHop(in: context, within: limit)
         isHoppingMuxSession = false
-        if skipped { onSkip() }
-        await refreshMuxTopology(for: context.sessionID, using: context.adapter)
-        guard !skipped else { return }
         await detectAgent(for: context.sessionID)
+    }
+
+    private func refreshAfterHop(in context: HopContext, within limit: Duration) async {
+        do {
+            try await MuxHopDeadline.run(within: limit) { [weak self] in
+                await self?.refreshMuxTopology(for: context.sessionID, using: context.adapter)
+            }
+        } catch {
+            return
+        }
     }
 
     private func announce(
