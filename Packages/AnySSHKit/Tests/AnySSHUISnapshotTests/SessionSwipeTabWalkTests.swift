@@ -142,6 +142,27 @@ import Testing
         #expect(model.sessionMuxGroupIDs[sessionID] == Self.alphaLogs)
     }
 
+    @Test func aRememberedTabAnchorsTheRingUntilAGoodSnapshotReplacesIt() async throws {
+        let model = SessionWorkspaceFixture.model()
+        let sessionID = try #require(model.activeSessionID)
+        let adapter = SwipeRingMuxAdapter(names: ["alpha"], groupTitles: ["code", "tests", "logs"])
+        try await bind(Self.alpha, on: model, for: sessionID, using: adapter)
+
+        model.rememberMuxGroup(Self.alphaTests, for: sessionID)
+        await model.refreshMuxTopology(
+            for: sessionID,
+            using: SwipeRingMuxAdapter(names: [], listFailure: ErrorState.transport(.cancelledBySwitch))
+        )
+
+        #expect(
+            model.muxTopologyCache.groups(for: sessionID).filter(\.isActive).map(\.id) == [Self.alphaTests])
+        #expect(model.swipeTarget(.forward) == .muxGroup(Self.alphaLogs))
+
+        await model.refreshMuxTopology(for: sessionID, using: adapter)
+
+        #expect(model.swipeTarget(.forward) == .muxGroup(Self.alphaTests))
+    }
+
     private func bind(
         _ muxSessionID: MuxSessionID,
         on model: SessionWorkspaceModel,
