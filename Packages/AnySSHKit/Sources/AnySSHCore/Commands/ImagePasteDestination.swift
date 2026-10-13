@@ -2,17 +2,17 @@ import Foundation
 
 public enum ImagePasteDestination {
     public static let filePrefix = "paste-"
-    public static let retentionDays = 6
+    public static let retentionDays = 7
     public static let directoryExpression = #""${XDG_CACHE_HOME:-$HOME/.cache}/anyssh/paste""#
 
     public static var prepareScript: String {
         "d=\(directoryExpression); umask 077; "
             + #"mkdir -p -- "$d" && chmod 700 "$d" && { "#
-            + #"find "$d" -type f -name '\#(filePrefix)*' -mtime +\#(retentionDays) "#
+            + #"find "$d" -type f -name '\#(filePrefix)*' -mtime +\#(retentionDays - 1) "#
             + #"-exec rm -f -- {} + 2>/dev/null; printf %s "$d"; }"#
     }
 
-    public static func fileName(at date: Date, format: PastedImage.Format) -> String {
+    public static func fileName(at date: Date, token: String, format: PastedImage.Format) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .gmt
         let parts = calendar.dateComponents(
@@ -29,6 +29,6 @@ public enum ImagePasteDestination {
             parts.second ?? 0,
             (parts.nanosecond ?? 0) / 1_000_000
         )
-        return filePrefix + stamp + "." + format.fileExtension
+        return filePrefix + stamp + "-" + token + "." + format.fileExtension
     }
 }
