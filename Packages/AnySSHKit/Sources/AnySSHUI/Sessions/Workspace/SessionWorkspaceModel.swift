@@ -88,7 +88,7 @@ public final class SessionWorkspaceModel {
         jobAlertScheduler: (any NotificationScheduler)? = nil,
         jobAlertSettings: JobAlertSettings = JobAlertSettings(),
         titlePreference: SessionTitlePreferenceStore = .shared,
-        isWorkspacePresented: @escaping PresentationPredicate = { true },
+        isWorkspacePresented: @escaping PresentationPredicate,
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {
