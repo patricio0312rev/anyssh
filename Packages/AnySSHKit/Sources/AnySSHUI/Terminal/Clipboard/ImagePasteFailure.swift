@@ -4,6 +4,7 @@ import FileTransfer
 public enum ImagePasteFailure: Equatable, Sendable {
     case unreadable
     case tooLarge
+    case photoUnavailable
     case transfer(ErrorState)
 
     init(_ error: any Error) {
