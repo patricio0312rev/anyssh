@@ -52,11 +52,12 @@ import Testing
             refusesSwitch: true
         )
         try await install(adapter, on: model, for: sessionID)
+        model.rememberMuxSession(Self.beta, for: sessionID)
 
         model.hop(toMuxSession: Self.alpha)
         try await waitUntil { !model.isHoppingMuxSession }
 
-        #expect(model.sessionMuxIDs[sessionID] == nil)
+        #expect(model.sessionMuxIDs[sessionID] == Self.beta)
         #expect(await adapter.switchLog.switches.isEmpty)
         #expect(toasts.items.map(\.severity) == [.attention])
         #expect(toasts.items.first?.title == MuxErrorState.sessionSwitchUnsupported.copy.title)
