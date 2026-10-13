@@ -6,7 +6,7 @@ public enum ClientTerminalCommand {
         p=\(clientPort)
         pid=$(lsof -nP -iTCP:$p -sTCP:ESTABLISHED -t 2>/dev/null | head -1)
         if [ -z "$pid" ]; then
-          pid=$(ss -tnp 2>/dev/null | awk -v p=":$p" '$0 ~ p' \
+          pid=$(ss -tnp 2>/dev/null | awk -v p=":$p$" '{ for (i = 1; i <= NF; i++) if ($i ~ p) { print; next } }' \
             | sed -n 's/.*pid=\\([0-9]*\\).*/\\1/p' | head -1)
         fi
         if [ -z "$pid" ]; then
@@ -22,9 +22,14 @@ public enum ClientTerminalCommand {
     }
 
     public static let interactiveShellLookup = """
-        shell=$(for k in $(ps -axo pid=,ppid= 2>/dev/null | awk -v root="$pid" '$2 == root { print $1 }'); do
-          case "$(ps -o tty= -p "$k" 2>/dev/null)" in (""|"?") ;; (*) echo "$k"; break ;; esac
-        done)
+        shell=""; level="$pid"; depth=0
+        while [ -z "$shell" ] && [ -n "$level" ] && [ "$depth" -lt 4 ]; do
+          level=$(ps -axo pid=,ppid= 2>/dev/null | awk -v roots=" $level " 'index(roots, " " $2 " ") { printf "%s ", $1 }')
+          for k in $level; do
+            case "$(ps -o tty= -p "$k" 2>/dev/null | tr -d ' ')" in (""|"?"|"??") ;; (*) shell=$k; break ;; esac
+          done
+          depth=$((depth + 1))
+        done
         """
 
     public static func script(clientPort: Int) -> String {
