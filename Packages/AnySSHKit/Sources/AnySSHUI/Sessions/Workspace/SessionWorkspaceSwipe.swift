@@ -2,8 +2,6 @@ import AnySSHCore
 import Sessions
 
 extension SessionWorkspaceModel {
-    static let muxHopLimit = Duration.seconds(10)
-
     func swipeTarget(
         _ direction: SessionSwipeRing.Direction,
         skippingMux: Bool = false
@@ -14,18 +12,18 @@ extension SessionWorkspaceModel {
 
     func hop(
         toMuxSession target: MuxSessionID,
-        within limit: Duration = SessionWorkspaceModel.muxHopLimit,
+        within budget: MuxHopBudget = .standard,
         onSkip: @escaping @MainActor () -> Void = {}
     ) {
-        hop(.session(target), within: limit, onSkip: onSkip)
+        hop(.session(target), within: budget, onSkip: onSkip)
     }
 
     func hop(
         tabToward direction: SessionSwipeRing.Direction,
-        within limit: Duration = SessionWorkspaceModel.muxHopLimit,
+        within budget: MuxHopBudget = .standard,
         onSkip: @escaping @MainActor () -> Void = {}
     ) {
-        hop(.tab(direction), within: limit, onSkip: onSkip)
+        hop(.tab(direction), within: budget, onSkip: onSkip)
     }
 
     func primeMuxTopology() async {
@@ -105,29 +103,29 @@ extension SessionWorkspaceModel {
 
     private func hop(
         _ plan: MuxHopPlan,
-        within limit: Duration,
+        within budget: MuxHopBudget,
         onSkip: @escaping @MainActor () -> Void
     ) {
         guard let context = hopContext() else { return }
         isHoppingMuxSession = true
         Task { [weak self] in
-            await self?.hop(plan, in: context, within: limit, onSkip: onSkip)
+            await self?.hop(plan, in: context, within: budget, onSkip: onSkip)
         }
     }
 
     private func hop(
         _ plan: MuxHopPlan,
         in context: HopContext,
-        within limit: Duration,
+        within budget: MuxHopBudget,
         onSkip: @MainActor () -> Void
     ) async {
-        let skipped = await land(plan, in: context, within: limit)
-        await settle(skipped: skipped, in: context, within: limit, onSkip: onSkip)
+        let skipped = await land(plan, in: context, within: budget)
+        await settle(skipped: skipped, in: context, within: budget, onSkip: onSkip)
     }
 
-    private func land(_ plan: MuxHopPlan, in context: HopContext, within limit: Duration) async -> Bool {
+    private func land(_ plan: MuxHopPlan, in context: HopContext, within budget: MuxHopBudget) async -> Bool {
         do {
-            let landing = try await MuxHopDeadline.run(within: limit) { [weak self] in
+            let landing = try await MuxHopDeadline.run(within: budget) { [weak self] in
                 try await self?.jump(plan, in: context)
             }
             guard let landing else { return true }
@@ -145,8 +143,12 @@ extension SessionWorkspaceModel {
         _ plan: MuxHopPlan,
         in context: HopContext
     ) async throws -> (destination: MuxHopDestination, outcome: MuxJumpOutcome)? {
-        guard let destination = await destination(for: plan, in: context) else { return nil }
-        return (destination, try await destination.jump(with: context.navigator))
+        let destination = await destination(for: plan, in: context)
+        try Task.checkCancellation()
+        guard let destination else { return nil }
+        let outcome = try await destination.jump(with: context.navigator)
+        if outcome.skipReason != nil { try Task.checkCancellation() }
+        return (destination, outcome)
     }
 
     private func destination(for plan: MuxHopPlan, in context: HopContext) async -> MuxHopDestination? {
@@ -169,7 +171,7 @@ extension SessionWorkspaceModel {
     private func settle(
         skipped: Bool,
         in context: HopContext,
-        within limit: Duration,
+        within budget: MuxHopBudget,
         onSkip: @MainActor () -> Void
     ) async {
         guard !skipped else {
@@ -178,14 +180,14 @@ extension SessionWorkspaceModel {
             await refreshMuxTopology(for: context.sessionID, using: context.adapter)
             return
         }
-        await refreshAfterHop(in: context, within: limit)
+        await refreshAfterHop(in: context, within: budget)
         isHoppingMuxSession = false
         await detectAgent(for: context.sessionID)
     }
 
-    private func refreshAfterHop(in context: HopContext, within limit: Duration) async {
+    private func refreshAfterHop(in context: HopContext, within budget: MuxHopBudget) async {
         do {
-            try await MuxHopDeadline.run(within: limit) { [weak self] in
+            try await MuxHopDeadline.run(within: budget) { [weak self] in
                 await self?.refreshMuxTopology(for: context.sessionID, using: context.adapter)
             }
         } catch {
