@@ -175,8 +175,10 @@ public enum AppCommandBinding {
                 #if canImport(UIKit)
                 let terminalView = surface.engine.surface
                 if terminalView.isFirstResponder {
+                    model.keyboardLock.lock()
                     _ = terminalView.resignFirstResponder()
                 } else {
+                    model.keyboardLock.unlock()
                     _ = terminalView.becomeFirstResponder()
                 }
                 #endif
