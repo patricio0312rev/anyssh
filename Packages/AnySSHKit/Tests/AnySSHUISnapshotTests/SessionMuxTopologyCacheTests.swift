@@ -18,11 +18,11 @@ struct SessionMuxTopologyCacheTests {
         isActive: true
     )
 
-    @Test func aStoreFromTheCurrentGenerationLandsSessionsAndGroupsTogether() {
+    @Test func aStoreFromTheLatestRequestLandsSessionsAndGroupsTogether() {
         let cache = SessionMuxTopologyCache()
-        let generation = cache.generation(for: Self.session)
+        let request = cache.beginRefresh(for: Self.session)
 
-        cache.store(topology(), for: Self.session, generation: generation)
+        cache.store(topology(), for: Self.session, request: request)
 
         #expect(cache.sessions(for: Self.session) == [Self.main])
         #expect(cache.groups(for: Self.session) == [Self.code])
@@ -30,10 +30,10 @@ struct SessionMuxTopologyCacheTests {
 
     @Test func aStaleTopologyAfterAClearIsDropped() {
         let cache = SessionMuxTopologyCache()
-        let generation = cache.generation(for: Self.session)
+        let request = cache.beginRefresh(for: Self.session)
         cache.clear(for: Self.session)
 
-        cache.store(topology(), for: Self.session, generation: generation)
+        cache.store(topology(), for: Self.session, request: request)
 
         #expect(cache.sessions(for: Self.session).isEmpty)
         #expect(cache.groups(for: Self.session).isEmpty)
@@ -44,7 +44,7 @@ struct SessionMuxTopologyCacheTests {
         let other = SessionID(rawValue: "session-2")
         cache.clear(for: Self.session)
 
-        cache.store(topology(), for: other, generation: cache.generation(for: other))
+        cache.store(topology(), for: other, request: cache.beginRefresh(for: other))
 
         #expect(cache.sessions(for: other) == [Self.main])
     }
@@ -52,24 +52,47 @@ struct SessionMuxTopologyCacheTests {
     @Test func groupsStayKeyedToTheMuxSessionThatProducedThem() {
         let cache = SessionMuxTopologyCache()
 
-        cache.store(topology(), for: Self.session, generation: cache.generation(for: Self.session))
+        cache.store(topology(), for: Self.session, request: cache.beginRefresh(for: Self.session))
 
         #expect(cache.groups(for: Self.session).map(\.sessionID) == [Self.main.id])
     }
 
     @Test func aReplacingStoreNeverMixesOldGroupsWithNewSessions() {
         let cache = SessionMuxTopologyCache()
-        cache.store(topology(), for: Self.session, generation: cache.generation(for: Self.session))
+        cache.store(topology(), for: Self.session, request: cache.beginRefresh(for: Self.session))
         let api = MuxSession(id: MuxSessionID(rawValue: "$2"), name: "api", isAttached: false)
 
         cache.store(
             SessionMuxTopologyCache.Topology(sessions: [api], groups: []),
             for: Self.session,
-            generation: cache.generation(for: Self.session)
+            request: cache.beginRefresh(for: Self.session)
         )
 
         #expect(cache.sessions(for: Self.session) == [api])
         #expect(cache.groups(for: Self.session).isEmpty)
+    }
+
+    @Test func anOlderRefreshFinishingLastNeverOverwritesTheNewerOne() {
+        let cache = SessionMuxTopologyCache()
+        let api = MuxSession(id: MuxSessionID(rawValue: "$2"), name: "api", isAttached: true)
+        let newer = SessionMuxTopologyCache.Topology(sessions: [api], groups: [])
+        let olderRequest = cache.beginRefresh(for: Self.session)
+        let newerRequest = cache.beginRefresh(for: Self.session)
+
+        cache.store(newer, for: Self.session, request: newerRequest)
+        cache.store(topology(), for: Self.session, request: olderRequest)
+
+        #expect(cache.topology(for: Self.session) == newer)
+    }
+
+    @Test func aRequestFromAnotherSessionNeverInvalidatesThisOne() {
+        let cache = SessionMuxTopologyCache()
+        let request = cache.beginRefresh(for: Self.session)
+        _ = cache.beginRefresh(for: SessionID(rawValue: "session-2"))
+
+        cache.store(topology(), for: Self.session, request: request)
+
+        #expect(cache.sessions(for: Self.session) == [Self.main])
     }
 
     private func topology() -> SessionMuxTopologyCache.Topology {
