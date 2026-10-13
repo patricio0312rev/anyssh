@@ -23,6 +23,7 @@ import Testing
         )
     }
 
+    #if os(macOS)
     @Test func theShellLookupSkipsPaddedNoTerminalChildrenAndWalksDown() throws {
         let fakeProcessTable = """
             ps() {
@@ -45,7 +46,6 @@ import Testing
         #expect(String(decoding: outcome.stdout, as: UTF8.self) == "300")
     }
 
-    #if os(macOS)
     @Test func bothProbeScriptsParseUnderTheMacOSSystemShell() throws {
         for script in [
             ClientTerminalCommand.script(clientPort: 52_000),
