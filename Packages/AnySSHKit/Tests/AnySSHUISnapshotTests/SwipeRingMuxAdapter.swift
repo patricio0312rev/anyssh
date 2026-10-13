@@ -12,19 +12,25 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     private let refusesSwitch: Bool
     private let refusesFocus: Bool
     private let groupTitles: [String]
+    private let listFailure: (any Error)?
+    private let switchGate: MuxHopGate?
 
     init(
         names: [String],
         kind: MultiplexerKind = .tmux,
         refusesSwitch: Bool = false,
         refusesFocus: Bool = false,
-        groupTitles: [String] = ["window"]
+        groupTitles: [String] = ["window"],
+        listFailure: (any Error)? = nil,
+        switchGate: MuxHopGate? = nil
     ) {
         self.names = names
         self.kind = kind
         self.refusesSwitch = refusesSwitch
         self.refusesFocus = refusesFocus
         self.groupTitles = groupTitles
+        self.listFailure = listFailure
+        self.switchGate = switchGate
         capabilities = kind == .herdr ? .herdr : .tmux
     }
 
@@ -33,7 +39,8 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     }
 
     func listSessions() async throws -> [MuxSession] {
-        names.map { MuxSession(id: MuxSessionID(rawValue: $0), name: $0, isAttached: false) }
+        if let listFailure { throw listFailure }
+        return names.map { MuxSession(id: MuxSessionID(rawValue: $0), name: $0, isAttached: false) }
     }
 
     func snapshot(_ session: MuxSession.ID) async throws -> MuxSnapshot {
@@ -65,6 +72,7 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
 
     func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
         guard !refusesSwitch else { throw ErrorState.mux(.sessionSwitchUnsupported) }
+        await switchGate?.wait()
         await switchLog.record(target: target, source: current)
     }
 
