@@ -132,6 +132,7 @@ public struct SessionWorkspaceView: View {
                     title: model.navbarTitle(),
                     transportState: model.activeTransportState,
                     keyboardEngine: model.activeSessionID.flatMap { model.surface(for: $0)?.engine },
+                    keyboardLock: model.keyboardLock,
                     showsBack: onClose != nil,
                     onBack: dismissToRemotes,
                     onToggleSwitcher: toggleSwitcher
