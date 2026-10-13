@@ -39,6 +39,7 @@ extension SessionWorkspaceView {
                 isDictating: dictation.isListening,
                 onDictate: toggleDictation,
                 onImportFile: { isImportingFile = true },
+                onPastePhoto: { isPickingPhoto = true },
                 onOpenSnippets: { isSnippetsPresented = true },
                 onOpenMultiplexer: model.showsMultiplexer ? { isMultiplexerPresented = true } : nil,
                 onOpenJumpTo: model.showsMultiplexer ? { isJumpToPresented = true } : nil,
