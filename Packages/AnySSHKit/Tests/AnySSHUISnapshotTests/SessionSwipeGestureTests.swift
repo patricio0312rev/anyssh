@@ -40,7 +40,7 @@ import Testing
         #expect(model.swipeTarget(.forward) == .appSession(model.registry.ids[1]))
     }
 
-    @Test func aRefusedHopKeepsTheBindingAndAsksForADetach() async throws {
+    @Test func aRefusedHopKeepsTheBindingAndExplainsTheRefusal() async throws {
         let model = SessionWorkspaceFixture.model("single")
         let toasts = StatusToastCenter()
         model.statusToasts = toasts
@@ -59,7 +59,8 @@ import Testing
         #expect(model.sessionMuxIDs[sessionID] == nil)
         #expect(await adapter.switchLog.switches.isEmpty)
         #expect(toasts.items.map(\.severity) == [.attention])
-        #expect(toasts.items.first?.body == MuxNavigationCopy.detachToSwitch)
+        #expect(toasts.items.first?.title == MuxErrorState.sessionSwitchUnsupported.copy.title)
+        #expect(toasts.items.first?.body == MuxErrorState.sessionSwitchUnsupported.copy.body)
     }
 
     @Test func aSwipeDuringAHopIsDropped() async throws {
