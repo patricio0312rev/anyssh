@@ -5,7 +5,7 @@ import Sessions
 @MainActor
 public final class ReconnectCoordinator {
     public typealias CandidatesProvider = @MainActor () -> [SessionRecord]
-    public typealias AttentionProvider = @MainActor () -> ReconnectAttention
+    public typealias AttentionProvider = @MainActor () async -> ReconnectAttention
     public typealias ReconnectHandler = @MainActor (SessionID) async -> Void
 
     private let policy: ReconnectPolicy
@@ -31,7 +31,7 @@ public final class ReconnectCoordinator {
 
     public func start(
         candidates: @escaping CandidatesProvider,
-        attention: AttentionProvider? = nil,
+        attention: @escaping AttentionProvider,
         onReconnect: @escaping ReconnectHandler
     ) {
         guard !isStarted else { return }
@@ -57,11 +57,11 @@ public final class ReconnectCoordinator {
 
     public func handlePathChange() {
         pathChangeCount += 1
-        Task { await requestReconnects() }
+        Task { await requestReconnects(for: .pathChange) }
     }
 
     public func handleForeground() {
-        Task { await requestReconnects() }
+        Task { await requestReconnects(for: .foreground) }
     }
 
     public func decision(for record: SessionRecord) -> ReconnectDecision {
@@ -76,9 +76,10 @@ public final class ReconnectCoordinator {
         policy.survivalCopy(for: record.capabilities)
     }
 
-    public func requestReconnects() async {
-        guard let candidates, let onReconnect else { return }
-        let records = scoped(candidates().filter { decision(for: $0).shouldDial })
+    public func requestReconnects(for trigger: ReconnectTrigger) async {
+        guard let candidates, let attention, let onReconnect else { return }
+        let dialable = candidates().filter { decision(for: $0).shouldDial }
+        let records = await attention().scoped(dialable, for: trigger)
         lastTriggeredSessionIDs = records.map(\.id)
         for record in records {
             guard !inFlight.contains(record.id) else { continue }
@@ -86,10 +87,5 @@ public final class ReconnectCoordinator {
             await onReconnect(record.id)
             inFlight.remove(record.id)
         }
-    }
-
-    private func scoped(_ records: [SessionRecord]) -> [SessionRecord] {
-        guard let attention else { return records }
-        return attention().scoped(records)
     }
 }

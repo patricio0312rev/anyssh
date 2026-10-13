@@ -21,6 +21,22 @@ enum TerminalEditMenuActions {
         }
     }
 
+    static func pasteImage(_ handler: @escaping @MainActor @Sendable () -> Void) -> UIAction {
+        UIAction(title: "Paste Image", image: UIImage(systemName: "photo")) { _ in handler() }
+    }
+
+    static func withoutPaste(_ elements: [UIMenuElement]) -> [UIMenuElement] {
+        elements.compactMap { element -> UIMenuElement? in
+            if let command = element as? UICommand,
+                command.action == #selector(UIResponderStandardEditActions.paste(_:))
+            {
+                return nil
+            }
+            guard let menu = element as? UIMenu else { return element }
+            return menu.replacingChildren(withoutPaste(menu.children))
+        }
+    }
+
     private static func copyAction(title: String, value: String) -> UIAction {
         UIAction(title: title) { _ in
             SystemClipboardPasteboard().write(value)

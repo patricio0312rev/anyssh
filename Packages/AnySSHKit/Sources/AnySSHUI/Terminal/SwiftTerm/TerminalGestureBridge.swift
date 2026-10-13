@@ -11,6 +11,12 @@ public final class TerminalGestureBridge {
     public var onCopy: ((String) -> Void)?
     public var onGesture: ((GestureSlot) -> Void)?
     public var onFocus: (() -> Void)?
+    public var onPasteImage: (@MainActor @Sendable () -> Void)? {
+        didSet { coordinator?.imagePasteHandler = onPasteImage }
+    }
+    public var keyboardLock: TerminalKeyboardLock? {
+        didSet { coordinator?.keyboardLock = keyboardLock }
+    }
     public var touchMode = false {
         didSet { view.allowMouseReporting = !touchMode }
     }
@@ -88,6 +94,8 @@ public final class TerminalGestureBridge {
             },
             probe: probe
         )
+        coordinator.imagePasteHandler = onPasteImage
+        coordinator.keyboardLock = keyboardLock
         coordinator.install()
         yieldMenuGestures(in: inherited, to: coordinator)
         self.coordinator = coordinator

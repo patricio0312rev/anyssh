@@ -7,6 +7,7 @@ extension SessionWorkspaceModel {
     func activate(_ id: SessionID) {
         activeSessionID = id
         activeAuthBridge = authBridges[id]
+        scheduleMuxTopologyRefresh(for: id)
     }
 
     func updateActivity(for id: SessionID) {

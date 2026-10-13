@@ -7,11 +7,17 @@ public struct TmuxAdapter: MultiplexerAdapter {
 
     private let runner: any RemoteCommandRunner
     private let binaryPath: String
+    private let clientPort: @Sendable () async -> Int?
     private let parser = TmuxParser()
 
-    public init(runner: any RemoteCommandRunner, binaryPath: String = "tmux") {
+    public init(
+        runner: any RemoteCommandRunner,
+        binaryPath: String = "tmux",
+        clientPort: @escaping @Sendable () async -> Int?
+    ) {
         self.runner = runner
         self.binaryPath = binaryPath
+        self.clientPort = clientPort
     }
 
     public func detect() async throws -> MultiplexerInfo {
@@ -109,17 +115,7 @@ public struct TmuxAdapter: MultiplexerAdapter {
     }
 
     public func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
-        let listing = TmuxCommands.clients(binary: binaryPath)
-        let listingResponse = try await runner.run(listing)
-        let clients = try MuxCommandSupport.section(
-            label: TmuxCommands.clientsLabel,
-            in: listingResponse,
-            batch: listing
-        )
-        guard let client = parser.client(attachedTo: current, in: MuxCommandSupport.text(clients))
-        else {
-            throw ErrorState.mux(.attachTargetVanished)
-        }
+        let client = try await ownClient()
         let batch = TmuxCommands.switchClient(
             binary: binaryPath,
             client: client,
@@ -135,5 +131,27 @@ public struct TmuxAdapter: MultiplexerAdapter {
 
     public func attachCommand(_ target: MuxTarget) -> String {
         MuxAttachCommand.tmux(binary: binaryPath, target: target)
+    }
+
+    private func ownClient() async throws -> String {
+        guard let port = await clientPort() else { throw ErrorState.mux(.attachTargetVanished) }
+        let listing = TmuxCommands.clients(binary: binaryPath, clientPort: port)
+        let response = try await runner.run(listing)
+        let terminal = try MuxCommandSupport.section(
+            label: TmuxCommands.ownTerminalLabel,
+            in: response,
+            batch: listing
+        )
+        let clients = try MuxCommandSupport.section(
+            label: TmuxCommands.clientsLabel,
+            in: response,
+            batch: listing
+        )
+        guard let ownTerminal = ClientTerminalCommand.terminal(from: MuxCommandSupport.text(terminal)),
+            let client = parser.client(onTerminal: ownTerminal, in: MuxCommandSupport.text(clients))
+        else {
+            throw ErrorState.mux(.attachTargetVanished)
+        }
+        return client
     }
 }

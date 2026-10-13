@@ -38,6 +38,10 @@ public final class SwiftTermEngine: TerminalSurfaceEngine {
         )
     }
 
+    public var pastesBracketed: Bool {
+        view.getTerminal().bracketedPasteMode
+    }
+
     public var modes: TerminalModeSnapshot {
         let terminal = view.getTerminal()
         return TerminalModeSnapshot(

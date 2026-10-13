@@ -43,7 +43,8 @@ extension SessionWorkspaceModel {
         if capabilities.tmux.isAvailable {
             return TmuxAdapter(
                 runner: connection,
-                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath
+                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath,
+                clientPort: { await connection.clientPort }
             )
         }
         return nil
@@ -87,6 +88,7 @@ extension SessionWorkspaceModel {
         let detector = AgentKindDetector()
         let terminalTitle = sessionAgentTitles[sessionID] ?? registry[sessionID]?.title
         let probe = await probeSession(sessionID)
+        noteForeground(probe.processNames, for: sessionID)
         if sessionAdapters[sessionID] == nil, let directory = probe.directory {
             applyWorkspace(
                 WorkspaceLocation(path: directory, provenance: .process),

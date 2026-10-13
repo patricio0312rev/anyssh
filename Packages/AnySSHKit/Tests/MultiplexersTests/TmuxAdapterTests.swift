@@ -57,7 +57,7 @@ import Testing
             TmuxCommands.prefixLabel: try MuxFixtureData.bytes("tmux-prefix.txt"),
             TmuxCommands.captureLabel: Data("pane body\n".utf8),
         ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "/opt/homebrew/bin/tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "/opt/homebrew/bin/tmux", clientPort: { nil })
 
         let info = try await adapter.detect()
         #expect(info.kind == .tmux)
@@ -93,7 +93,7 @@ import Testing
 
     @Test func focusSelectsTheWindowAndThePaneInOneBatch() async throws {
         let runner = ScriptedMuxRunner(sections: [:])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { nil })
 
         try await adapter.focus(
             MuxTarget(
@@ -132,7 +132,7 @@ import Testing
         let runner = ScriptedMuxRunner(sections: [
             TmuxCommands.sessionsLabel: Data("$3\tzeta\t0\n$1\talpha\t1\n$2\tmid\t0\n".utf8)
         ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { nil })
 
         let sessions = try await adapter.listSessions()
 
@@ -140,32 +140,21 @@ import Testing
         #expect(sessions.map(\.id.rawValue) == ["$3", "$1", "$2"])
     }
 
-    @Test func switchingSessionsMovesTheClientAttachedToTheBoundSession() async throws {
-        let runner = ScriptedMuxRunner(sections: [
-            TmuxCommands.clientsLabel: Data(
-                "/dev/ttys002\t$2\tagents\n/dev/ttys004\t$1\tmain\n".utf8
-            )
-        ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+    @Test func theClientOnOurTerminalIsPickedAmongClientsOnOtherTerminals() throws {
+        let parser = TmuxParser()
+        let clients = try MuxFixtureData.text("tmux-list-clients.txt")
 
-        try await adapter.switchSession(
-            to: MuxSessionID(rawValue: "$2"),
-            from: MuxSessionID(rawValue: "$1")
-        )
-
-        #expect(
-            runner.batches.map { $0.commands.map(\.arguments) } == [
-                [["tmux", "list-clients", "-F", TmuxCommands.clientFormat]],
-                [["tmux", "switch-client", "-c", "/dev/ttys004", "-t", "$2"]],
-            ]
-        )
+        #expect(parser.client(onTerminal: "pts/3", in: clients) == "/dev/pts/3")
+        #expect(parser.client(onTerminal: "pts/7", in: clients) == "/dev/pts/7")
+        #expect(parser.client(onTerminal: "pts/9", in: clients) == nil)
     }
 
-    @Test func switchingSessionsResolvesTheClientByNameToo() async throws {
+    @Test func aStaleBindingStillMovesOurClientAndNeverTheLaptop() async throws {
         let runner = ScriptedMuxRunner(sections: [
-            TmuxCommands.clientsLabel: Data("/dev/ttys004\t$1\tmain\n".utf8)
+            TmuxCommands.ownTerminalLabel: Data("pts/3\n".utf8),
+            TmuxCommands.clientsLabel: try MuxFixtureData.bytes("tmux-list-clients.txt"),
         ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { 52_000 })
 
         try await adapter.switchSession(
             to: MuxSessionID(rawValue: "agents"),
@@ -173,19 +162,36 @@ import Testing
         )
 
         #expect(
-            runner.batches.last?.commands.map(\.arguments) == [
-                ["tmux", "switch-client", "-c", "/dev/ttys004", "-t", "agents"]
+            runner.batches.map { $0.commands.map(\.arguments) } == [
+                [
+                    ["sh", "-c", ClientTerminalCommand.script(clientPort: 52_000)],
+                    ["tmux", "list-clients", "-F", TmuxCommands.clientFormat],
+                ],
+                [["tmux", "switch-client", "-c", "/dev/pts/3", "-t", "agents"]],
             ]
         )
     }
 
-    @Test func switchingSessionsWithTwoClientsOnTheBoundSessionIsRefused() async {
+    @Test func switchingWithoutOurClientPortIsRefusedBeforeAnyCommand() async throws {
         let runner = ScriptedMuxRunner(sections: [
-            TmuxCommands.clientsLabel: Data(
-                "/dev/ttys002\t$1\tmain\n/dev/ttys004\t$1\tmain\n".utf8
-            )
+            TmuxCommands.clientsLabel: try MuxFixtureData.bytes("tmux-list-clients.txt")
         ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { nil })
+
+        await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
+            try await adapter.switchSession(
+                to: MuxSessionID(rawValue: "$2"),
+                from: MuxSessionID(rawValue: "$1")
+            )
+        }
+        #expect(runner.batches.isEmpty)
+    }
+
+    @Test func switchingWhenOurTerminalIsUnknownIsRefused() async throws {
+        let runner = ScriptedMuxRunner(sections: [
+            TmuxCommands.clientsLabel: try MuxFixtureData.bytes("tmux-list-clients.txt")
+        ])
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { 52_000 })
 
         await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
             try await adapter.switchSession(
@@ -196,15 +202,16 @@ import Testing
         #expect(runner.batches.count == 1)
     }
 
-    @Test func switchingSessionsWithNoClientOnTheBoundSessionIsRefused() async {
+    @Test func switchingWhenNoClientSitsOnOurTerminalIsRefused() async throws {
         let runner = ScriptedMuxRunner(sections: [
-            TmuxCommands.clientsLabel: Data("/dev/ttys002\t$2\tagents\n".utf8)
+            TmuxCommands.ownTerminalLabel: Data("pts/9\n".utf8),
+            TmuxCommands.clientsLabel: try MuxFixtureData.bytes("tmux-list-clients.txt"),
         ])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { 52_000 })
 
         await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
             try await adapter.switchSession(
-                to: MuxSessionID(rawValue: "$3"),
+                to: MuxSessionID(rawValue: "$2"),
                 from: MuxSessionID(rawValue: "$1")
             )
         }
@@ -213,7 +220,7 @@ import Testing
 
     @Test func focusingASessionWithoutAWindowOrPaneIsRefused() async {
         let runner = ScriptedMuxRunner(sections: [:])
-        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux")
+        let adapter = TmuxAdapter(runner: runner, binaryPath: "tmux", clientPort: { nil })
 
         await #expect(throws: ErrorState.mux(.attachTargetVanished)) {
             try await adapter.focus(MuxTarget(session: MuxSessionID(rawValue: "$1")))

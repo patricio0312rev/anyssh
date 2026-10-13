@@ -55,6 +55,7 @@ public final class SessionWorkspaceModel {
 
     let lastDirectories = LastDirectoryStore.applicationSupport()
     let muxTopologyCache = SessionMuxTopologyCache()
+    public let keyboardLock = TerminalKeyboardLock()
 
     var isHoppingMuxSession = false
     var scopes = [SessionID: SessionActivityScope]()
@@ -66,6 +67,7 @@ public final class SessionWorkspaceModel {
     var sessionAgentTitles = [SessionID: String]()
     var sessionMuxIDs = [SessionID: MuxSessionID]()
     var sessionMuxGroupIDs = [SessionID: MuxGroupID]()
+    var sessionsInsideMux = Set<SessionID>()
     var publishedAgentTitleIDs = Set<SessionID>()
     var stallWatchers = [SessionID: Task<Void, Never>]()
     var agentStates = [SessionID: String]()
@@ -88,7 +90,7 @@ public final class SessionWorkspaceModel {
         jobAlertScheduler: (any NotificationScheduler)? = nil,
         jobAlertSettings: JobAlertSettings = JobAlertSettings(),
         titlePreference: SessionTitlePreferenceStore = .shared,
-        isWorkspacePresented: @escaping PresentationPredicate = { true },
+        isWorkspacePresented: @escaping PresentationPredicate,
         makeBrowserServices: @escaping BrowserServiceFactory =
             SessionWorkspaceModel.remoteBrowserServices
     ) {

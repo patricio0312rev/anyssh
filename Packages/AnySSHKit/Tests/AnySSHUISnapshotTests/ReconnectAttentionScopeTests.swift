@@ -15,7 +15,7 @@ import Testing
             onReconnect: { dialed.append($0) }
         )
 
-        await coordinator.requestReconnects()
+        await coordinator.requestReconnects(for: .foreground)
 
         #expect(coordinator.lastTriggeredSessionIDs.isEmpty)
         #expect(dialed.ids.isEmpty)
@@ -30,13 +30,14 @@ import Testing
                 ReconnectAttention(
                     isWorkspacePresented: true,
                     activeSessionID: Self.third,
-                    engagedSessionIDs: [Self.first, Self.third]
+                    engagedSessionIDs: [Self.first, Self.third],
+                    silentSessionIDs: []
                 )
             },
             onReconnect: { dialed.append($0) }
         )
 
-        await coordinator.requestReconnects()
+        await coordinator.requestReconnects(for: .foreground)
 
         #expect(coordinator.lastTriggeredSessionIDs == [Self.third, Self.first])
         #expect(dialed.ids == [Self.third, Self.first])
@@ -51,16 +52,83 @@ import Testing
                 ReconnectAttention(
                     isWorkspacePresented: true,
                     activeSessionID: Self.first,
-                    engagedSessionIDs: []
+                    engagedSessionIDs: [],
+                    silentSessionIDs: []
                 )
             },
             onReconnect: { dialed.append($0) }
         )
 
-        await coordinator.requestReconnects()
+        await coordinator.requestReconnects(for: .foreground)
 
         #expect(coordinator.lastTriggeredSessionIDs == [Self.first])
         #expect(dialed.ids == [Self.first])
+    }
+
+    @Test func aPathChangeRedialsSilentSessionsWhileTheWorkspaceIsDismissed() async {
+        let coordinator = ReconnectCoordinator(pathSignal: ScriptedPathSignal())
+        let dialed = DialedSessions()
+        coordinator.start(
+            candidates: { Self.backgroundedRecords },
+            attention: {
+                ReconnectAttention(
+                    isWorkspacePresented: false,
+                    activeSessionID: nil,
+                    engagedSessionIDs: [],
+                    silentSessionIDs: [Self.second]
+                )
+            },
+            onReconnect: { dialed.append($0) }
+        )
+
+        await coordinator.requestReconnects(for: .pathChange)
+
+        #expect(coordinator.lastTriggeredSessionIDs == [Self.second])
+        #expect(dialed.ids == [Self.second])
+    }
+
+    @Test func aPathChangeLeavesPromptingBackgroundSessionsAlone() async {
+        let coordinator = ReconnectCoordinator(pathSignal: ScriptedPathSignal())
+        let dialed = DialedSessions()
+        coordinator.start(
+            candidates: { Self.backgroundedRecords },
+            attention: {
+                ReconnectAttention(
+                    isWorkspacePresented: true,
+                    activeSessionID: Self.third,
+                    engagedSessionIDs: [],
+                    silentSessionIDs: [Self.second]
+                )
+            },
+            onReconnect: { dialed.append($0) }
+        )
+
+        await coordinator.requestReconnects(for: .pathChange)
+
+        #expect(coordinator.lastTriggeredSessionIDs == [Self.third, Self.second])
+        #expect(dialed.ids == [Self.third, Self.second])
+    }
+
+    @Test func foregroundRecoveryIgnoresSilentSessionsOutOfSight() async {
+        let coordinator = ReconnectCoordinator(pathSignal: ScriptedPathSignal())
+        let dialed = DialedSessions()
+        coordinator.start(
+            candidates: { Self.backgroundedRecords },
+            attention: {
+                ReconnectAttention(
+                    isWorkspacePresented: true,
+                    activeSessionID: Self.third,
+                    engagedSessionIDs: [],
+                    silentSessionIDs: [Self.second]
+                )
+            },
+            onReconnect: { dialed.append($0) }
+        )
+
+        await coordinator.requestReconnects(for: .foreground)
+
+        #expect(coordinator.lastTriggeredSessionIDs == [Self.third])
+        #expect(dialed.ids == [Self.third])
     }
 
     private static let first = SessionID(rawValue: "s1")

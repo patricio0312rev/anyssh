@@ -46,7 +46,8 @@ import Testing
                 return dial == 1
                     ? second
                     : MockRemoteConnection(connectionID: ConnectionID(rawValue: "c\(dial)"))
-            }
+            },
+            isWorkspacePresented: { true }
         )
         model.replaceMultiplexer(
             for: sessionID,
@@ -74,7 +75,7 @@ import Testing
         tmux.version\ttmux 3.6a
         herdr.path\t/Users/dev/.local/bin/herdr
         herdr.version\therdr 0.8.0
-        herdr.protocol\t\(HerdrReport.supportedProtocolVersion)
+        herdr.protocol\t\(HerdrReport.supportedProtocolVersions.lowerBound)
 
         """
 }

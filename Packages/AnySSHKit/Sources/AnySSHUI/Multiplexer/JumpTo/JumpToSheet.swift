@@ -109,23 +109,7 @@ public struct JumpToSheet: View {
         Task {
             guard await model.jump(to: row) else { return }
             onDismiss()
-            announce(row)
+            MuxJumpAnnouncement.present(on: statusToasts, target: row.title, model: model)
         }
-    }
-
-    private func announce(_ row: JumpRow) {
-        guard case .focusedElsewhere(let session) = model.lastOutcome else {
-            statusToasts.present(severity: .success, title: "Jumped to \(row.title)")
-            return
-        }
-        statusToasts.present(
-            severity: .attention,
-            title: MuxNavigationCopy.focused(in: name(of: session)),
-            body: MuxNavigationCopy.detachToSwitch
-        )
-    }
-
-    private func name(of session: MuxSessionID) -> String {
-        model.sessions.first { $0.id == session }?.name ?? session.rawValue
     }
 }

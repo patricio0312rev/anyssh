@@ -61,7 +61,7 @@ public enum SessionNavbarTitle {
 
     private static func isMuxIdentifier(_ title: String) -> Bool {
         if title.wholeMatch(of: /[%@$]\d+/) != nil { return true }
-        return title.wholeMatch(of: /\S+:[pt]\d+/) != nil
+        return title.wholeMatch(of: /\S+:[pt]\d[0-9A-Z]*/) != nil
     }
 
     private static let genericPaneTitles: Set<String> = [

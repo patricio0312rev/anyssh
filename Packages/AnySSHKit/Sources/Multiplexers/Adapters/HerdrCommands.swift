@@ -8,7 +8,6 @@ enum HerdrCommands {
     static let configLabel = "herdr.config"
     static let focusAgentLabel = "herdr.focusAgent"
     static let focusTabLabel = "herdr.focusTab"
-    static let supportedProtocol = 19
 
     static func detect(binary: String? = nil) -> RemoteBatch {
         if let binary {

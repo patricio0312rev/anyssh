@@ -11,12 +11,14 @@ public struct AccessoryBar: View {
     let scrollToID: String?
     var onOpenMultiplexer: (() -> Void)?
     var onOpenJumpTo: (() -> Void)?
+    var onOpenAgents: (() -> Void)?
     var onOpenSnippets: (() -> Void)?
     var onOpenChanges: (() -> Void)?
     var onOpenFiles: (() -> Void)?
     var onPaste: (() -> Void)?
     var isDictating = false
     var onImportFile: (() -> Void)?
+    var onPastePhoto: (() -> Void)?
     var onDictate: (() -> Void)?
     var showsKeyStrip = true
 
@@ -67,9 +69,11 @@ public struct AccessoryBar: View {
         isDictating: Bool = false,
         onDictate: (() -> Void)? = nil,
         onImportFile: (() -> Void)? = nil,
+        onPastePhoto: (() -> Void)? = nil,
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
         onOpenJumpTo: (() -> Void)? = nil,
+        onOpenAgents: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
@@ -81,9 +85,11 @@ public struct AccessoryBar: View {
         self.isDictating = isDictating
         self.onDictate = onDictate
         self.onImportFile = onImportFile
+        self.onPastePhoto = onPastePhoto
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenAgents = onOpenAgents
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
         self.onPaste = onPaste
@@ -100,9 +106,11 @@ public struct AccessoryBar: View {
         isDictating: Bool = false,
         onDictate: (() -> Void)? = nil,
         onImportFile: (() -> Void)? = nil,
+        onPastePhoto: (() -> Void)? = nil,
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
         onOpenJumpTo: (() -> Void)? = nil,
+        onOpenAgents: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
@@ -120,9 +128,11 @@ public struct AccessoryBar: View {
         self.isDictating = isDictating
         self.onDictate = onDictate
         self.onImportFile = onImportFile
+        self.onPastePhoto = onPastePhoto
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenAgents = onOpenAgents
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
         self.onPaste = onPaste

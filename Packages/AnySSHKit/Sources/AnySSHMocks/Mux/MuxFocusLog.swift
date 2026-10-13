@@ -8,4 +8,8 @@ public actor MuxFocusLog {
     public func record(_ target: MuxTarget) {
         targets.append(target)
     }
+
+    public func focusedGroup(in session: MuxSessionID) -> MuxGroupID? {
+        targets.last { $0.session == session && $0.group != nil }?.group
+    }
 }

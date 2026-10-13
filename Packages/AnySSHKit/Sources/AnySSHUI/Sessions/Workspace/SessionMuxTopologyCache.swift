@@ -13,7 +13,7 @@ final class SessionMuxTopologyCache {
     }
 
     private var topologies = [SessionID: Topology]()
-    private var generations = [SessionID: Int]()
+    private var latestRequests = [SessionID: Int]()
 
     func topology(for sessionID: SessionID) -> Topology {
         topologies[sessionID] ?? Topology()
@@ -27,17 +27,32 @@ final class SessionMuxTopologyCache {
         topology(for: sessionID).groups
     }
 
-    func generation(for sessionID: SessionID) -> Int {
-        generations[sessionID] ?? 0
+    func beginRefresh(for sessionID: SessionID) -> Int {
+        invalidateRequests(for: sessionID)
+        return latestRequests[sessionID, default: 0]
     }
 
-    func store(_ topology: Topology, for sessionID: SessionID, generation: Int) {
-        guard generation == self.generation(for: sessionID) else { return }
+    func store(_ topology: Topology, for sessionID: SessionID, request: Int) {
+        guard request == latestRequests[sessionID] else { return }
         topologies[sessionID] = topology
+    }
+
+    func markActive(_ group: MuxGroupID, for sessionID: SessionID) {
+        guard var topology = topologies[sessionID], topology.groups.contains(where: { $0.id == group })
+        else { return }
+        topology.groups = topology.groups.map {
+            MuxGroup(id: $0.id, sessionID: $0.sessionID, title: $0.title, isActive: $0.id == group)
+        }
+        topologies[sessionID] = topology
+        invalidateRequests(for: sessionID)
     }
 
     func clear(for sessionID: SessionID) {
         topologies.removeValue(forKey: sessionID)
-        generations[sessionID] = generation(for: sessionID) + 1
+        invalidateRequests(for: sessionID)
+    }
+
+    private func invalidateRequests(for sessionID: SessionID) {
+        latestRequests[sessionID, default: 0] += 1
     }
 }

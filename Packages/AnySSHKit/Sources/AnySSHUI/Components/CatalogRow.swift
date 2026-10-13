@@ -75,17 +75,19 @@ public struct CatalogRow<Leading: View, Trailing: View, Footer: View>: View {
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            if let detail {
-                detailRow(detail)
+            if detail != nil || detailStatus != nil {
+                detailRow
             }
             footer
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func detailRow(_ detail: String) -> some View {
+    private var detailRow: some View {
         HStack(spacing: Theme.Space.step2) {
-            detailText(detail)
+            if let detail {
+                detailText(detail)
+            }
             detailStatus
         }
         .frame(maxWidth: .infinity, alignment: .leading)

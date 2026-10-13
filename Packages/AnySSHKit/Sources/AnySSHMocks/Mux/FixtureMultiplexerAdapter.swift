@@ -71,7 +71,7 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
         guard let snapshot = snapshots[session] else {
             throw ErrorState.mux(.attachTargetVanished)
         }
-        return snapshot
+        return snapshot.focusing(await focusLog.focusedGroup(in: session))
     }
 
     public func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String {

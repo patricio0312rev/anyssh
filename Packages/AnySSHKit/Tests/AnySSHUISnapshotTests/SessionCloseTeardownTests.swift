@@ -35,7 +35,7 @@ import Testing
         model.markBackgroundedSessions()
         let alphaDials = fixture.dials.count(for: CloseTeardownFixture.alpha.id)
 
-        await model.reconnectCoordinator.requestReconnects()
+        await model.reconnectCoordinator.requestReconnects(for: .foreground)
 
         #expect(model.reconnectCoordinator.lastTriggeredSessionIDs == [bravoID])
         #expect(fixture.dials.count(for: CloseTeardownFixture.alpha.id) == alphaDials)
@@ -43,6 +43,23 @@ import Testing
 
         await fixture.hanging.release()
         await closing.value
+    }
+
+    @Test func closingTheActiveSessionPromotesTheNextOneBeforeTheSocketCloses() async throws {
+        let fixture = await CloseTeardownFixture.make()
+        let model = fixture.model
+        let alphaID = try #require(fixture.session(on: CloseTeardownFixture.alpha.id))
+        let bravoID = try #require(fixture.session(on: CloseTeardownFixture.bravo.id))
+        #expect(model.activeSessionID == alphaID)
+
+        let closing = Task { await model.close(alphaID) }
+        try await waitUntil { await fixture.hanging.isClosing }
+
+        #expect(model.activeSessionID == bravoID)
+
+        await fixture.hanging.release()
+        await closing.value
+        #expect(model.activeSessionID == bravoID)
     }
 
     @Test func closingTheLastSessionEmptiesTheRegistryWhileTheSocketStillHangs() async throws {
@@ -105,7 +122,8 @@ private struct CloseTeardownFixture {
                     )
                 )
             },
-            reconnectCoordinator: ReconnectCoordinator(pathSignal: ScriptedPathSignal())
+            reconnectCoordinator: ReconnectCoordinator(pathSignal: ScriptedPathSignal()),
+            isWorkspacePresented: { true }
         )
         await model.open(remote: bravo)
         await model.open(remote: alpha)

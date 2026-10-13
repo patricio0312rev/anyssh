@@ -30,7 +30,7 @@ struct JumpToRowView: View {
             LoadingView(.inline)
                 .accessibilityIdentifier(JumpToIdentifier.jumping(row.id.rawValue))
         } else if row.isActive {
-            Text("Active")
+            Text(MuxNavigationCopy.active)
                 .font(Theme.Text.caption)
                 .foregroundStyle(Theme.text.secondary)
         }
@@ -45,18 +45,23 @@ struct JumpToStatusDot: View {
     let row: JumpRow
 
     var body: some View {
-        if let color = statusColor {
-            StatusDot(
-                color: color,
-                label: "Agent status",
-                value: row.status.valueText,
-                accessibilityIdentifier: JumpToIdentifier.status(row.id.rawValue)
-            )
-        }
+        row.status.dot(accessibilityIdentifier: JumpToIdentifier.status(row.id.rawValue))
+    }
+}
+
+extension JumpAgentStatus {
+    func dot(accessibilityIdentifier: String) -> StatusDot? {
+        guard let color else { return nil }
+        return StatusDot(
+            color: color,
+            label: "Agent status",
+            value: valueText,
+            accessibilityIdentifier: accessibilityIdentifier
+        )
     }
 
-    private var statusColor: Color? {
-        switch row.status {
+    private var color: Color? {
+        switch self {
         case .waiting(let value): value == "blocked" ? Theme.status.attention : Theme.status.busy
         case .finished: Theme.status.online
         case .unknown: nil

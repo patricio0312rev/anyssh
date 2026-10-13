@@ -1,4 +1,5 @@
 import AnySSHCore
+import Foundation
 import TerminalEmulator
 
 @MainActor
@@ -82,6 +83,11 @@ public final class TerminalSurface {
             await retiring?.value
             await pump.run()
         }
+    }
+
+    public func prepareForFreshShell(at date: Date = .now) async {
+        startDraining()
+        await pump.ingest(ArraySlice(TerminalModeReset.bytes + ReconnectDivider.bytes(at: date)))
     }
 
     public func stopDraining() {

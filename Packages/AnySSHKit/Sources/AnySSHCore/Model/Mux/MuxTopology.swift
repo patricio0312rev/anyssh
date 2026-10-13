@@ -62,6 +62,9 @@ public struct MuxPane: Identifiable, Hashable, Sendable {
     public let isActive: Bool
     public let agentStatus: String?
     public let repositoryRoot: String?
+    public let agent: String?
+    public let agentName: String?
+    public let terminalTitle: String?
 
     public init(
         id: MuxPaneID,
@@ -70,7 +73,10 @@ public struct MuxPane: Identifiable, Hashable, Sendable {
         workingDirectory: String?,
         isActive: Bool,
         agentStatus: String?,
-        repositoryRoot: String?
+        repositoryRoot: String?,
+        agent: String? = nil,
+        agentName: String? = nil,
+        terminalTitle: String? = nil
     ) {
         self.id = id
         self.groupID = groupID
@@ -79,6 +85,9 @@ public struct MuxPane: Identifiable, Hashable, Sendable {
         self.isActive = isActive
         self.agentStatus = agentStatus
         self.repositoryRoot = repositoryRoot
+        self.agent = agent
+        self.agentName = agentName
+        self.terminalTitle = terminalTitle
     }
 }
 

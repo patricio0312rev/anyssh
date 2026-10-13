@@ -31,6 +31,7 @@ enum SessionWorkspaceAssembly {
             multiplexerAdapter: mux.adapter,
             layoutDirectory: layoutDirectory(for: scenario),
             jobAlertScheduler: RecordingNotificationScheduler(),
+            isWorkspacePresented: { true },
             makeBrowserServices: { _, _ in mockBrowserServices }
         )
         seedTranscripts(in: model, records: records, for: scenario)

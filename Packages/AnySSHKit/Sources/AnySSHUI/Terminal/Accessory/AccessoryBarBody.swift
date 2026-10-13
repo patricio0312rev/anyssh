@@ -15,15 +15,15 @@ extension AccessoryBar {
                         .foregroundStyle(Theme.accent)
                         .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.preview)
                 }
-                if let onImportFile {
+                if let onOpenAgents {
                     IconButton(
-                        systemImage: "doc.badge.plus",
-                        label: "Import file",
+                        systemImage: "person.2",
+                        label: AgentsMenuCopy.openLabel,
                         surface: .toolbar,
-                        accessibilityIdentifier: FileImportIdentifier.open
+                        accessibilityIdentifier: AgentsMenuIdentifier.open
                     ) {
                         AccessoryFeedback.tap()
-                        onImportFile()
+                        onOpenAgents()
                     }
                     .foregroundStyle(Theme.text.secondary)
                     .modifier(AccessoryControlSize())
@@ -78,6 +78,14 @@ extension AccessoryBar {
         if let onOpenFiles {
             Button("Files", systemImage: "folder", action: onOpenFiles)
                 .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.files)
+        }
+        if let onImportFile {
+            Button("Import File", systemImage: "doc.badge.plus", action: onImportFile)
+                .accessibilityIdentifier(FileImportIdentifier.open)
+        }
+        if let onPastePhoto {
+            Button("Paste Photo", systemImage: "photo.badge.plus", action: onPastePhoto)
+                .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.pastePhoto)
         }
         if let onOpenMultiplexer {
             Button(

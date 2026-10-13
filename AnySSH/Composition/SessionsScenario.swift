@@ -10,6 +10,7 @@ enum SessionsScenario: String, Equatable, CaseIterable {
     case jumpToGrid = "sessions.jumpTo.grid"
     case jumpToTmux = "sessions.jumpTo.tmux"
     case jumpToJumped = "sessions.jumpTo.jumped"
+    case agents = "sessions.agents"
     case panes = "sessions.panes"
     case panels = "sessions.panels"
     case bindingEditor = "sessions.binding"

@@ -15,7 +15,7 @@ import Testing
             duration: .seconds(30),
             cancelLatency: .milliseconds(20)
         )
-        let adapter = TmuxAdapter(runner: runner)
+        let adapter = TmuxAdapter(runner: runner, clientPort: { nil })
         let poller = MuxTopologyPoller(adapter: adapter)
         let scope = MuxTestActivityScope()
 
@@ -42,7 +42,7 @@ import Testing
             TmuxCommands.windowsLabel: try MuxFixtureData.bytes("tmux-list-windows.txt"),
             TmuxCommands.panesLabel: try MuxFixtureData.bytes("tmux-list-panes.txt"),
         ])
-        let adapter = TmuxAdapter(runner: runner)
+        let adapter = TmuxAdapter(runner: runner, clientPort: { nil })
         let poller = MuxTopologyPoller(adapter: adapter)
         await poller.setVisibility(.suspended)
         let scope = MuxTestActivityScope()

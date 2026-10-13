@@ -1,5 +1,6 @@
 #if canImport(UIKit)
 import AnySSHCore
+import PhotosUI
 import SwiftUI
 import TerminalEmulator
 
@@ -11,10 +12,14 @@ public struct SessionWorkspaceView: View {
     @State var isSnippetsPresented = false
     @State var isMultiplexerPresented = false
     @State var isJumpToPresented = false
+    @State var isAgentsPresented = false
     @State var isJobAlertsPresented = false
     @State var isImportingFile = false
+    @State var isPickingPhoto = false
+    @State var pickedPhoto: PhotosPickerItem?
     @State var dictation = DictationEngine()
     @State var fileImport = FileImportModel()
+    @State var imagePaste = ImagePasteModel()
     @State var switchEdge = Edge.trailing
     @State var commandRegistry = AppCommandRegistry(commands: [])
     @State var keyboard = KeyboardVisibility()
@@ -64,6 +69,7 @@ public struct SessionWorkspaceView: View {
                 model: model,
                 isMultiplexerPresented: $isMultiplexerPresented,
                 isJumpToPresented: $isJumpToPresented,
+                isAgentsPresented: $isAgentsPresented,
                 isJobAlertsPresented: $isJobAlertsPresented
             )
             .sheet(isPresented: $isSnippetsPresented) {
@@ -100,6 +106,13 @@ public struct SessionWorkspaceView: View {
                 allowedContentTypes: [.item],
                 onCompletion: importPicked
             )
+            .photosPicker(
+                isPresented: $isPickingPhoto,
+                selection: $pickedPhoto,
+                matching: .images,
+                preferredItemEncoding: .compatible
+            )
+            .onChange(of: pickedPhoto) { _, item in pastePickedPhoto(item) }
             .background { Theme.surface.base.ignoresSafeArea() }
             .background { switchDurationProbe }
             .animation(Theme.Motion.sessionSwitch, value: model.activeSessionID)
@@ -119,6 +132,7 @@ public struct SessionWorkspaceView: View {
                     title: model.navbarTitle(),
                     transportState: model.activeTransportState,
                     keyboardEngine: model.activeSessionID.flatMap { model.surface(for: $0)?.engine },
+                    keyboardLock: model.keyboardLock,
                     showsBack: onClose != nil,
                     onBack: dismissToRemotes,
                     onToggleSwitcher: toggleSwitcher
@@ -162,7 +176,8 @@ public struct SessionWorkspaceView: View {
                 onOpenSwitcher: presentSwitcher,
                 onOpenPalette: { isPalettePresented = true },
                 onOpenChanges: { presentedBrowser = .changes },
-                onOpenJumpTo: { isJumpToPresented = true }
+                onOpenJumpTo: { isJumpToPresented = true },
+                onPaste: pasteFromClipboard
             )
         )
     }

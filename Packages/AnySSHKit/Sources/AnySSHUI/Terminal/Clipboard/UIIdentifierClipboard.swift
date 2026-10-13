@@ -4,6 +4,10 @@ extension UIIdentifier.Terminal {
         public static let copy = "terminal.clipboard.copy"
         public static let dismissHint = "terminal.clipboard.dismissHint"
         public static let selection = "terminal.clipboard.selection"
+        public static let emptyToast = "terminal.clipboard.emptyToast"
+        public static let imageUploading = "terminal.clipboard.imageUploading"
+        public static let imagePasted = "terminal.clipboard.imagePasted"
+        public static let imageFailed = "terminal.clipboard.imageFailed"
     }
 
     public enum Paste {

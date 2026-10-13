@@ -21,11 +21,13 @@ public struct JumpSession: Identifiable, Hashable, Sendable {
     public let id: MuxSessionID
     public let name: String
     public let groups: [JumpRow]
+    public let agents: [MuxAgentEntry]
 
-    public init(id: MuxSessionID, name: String, groups: [JumpRow]) {
+    public init(id: MuxSessionID, name: String, groups: [JumpRow], agents: [MuxAgentEntry] = []) {
         self.id = id
         self.name = name
         self.groups = groups
+        self.agents = agents
     }
 }
 
@@ -71,7 +73,12 @@ public enum JumpTreeBuilder {
                     paneCount: snapshot.panes.filter { $0.groupID == group.id }.count
                 )
             }
-            return JumpSession(id: session.id, name: session.name, groups: rows)
+            return JumpSession(
+                id: session.id,
+                name: session.name,
+                groups: rows,
+                agents: MuxAgentDirectory.entries(in: snapshot)
+            )
         }
     }
 

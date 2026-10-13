@@ -82,34 +82,25 @@ extension SessionWorkspaceModel {
 
     public func close(_ id: SessionID) async {
         await tearDown(id, reason: .closedByUser)
-        guard activeSessionID == id else { return }
-        promoteNextSession()
     }
 
     private func resume(_ id: SessionID) async {
-        await activateResumed(id)
-        await resumeReconnect(for: id)
-    }
-
-    private func activateResumed(_ id: SessionID) async {
-        if id == activeSessionID {
-            store.surface(for: id)?.startDraining()
-            registry.touch(id, at: Date.now)
-            return
-        }
-        let canSwitch =
-            activeSessionID != nil
-            && store.surface(for: id) != nil
-            && activeSessionID.flatMap { store.surface(for: $0) } != nil
-            && activeSessionID.flatMap { scopes[$0] } != nil
-        if canSwitch {
+        if id != activeSessionID, canSwitch(toResumed: id) {
             beginSwitch(to: id)
             await completeSwitch()
             return
         }
-        activate(id)
+        if id != activeSessionID { activate(id) }
         registry.touch(id, at: Date.now)
         store.surface(for: id)?.startDraining()
+        await resumeReconnect(for: id)
+    }
+
+    private func canSwitch(toResumed id: SessionID) -> Bool {
+        activeSessionID != nil
+            && store.surface(for: id) != nil
+            && activeSessionID.flatMap { store.surface(for: $0) } != nil
+            && activeSessionID.flatMap { scopes[$0] } != nil
     }
 
     private func closeDeadSessions(on remoteID: RemoteID) async {

@@ -39,12 +39,14 @@ extension SessionWorkspaceView {
                 isDictating: dictation.isListening,
                 onDictate: toggleDictation,
                 onImportFile: { isImportingFile = true },
+                onPastePhoto: { isPickingPhoto = true },
                 onOpenSnippets: { isSnippetsPresented = true },
                 onOpenMultiplexer: model.showsMultiplexer ? { isMultiplexerPresented = true } : nil,
                 onOpenJumpTo: model.showsMultiplexer ? { isJumpToPresented = true } : nil,
+                onOpenAgents: model.showsMultiplexer ? { isAgentsPresented = true } : nil,
                 onOpenChanges: { presentedBrowser = .changes },
                 onOpenFiles: { presentedBrowser = .files },
-                onPaste: { commandRegistry.run(id: "app.paste") },
+                onPaste: { commandRegistry.run(id: AppCommandBinding.paste) },
                 showsKeyStrip: showsKeyStrip
             )
             .id(id)
