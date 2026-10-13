@@ -61,6 +61,7 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
             )
         }
         return MuxSnapshot(session: match, groups: groups, panes: [])
+            .focusing(await focusLog.focusedGroup(in: session))
     }
 
     func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String { "" }
