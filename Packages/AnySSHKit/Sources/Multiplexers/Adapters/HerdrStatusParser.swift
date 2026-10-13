@@ -43,7 +43,7 @@ struct HerdrStatusParser: Sendable {
         guard let protocolVersion = HerdrJSON.int(object["protocol"]) else {
             throw HerdrParseError.missingField("protocol")
         }
-        if protocolVersion != HerdrCommands.supportedProtocol {
+        if !HerdrReport.supportedProtocolVersions.contains(protocolVersion) {
             throw HerdrParseError.protocolMismatch(protocolVersion)
         }
         let binary = (object["binary"] as? String) ?? path
