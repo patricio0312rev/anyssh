@@ -9,5 +9,9 @@ enum ImagePasteCopy {
     static let unreadableBody =
         "The clipboard image is not a format this device can decode. Nothing was sent."
     static let tooLargeTitle = "Image too large"
+    static let photoUnavailableTitle = "Photo could not be loaded"
+    static let photoUnavailableBody =
+        "The photo did not arrive from the library. If it is stored in iCloud, check the "
+        + "connection and try again."
     static let tooLargeBody = "It stays over the upload limit even after shrinking, so nothing was sent."
 }
