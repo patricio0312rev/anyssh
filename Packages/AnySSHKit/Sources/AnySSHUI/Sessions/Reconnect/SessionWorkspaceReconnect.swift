@@ -141,6 +141,7 @@ extension SessionWorkspaceModel {
             await old.close(reason: .backgrounded)
         }
         guard registry[sessionID] != nil else { return }
+        let resumesMultiplexer = sessionsInsideMux.contains(sessionID)
         scopes.removeValue(forKey: sessionID)
         let bridge = makeAuthBridge(for: remote)
         let connection = makeConnection(remote, bridge)
@@ -152,6 +153,7 @@ extension SessionWorkspaceModel {
             }
         }
         let surface = attach(sessionID, connection: connection)
+        await surface.prepareForFreshShell()
         do {
             if let bridge {
                 await connection.setDisplayDelegate(bridge.delegate)
@@ -168,6 +170,10 @@ extension SessionWorkspaceModel {
             try requireRegistered(sessionID)
             await configureMultiplexer(for: sessionID, connection: connection)
             try requireRegistered(sessionID)
+            if resumesMultiplexer {
+                try await reattachMultiplexer(sessionID, remote: remote, connection: connection)
+                try requireRegistered(sessionID)
+            }
             clearOpenFailure()
             updateTransportState(.connected, for: sessionID)
             presentReattached(for: registry[sessionID]?.title ?? remote.name)
