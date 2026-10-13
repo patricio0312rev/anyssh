@@ -70,7 +70,8 @@ import Testing
             remotes: [],
             activeSessionID: idA,
             connections: connections,
-            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) }
+            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) },
+            isWorkspacePresented: { true }
         )
     }
 
