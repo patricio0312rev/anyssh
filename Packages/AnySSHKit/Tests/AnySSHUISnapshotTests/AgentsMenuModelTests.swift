@@ -14,15 +14,15 @@ import Testing
         await model.load()
         let agents = try #require(model.agentSessions.first?.agents)
 
-        #expect(agents.map(\.title) == ["opencode", "claude", "codex", "gemini"])
         #expect(
-            agents.map(\.detail) == [
+            agents.map(\.title) == [
                 "Refactor the billing webhooks",
-                "Fix the flaky login test",
+                "login fix",
                 "Write the release notes",
                 "Audit the Terraform modules",
             ]
         )
+        #expect(agents.map(\.detail) == [nil, "Fix the flaky login test", nil, nil])
         #expect(agents.map(\.kind?.id) == ["opencode", "claude-code", "codex", "gemini"])
         #expect(agents.map(\.tabTitle) == ["api", "web", "docs", "infra"])
     }
