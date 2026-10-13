@@ -46,7 +46,8 @@ import Testing
                 return dial == 1
                     ? second
                     : MockRemoteConnection(connectionID: ConnectionID(rawValue: "c\(dial)"))
-            }
+            },
+            isWorkspacePresented: { true }
         )
         model.replaceMultiplexer(
             for: sessionID,
