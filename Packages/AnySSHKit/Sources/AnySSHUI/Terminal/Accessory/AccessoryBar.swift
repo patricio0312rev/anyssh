@@ -11,6 +11,7 @@ public struct AccessoryBar: View {
     let scrollToID: String?
     var onOpenMultiplexer: (() -> Void)?
     var onOpenJumpTo: (() -> Void)?
+    var onOpenAgents: (() -> Void)?
     var onOpenSnippets: (() -> Void)?
     var onOpenChanges: (() -> Void)?
     var onOpenFiles: (() -> Void)?
@@ -70,6 +71,7 @@ public struct AccessoryBar: View {
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
         onOpenJumpTo: (() -> Void)? = nil,
+        onOpenAgents: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
@@ -84,6 +86,7 @@ public struct AccessoryBar: View {
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenAgents = onOpenAgents
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
         self.onPaste = onPaste
@@ -103,6 +106,7 @@ public struct AccessoryBar: View {
         onOpenSnippets: (() -> Void)? = nil,
         onOpenMultiplexer: (() -> Void)? = nil,
         onOpenJumpTo: (() -> Void)? = nil,
+        onOpenAgents: (() -> Void)? = nil,
         onOpenChanges: (() -> Void)? = nil,
         onOpenFiles: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
@@ -123,6 +127,7 @@ public struct AccessoryBar: View {
         self.onOpenSnippets = onOpenSnippets
         self.onOpenMultiplexer = onOpenMultiplexer
         self.onOpenJumpTo = onOpenJumpTo
+        self.onOpenAgents = onOpenAgents
         self.onOpenChanges = onOpenChanges
         self.onOpenFiles = onOpenFiles
         self.onPaste = onPaste
