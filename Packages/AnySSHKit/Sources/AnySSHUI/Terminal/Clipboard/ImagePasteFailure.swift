@@ -1,7 +1,7 @@
 import AnySSHCore
 import FileTransfer
 
-public enum ImagePasteFailure: Equatable, Sendable {
+public enum ImagePasteFailure: Error, Equatable, Sendable {
     case unreadable
     case tooLarge
     case photoUnavailable
