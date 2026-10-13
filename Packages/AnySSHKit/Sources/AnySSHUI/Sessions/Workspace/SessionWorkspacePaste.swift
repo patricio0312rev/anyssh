@@ -9,8 +9,10 @@ extension SessionWorkspaceView {
         switch PasteRoute.resolve(from: SystemClipboardPasteboard()) {
         case .text(let text):
             emitPaste(text, into: surface)
-        case .image(let image):
-            uploadAndPaste(into: id) { await imagePaste.upload(image, over: $0) }
+        case .image(let data):
+            uploadAndPaste(into: id) { await imagePaste.upload(contentsOf: data, over: $0) }
+        case .unreadableImage:
+            presentImagePasteFailure(.unreadable)
         case .empty:
             toasts.present(
                 severity: .attention,
@@ -30,7 +32,7 @@ extension SessionWorkspaceView {
 
     func uploadAndPaste(
         into id: SessionID,
-        upload: @escaping @MainActor (any RemoteConnection) async -> String?
+        upload: @escaping @MainActor (any RemoteConnection) async -> Result<String, ImagePasteFailure>
     ) {
         guard let connection = model.connection(for: id) else {
             toasts.present(state: .files(.fetchFailed))
@@ -43,12 +45,14 @@ extension SessionWorkspaceView {
             accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageUploading
         )
         Task {
-            let path = await upload(connection)
+            let result = await upload(connection)
             toasts.retract(progress)
-            guard let path else {
-                if case .failed(let failure) = imagePaste.outcome {
-                    presentImagePasteFailure(failure)
-                }
+            let path: String
+            switch result {
+            case .success(let uploaded):
+                path = uploaded
+            case .failure(let failure):
+                presentImagePasteFailure(failure)
                 return
             }
             guard let surface = model.surface(for: id) else {
