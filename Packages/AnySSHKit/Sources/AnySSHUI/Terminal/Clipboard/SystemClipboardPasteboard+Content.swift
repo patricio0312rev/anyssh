@@ -9,7 +9,8 @@ import AppKit
 #endif
 
 extension SystemClipboardPasteboard: ClipboardContentSource {
-    nonisolated public func contentKinds() -> ClipboardContentKinds {
+    @MainActor
+    public func contentKinds() -> ClipboardContentKinds {
         #if canImport(UIKit)
         let board = UIPasteboard.general
         return ClipboardContentKinds(hasText: board.hasStrings, hasImage: board.hasImages)
@@ -24,24 +25,25 @@ extension SystemClipboardPasteboard: ClipboardContentSource {
         #endif
     }
 
-    nonisolated public func readText() -> String? {
+    @MainActor
+    public func readText() -> String? {
         read()
     }
 
-    nonisolated public func readImage() -> PastedImage? {
+    @MainActor
+    public func readImage() -> Data? {
         #if canImport(UIKit)
         let board = UIPasteboard.general
-        if let png = board.data(forPasteboardType: UTType.png.identifier) {
-            return PastedImage(data: png, format: .png)
+        let preferred = [UTType.png.identifier, UTType.jpeg.identifier]
+        let declared = board.types.filter { UTType($0)?.conforms(to: .image) == true }
+        for type in preferred + declared {
+            if let data = board.data(forPasteboardType: type) {
+                return data
+            }
         }
-        if let jpeg = board.data(forPasteboardType: UTType.jpeg.identifier) {
-            return PastedImage(data: jpeg, format: .jpeg)
-        }
-        guard let jpeg = board.image?.jpegData(compressionQuality: 1) else { return nil }
-        return PastedImage(data: jpeg, format: .jpeg)
+        return nil
         #elseif canImport(AppKit)
-        guard let png = NSPasteboard.general.data(forType: .png) else { return nil }
-        return PastedImage(data: png, format: .png)
+        return NSPasteboard.general.data(forType: .png)
         #else
         return nil
         #endif
