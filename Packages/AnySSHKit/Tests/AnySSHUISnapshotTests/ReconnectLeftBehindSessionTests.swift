@@ -35,7 +35,7 @@ import Testing
         let dialsBefore = fixture.dials.count
 
         model.handleForeground()
-        await model.reconnectCoordinator.requestReconnects()
+        await model.reconnectCoordinator.requestReconnects(for: .foreground)
 
         #expect(fixture.dials.count == dialsBefore)
         #expect(model.reconnectCoordinator.lastTriggeredSessionIDs.isEmpty)
@@ -80,6 +80,42 @@ import Testing
 
         #expect(await biometrics.authentications == 1)
     }
+
+    @Test func aPathChangeRedialsAStoredPasswordTabButNotAHiddenPassphraseOne() async throws {
+        let biometrics = CountingBiometrics()
+        let credential = GatedCredential(
+            authenticator: biometrics,
+            secrets: InMemorySecretStore(),
+            reference: SecretReference(
+                remoteID: LeftBehindFixture.alpha.id,
+                kind: .keyPassphrase
+            )
+        )
+        let secrets = InMemorySecretStore(secrets: [
+            SecretReference(remoteID: LeftBehindFixture.bravo.id, kind: .password): Data("pw".utf8)
+        ])
+        let fixture = await LeftBehindFixture.make(
+            credential: credential,
+            secrets: secrets,
+            isPresented: { false }
+        )
+        let model = fixture.model
+        let alphaID = try #require(fixture.session(on: LeftBehindFixture.alpha.id))
+        let bravoID = try #require(fixture.session(on: LeftBehindFixture.bravo.id))
+        #expect(await biometrics.authentications == 1)
+        model.markBackgroundedSessions()
+        model.startReconnectMonitoring()
+        let dialsBefore = fixture.dials.count
+
+        model.reconnectCoordinator.handlePathChange()
+        try await waitUntil { model.registry[bravoID]?.state == .connected }
+
+        #expect(fixture.dials.count == dialsBefore + 1)
+        #expect(fixture.dials.remoteIDs.last == LeftBehindFixture.bravo.id)
+        #expect(model.reconnectCoordinator.lastTriggeredSessionIDs == [bravoID])
+        #expect(model.registry[alphaID]?.state == .disconnected(.backgrounded))
+        #expect(await biometrics.authentications == 1)
+    }
 }
 
 @MainActor
@@ -104,6 +140,7 @@ private struct LeftBehindFixture {
 
     static func make(
         credential: GatedCredential? = nil,
+        secrets: (any SecretStore)? = nil,
         isPresented: @escaping @MainActor () -> Bool = { true }
     ) async -> LeftBehindFixture {
         let dials = DialLog()
@@ -122,6 +159,7 @@ private struct LeftBehindFixture {
                     credential: remote.id == alpha.id ? credential : nil
                 )
             },
+            secrets: secrets,
             reconnectCoordinator: ReconnectCoordinator(pathSignal: ScriptedPathSignal()),
             isWorkspacePresented: isPresented
         )
