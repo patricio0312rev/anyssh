@@ -93,6 +93,9 @@ extension TerminalHostController {
         bridge.onFocus = { [weak swiftTerm] in
             swiftTerm?.wantsKeyboard = true
         }
+        bridge.onPasteImage = { [weak self] in
+            self?.commandRegistry?.run(id: AppCommandBinding.paste)
+        }
         gestureBridge = bridge
         didInstallInteraction = true
     }
