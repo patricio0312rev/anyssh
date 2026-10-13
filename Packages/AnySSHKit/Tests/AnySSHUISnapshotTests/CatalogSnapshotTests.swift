@@ -79,6 +79,21 @@ import Testing
         )
     }
 
+    @Test func statusWithoutMetadataStillShowsItsDot() {
+        ComponentSnapshot.assert(
+            SurfaceCard {
+                CatalogRow(
+                    title: "release-notes",
+                    detailStatus: StatusDot(reachability: .reachable, remoteID: "snapshot"),
+                    accessibilityIdentifier: "snapshot.row.statusOnly"
+                )
+            }
+            .padding(Theme.Space.screenMargin),
+            named: "catalogRow-status-only",
+            height: 120
+        )
+    }
+
     @Test func listSurfaceWithSelection() {
         ComponentSnapshot.assert(
             List {
