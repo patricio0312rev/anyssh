@@ -17,6 +17,10 @@ enum PastedImageFixtures {
         return PastedImage(data: try encode(pixels, as: .jpeg), format: .jpeg)
     }
 
+    static func data(width: Int, height: Int, as type: UTType) throws -> Data {
+        try encode(try draw(width: width, height: height, noisy: true), as: type)
+    }
+
     static func pixelSize(of image: PastedImage) -> (width: Int, height: Int)? {
         guard let source = CGImageSourceCreateWithData(image.data as CFData, nil),
             let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
