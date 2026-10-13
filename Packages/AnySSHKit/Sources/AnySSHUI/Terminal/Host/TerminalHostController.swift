@@ -7,6 +7,7 @@ public final class TerminalHostController: UIViewController {
     let onSessionSwitch: (() -> Void)?
     let onGesture: ((GestureSlot) -> Void)?
     let commandRegistry: AppCommandRegistry?
+    let keyboardLock: TerminalKeyboardLock?
     var gestureBridge: TerminalGestureBridge?
     var didInstallInteraction = false
     var keyboardView: HardwareKeyboardView?
@@ -20,12 +21,14 @@ public final class TerminalHostController: UIViewController {
         engine: any TerminalSurfaceEngine,
         onSessionSwitch: (() -> Void)? = nil,
         onGesture: ((GestureSlot) -> Void)? = nil,
-        commandRegistry: AppCommandRegistry? = nil
+        commandRegistry: AppCommandRegistry? = nil,
+        keyboardLock: TerminalKeyboardLock? = nil
     ) {
         self.engine = engine
         self.onSessionSwitch = onSessionSwitch
         self.onGesture = onGesture
         self.commandRegistry = commandRegistry
+        self.keyboardLock = keyboardLock
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -85,7 +88,7 @@ public final class TerminalHostController: UIViewController {
             surface.trailingAnchor.constraint(equalTo: guides.trailingAnchor),
             surfaceBottom,
         ])
-        if wasFirstResponder {
+        if wasFirstResponder, keyboardLock?.isLocked != true {
             _ = surface.becomeFirstResponder()
         }
     }
