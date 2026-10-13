@@ -116,7 +116,7 @@ import Testing
             guard let target = model.swipeTarget(direction) else { break }
             visited.append(target)
             switch target {
-            case .muxGroup(let muxGroupID): model.hop(toMuxGroup: muxGroupID)
+            case .muxGroup: model.hop(tabToward: direction)
             case .muxSession(let muxSessionID): model.hop(toMuxSession: muxSessionID)
             case .appSession: return visited
             }
