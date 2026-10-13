@@ -42,6 +42,7 @@ extension SessionWorkspaceView {
                 onOpenSnippets: { isSnippetsPresented = true },
                 onOpenMultiplexer: model.showsMultiplexer ? { isMultiplexerPresented = true } : nil,
                 onOpenJumpTo: model.showsMultiplexer ? { isJumpToPresented = true } : nil,
+                onOpenAgents: model.showsMultiplexer ? { isAgentsPresented = true } : nil,
                 onOpenChanges: { presentedBrowser = .changes },
                 onOpenFiles: { presentedBrowser = .files },
                 onPaste: { commandRegistry.run(id: "app.paste") },
