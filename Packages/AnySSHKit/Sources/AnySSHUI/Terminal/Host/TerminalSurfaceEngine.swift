@@ -10,6 +10,8 @@ public protocol TerminalSurfaceEngine: TerminalEngine {
 
     var wantsKeyboard: Bool { get set }
 
+    var pastesBracketed: Bool { get }
+
     @discardableResult
     func activateRenderer() -> TerminalRenderer
 
