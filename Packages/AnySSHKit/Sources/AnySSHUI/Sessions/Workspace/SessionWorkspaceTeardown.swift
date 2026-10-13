@@ -69,6 +69,7 @@ extension SessionWorkspaceModel {
         sessionAgentTitles.removeValue(forKey: id)
         sessionMuxIDs.removeValue(forKey: id)
         sessionMuxGroupIDs.removeValue(forKey: id)
+        sessionsInsideMux.remove(id)
         muxTopologyCache.clear(for: id)
         publishedAgentTitleIDs.remove(id)
         agentStates.removeValue(forKey: id)
