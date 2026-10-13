@@ -11,6 +11,7 @@ public struct SessionWorkspaceView: View {
     @State var isSnippetsPresented = false
     @State var isMultiplexerPresented = false
     @State var isJumpToPresented = false
+    @State var isAgentsPresented = false
     @State var isJobAlertsPresented = false
     @State var isImportingFile = false
     @State var dictation = DictationEngine()
@@ -64,6 +65,7 @@ public struct SessionWorkspaceView: View {
                 model: model,
                 isMultiplexerPresented: $isMultiplexerPresented,
                 isJumpToPresented: $isJumpToPresented,
+                isAgentsPresented: $isAgentsPresented,
                 isJobAlertsPresented: $isJobAlertsPresented
             )
             .sheet(isPresented: $isSnippetsPresented) {
