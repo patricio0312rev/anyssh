@@ -84,6 +84,31 @@ import Testing
         await gate.open()
     }
 
+    @Test func aHungTabRefreshStillFreesTheSwipe() async throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let toasts = StatusToastCenter()
+        model.statusToasts = toasts
+        let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
+        let adapter = SwipeRingMuxAdapter(names: ["alpha"], groupTitles: ["code", "tests"])
+        try await install(adapter, on: model, for: sessionID)
+        model.rememberMuxSession(Self.alpha, for: sessionID)
+        await model.refreshMuxTopology(for: sessionID, using: adapter)
+        #expect(model.swipeTarget(.forward) == .muxGroup(MuxGroupID(rawValue: "alpha:tests")))
+        let gate = MuxHopGate()
+        let hung = SwipeRingMuxAdapter(names: ["alpha"], groupTitles: ["code", "tests"], snapshotGate: gate)
+        model.sessionAdapters[sessionID] = hung
+
+        let skips = SkipRecorder()
+        model.hop(tabToward: .forward, within: Self.shortLimit) { skips.record() }
+        try await waitInRealTime { !model.isHoppingMuxSession }
+
+        #expect(skips.count == 1)
+        #expect(await hung.focusLog.targets.isEmpty)
+        #expect(toasts.items.first?.title == MuxNavigationCopy.skipped(.timedOut).title)
+        await gate.open()
+    }
+
     @Test(
         arguments: [
             CancellationError(),
