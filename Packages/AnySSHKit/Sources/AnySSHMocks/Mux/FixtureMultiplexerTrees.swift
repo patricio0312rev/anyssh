@@ -241,7 +241,7 @@ extension FixtureMultiplexerAdapter {
             MuxPane(
                 id: MuxPaneID(rawValue: "w\(index):p\(position + 1)"),
                 groupID: group.id,
-                title: agent.0,
+                title: herdrLabels[agent.0] ?? herdrTaskTitles[agent.0] ?? agent.0,
                 workingDirectory: position == 0 ? root : "\(root)/tests",
                 isActive: position == 0,
                 agentStatus: agent.1,
@@ -252,6 +252,8 @@ extension FixtureMultiplexerAdapter {
         }
         return HerdrTab(group: group, panes: panes)
     }
+
+    private static let herdrLabels = ["claude": "login fix"]
 
     private static let herdrTaskTitles = [
         "opencode": "Refactor the billing webhooks",
