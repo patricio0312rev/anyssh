@@ -3,6 +3,8 @@ enum MuxNavigationCopy {
 
     static func switched(to session: String) -> String { "Switched to \(session)" }
 
+    static func jumped(to target: String) -> String { "Jumped to \(target)" }
+
     static let detachToSwitch = "Detach to switch sessions."
 
     static let currentSession = "this session"
@@ -10,4 +12,6 @@ enum MuxNavigationCopy {
     static let switchedSession = "Switched session"
 
     static let switchedTab = "Switched tab"
+
+    static let active = "Active"
 }
