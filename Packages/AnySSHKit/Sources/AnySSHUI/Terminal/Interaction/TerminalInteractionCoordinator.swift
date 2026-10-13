@@ -40,6 +40,7 @@ public final class TerminalInteractionCoordinator: NSObject,
     let probe: TerminalSelectionProbe
     let arbitration: TerminalScrollArbitration
     public var imagePasteHandler: (@MainActor @Sendable () -> Void)?
+    public var keyboardLock: TerminalKeyboardLock?
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
@@ -50,11 +51,14 @@ public final class TerminalInteractionCoordinator: NSObject,
     var wheelAnchor: CGPoint = .zero
     var wheelTravelled = false
     var clickArbiter = TerminalClickArbiter()
+    var focusGate = TerminalTapFocusGate()
     var remoteMouseHeld = false
     var selectionDragActive = false
     var claimsScrollForSwipe = false
 
     var isSelecting: Bool { selectionState() || selectionDragActive }
+    var isScrollMoving: Bool { scrollView?.isDecelerating == true || scrollView?.isDragging == true }
+    var isKeyboardLocked: Bool { keyboardLock?.isLocked == true }
     var currentRoute: TerminalGestureRoute { activeRoute }
 
     public init(
@@ -124,6 +128,7 @@ public final class TerminalInteractionCoordinator: NSObject,
     }
 
     @objc private func handleScrollPan(_ gesture: UIPanGestureRecognizer) {
+        if gesture.state == .began { focusGate.dragBegan() }
         publishProbeState()
     }
 
