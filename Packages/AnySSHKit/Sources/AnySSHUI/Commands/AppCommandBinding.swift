@@ -1,5 +1,4 @@
 import AnySSHCore
-import TerminalEmulator
 
 #if canImport(UIKit)
 import UIKit
@@ -9,6 +8,7 @@ import UIKit
 public enum AppCommandBinding {
     public static let nextSession = "session.next"
     public static let previousSession = "session.previous"
+    public static let paste = "app.paste"
 
     public static func workspaceCommands(
         model: SessionWorkspaceModel,
@@ -16,7 +16,8 @@ public enum AppCommandBinding {
         onOpenSwitcher: @escaping () -> Void,
         onOpenPalette: @escaping () -> Void,
         onOpenChanges: @escaping () -> Void,
-        onOpenJumpTo: @escaping () -> Void = {}
+        onOpenJumpTo: @escaping () -> Void = {},
+        onPaste: @escaping () -> Void
     ) -> [AppCommand] {
         sessionLifecycleCommands(model, onNewConnection: onNewConnection)
             + sessionCommands(model)
@@ -25,7 +26,8 @@ public enum AppCommandBinding {
                 onOpenSwitcher: onOpenSwitcher,
                 onOpenPalette: onOpenPalette,
                 onOpenChanges: onOpenChanges,
-                onOpenJumpTo: onOpenJumpTo
+                onOpenJumpTo: onOpenJumpTo,
+                onPaste: onPaste
             )
     }
 
@@ -76,7 +78,8 @@ public enum AppCommandBinding {
         onOpenSwitcher: @escaping () -> Void,
         onOpenPalette: @escaping () -> Void,
         onOpenChanges: @escaping () -> Void,
-        onOpenJumpTo: @escaping () -> Void
+        onOpenJumpTo: @escaping () -> Void,
+        onPaste: @escaping () -> Void
     ) -> [AppCommand] {
         [
             AppCommand(
@@ -102,7 +105,7 @@ public enum AppCommandBinding {
                 disabledReason: { model.activeRecord?.workspace == nil ? noWorkspace : nil },
                 handler: onOpenChanges
             ),
-            pasteCommand(model),
+            pasteCommand(model, onPaste: onPaste),
             toggleKeyboardCommand(model),
             AppCommand(
                 id: "app.commandPalette",
@@ -144,21 +147,17 @@ public enum AppCommandBinding {
         }
     }
 
-    private static func pasteCommand(_ model: SessionWorkspaceModel) -> AppCommand {
+    private static func pasteCommand(
+        _ model: SessionWorkspaceModel,
+        onPaste: @escaping () -> Void
+    ) -> AppCommand {
         AppCommand(
-            id: "app.paste",
+            id: paste,
             title: "Paste",
             keyEquivalent: AppKeyEquivalent(key: .v),
             isEnabled: { model.activeSessionID != nil },
             disabledReason: { model.activeSessionID == nil ? noActiveSession : nil },
-            handler: {
-                guard let id = model.activeSessionID, let surface = model.surface(for: id) else {
-                    return
-                }
-                guard let text = SystemClipboardPasteboard().read(), !text.isEmpty else { return }
-                let bytes = PastePayload(text).bytes(mode: TerminalInputMode())
-                surface.engine.emitInput(ArraySlice(bytes))
-            }
+            handler: onPaste
         )
     }
 
