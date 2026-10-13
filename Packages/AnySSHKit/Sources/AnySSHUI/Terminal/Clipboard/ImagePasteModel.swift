@@ -18,13 +18,44 @@ public final class ImagePasteModel {
     public init() {}
 
     public func upload(_ image: PastedImage, over connection: any RemoteConnection) async -> String? {
+        guard let transport = transport(of: connection) else { return nil }
+        outcome = .uploading
+        return await finish { try await ImagePasteUploader(connection: transport).upload(image) }
+    }
+
+    public func uploadPhoto(
+        over connection: any RemoteConnection,
+        loading load: @escaping @Sendable () async throws -> Data?
+    ) async -> String? {
+        guard let transport = transport(of: connection) else { return nil }
+        outcome = .uploading
+        let data: Data
+        do {
+            guard let loaded = try await load() else {
+                outcome = .failed(.photoUnavailable)
+                return nil
+            }
+            data = loaded
+        } catch {
+            outcome = .failed(.photoUnavailable)
+            return nil
+        }
+        return await finish {
+            try await ImagePasteUploader(connection: transport).upload(contentsOf: data)
+        }
+    }
+
+    private func transport(of connection: any RemoteConnection) -> (any BlobUploadTransport)? {
         guard let transport = connection as? any BlobUploadTransport else {
             outcome = .failed(.transfer(.files(.fetchFailed)))
             return nil
         }
-        outcome = .uploading
+        return transport
+    }
+
+    private func finish(_ operation: () async throws -> String) async -> String? {
         do {
-            let path = try await ImagePasteUploader(connection: transport).upload(image)
+            let path = try await operation()
             outcome = .uploaded(path: path)
             return path
         } catch {
