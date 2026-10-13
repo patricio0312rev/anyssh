@@ -74,9 +74,19 @@ import Testing
         #expect(ring.step(.backward) == groupTarget("code"))
     }
 
-    @Test func aFocusedTabOutranksTheActiveFlag() {
+    @Test func theLiveActiveTabOutranksTheRememberedOne() {
         let ring = makeRing(
-            tabs: [("code", true), ("tests", false), ("logs", false)],
+            tabs: [("code", false), ("tests", false), ("logs", true)],
+            focused: "tests"
+        )
+
+        #expect(ring.step(.forward) == muxTarget("api"))
+        #expect(ring.step(.backward) == groupTarget("tests"))
+    }
+
+    @Test func theRememberedTabAnchorsWhenNoTabReportsActive() {
+        let ring = makeRing(
+            tabs: [("code", false), ("tests", false), ("logs", false)],
             focused: "tests"
         )
 
