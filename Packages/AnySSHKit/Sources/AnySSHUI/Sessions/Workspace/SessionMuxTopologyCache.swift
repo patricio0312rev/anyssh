@@ -37,6 +37,16 @@ final class SessionMuxTopologyCache {
         topologies[sessionID] = topology
     }
 
+    func markActive(_ group: MuxGroupID, for sessionID: SessionID) {
+        guard var topology = topologies[sessionID], topology.groups.contains(where: { $0.id == group })
+        else { return }
+        topology.groups = topology.groups.map {
+            MuxGroup(id: $0.id, sessionID: $0.sessionID, title: $0.title, isActive: $0.id == group)
+        }
+        topologies[sessionID] = topology
+        invalidateRequests(for: sessionID)
+    }
+
     func clear(for sessionID: SessionID) {
         topologies.removeValue(forKey: sessionID)
         invalidateRequests(for: sessionID)
