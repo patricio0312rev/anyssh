@@ -17,7 +17,7 @@ import Testing
 
         #expect(model.swipeTarget(.forward) == .muxGroup(Self.alphaTests))
 
-        model.hop(toMuxGroup: Self.alphaTests)
+        model.hop(tabToward: .forward)
         try await waitUntil { !model.isHoppingMuxSession }
 
         #expect(model.sessionMuxGroupIDs[sessionID] == Self.alphaTests)
@@ -40,7 +40,7 @@ import Testing
 
         #expect(model.swipeTarget(.backward) == .muxGroup(Self.alphaTests))
 
-        model.hop(toMuxGroup: Self.alphaTests)
+        model.hop(tabToward: .backward)
         try await waitUntil { !model.isHoppingMuxSession }
 
         #expect(model.swipeTarget(.forward) == .muxGroup(Self.alphaCode))
@@ -67,7 +67,7 @@ import Testing
         let adapter = FixtureMultiplexerAdapter(fixture: .tmuxCluster)
         try await bind(Self.main, on: model, for: sessionID, using: adapter)
 
-        model.hop(toMuxGroup: Self.window2)
+        model.hop(tabToward: .forward)
         try await waitUntil { !model.isHoppingMuxSession }
 
         #expect(
@@ -89,7 +89,7 @@ import Testing
 
         #expect(model.swipeTarget(.forward) == .muxGroup(Self.herdrWeb))
 
-        model.hop(toMuxGroup: Self.herdrWeb)
+        model.hop(tabToward: .forward)
         try await waitUntil { !model.isHoppingMuxSession }
 
         #expect(
@@ -114,7 +114,7 @@ import Testing
         #expect(model.swipeTarget(.forward) == .muxGroup(Self.window2))
 
         let skips = SkipRecorder()
-        model.hop(toMuxGroup: Self.window2) { skips.record() }
+        model.hop(tabToward: .forward) { skips.record() }
         try await waitUntil { !model.isHoppingMuxSession }
 
         #expect(skips.count == 1)
@@ -122,6 +122,24 @@ import Testing
         #expect(await adapter.focusLog.targets.isEmpty)
         #expect(toasts.items.map(\.severity) == [.attention])
         #expect(model.swipeTarget(.forward, skippingMux: true) == .appSession(model.registry.ids[1]))
+    }
+
+    @Test func aTabChangedBehindTheAppsBackAnchorsTheNextSwipe() async throws {
+        let model = SessionWorkspaceFixture.model()
+        let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
+        let adapter = SwipeRingMuxAdapter(names: ["alpha"], groupTitles: ["code", "tests", "logs"])
+        try await bind(Self.alpha, on: model, for: sessionID, using: adapter)
+        #expect(model.swipeTarget(.forward) == .muxGroup(Self.alphaTests))
+
+        try await adapter.focus(MuxTarget(session: Self.alpha, group: Self.alphaTests))
+        model.hop(tabToward: .forward)
+        try await waitUntil { !model.isHoppingMuxSession }
+
+        #expect(
+            await adapter.focusLog.targets.last == MuxTarget(session: Self.alpha, group: Self.alphaLogs)
+        )
+        #expect(model.sessionMuxGroupIDs[sessionID] == Self.alphaLogs)
     }
 
     private func bind(
@@ -139,6 +157,7 @@ import Testing
     private static let alpha = MuxSessionID(rawValue: "alpha")
     private static let alphaCode = MuxGroupID(rawValue: "alpha:code")
     private static let alphaTests = MuxGroupID(rawValue: "alpha:tests")
+    private static let alphaLogs = MuxGroupID(rawValue: "alpha:logs")
     private static let main = MuxSessionID(rawValue: "$1")
     private static let window2 = MuxGroupID(rawValue: "@2")
     private static let window3 = MuxGroupID(rawValue: "@3")
