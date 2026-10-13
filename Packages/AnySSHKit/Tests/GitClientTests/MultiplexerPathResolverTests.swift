@@ -1,4 +1,5 @@
 import AnySSHCore
+import Foundation
 import Testing
 
 @testable import GitClient
@@ -28,6 +29,60 @@ import Testing
 
         #expect(location?.path == "/home/dev/src/api")
         #expect(location?.provenance == .multiplexer)
+    }
+
+    @Test func herdrWithoutAWorktreeAsksGitForTheRepositoryRoot() async {
+        let adapter = SnapshotAdapter(
+            kind: .herdr,
+            pane: pane(workingDirectory: "/home/dev/src/api/services", repositoryRoot: nil)
+        )
+        let runner = RootRunner(output: "/home/dev/src/api\n", exitCode: 0)
+
+        let location = await MultiplexerPathResolver(
+            adapter: adapter,
+            sessionID: Self.session,
+            runner: runner
+        )
+        .resolve(Self.record)
+
+        #expect(location?.path == "/home/dev/src/api")
+        #expect(location?.provenance == .multiplexer)
+        #expect(await runner.directories == ["/home/dev/src/api/services"])
+    }
+
+    @Test func herdrOutsideARepositoryKeepsThePaneDirectory() async {
+        let adapter = SnapshotAdapter(
+            kind: .herdr,
+            pane: pane(workingDirectory: "/home/dev/notes", repositoryRoot: nil)
+        )
+        let runner = RootRunner(output: "", exitCode: 128)
+
+        let location = await MultiplexerPathResolver(
+            adapter: adapter,
+            sessionID: Self.session,
+            runner: runner
+        )
+        .resolve(Self.record)
+
+        #expect(location?.path == "/home/dev/notes")
+    }
+
+    @Test func tmuxNeverAsksGit() async {
+        let adapter = SnapshotAdapter(
+            kind: .tmux,
+            pane: pane(workingDirectory: "/home/dev/src/api/services", repositoryRoot: nil)
+        )
+        let runner = RootRunner(output: "/home/dev/src/api\n", exitCode: 0)
+
+        let location = await MultiplexerPathResolver(
+            adapter: adapter,
+            sessionID: Self.session,
+            runner: runner
+        )
+        .resolve(Self.record)
+
+        #expect(location?.path == "/home/dev/src/api/services")
+        #expect(await runner.directories.isEmpty)
     }
 
     @Test func aMissingPaneYieldsNothing() async {
@@ -112,4 +167,31 @@ private struct SnapshotAdapter: MultiplexerAdapter {
     func focus(_ target: MuxTarget) async throws {}
     func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {}
     func attachCommand(_ target: MuxTarget) -> String { "" }
+}
+
+private actor RootRunner: RemoteCommandRunner {
+    private let output: String
+    private let exitCode: Int32
+    private(set) var directories = [String]()
+
+    init(output: String, exitCode: Int32) {
+        self.output = output
+        self.exitCode = exitCode
+    }
+
+    func run(_ batch: RemoteBatch) async throws -> BatchResponse {
+        directories += batch.commands.compactMap { command in
+            command.arguments.firstIndex(of: "-C").map { command.arguments[$0 + 1] }
+        }
+        return BatchResponse(
+            sections: batch.commands.map { command in
+                CommandSection(
+                    label: command.label,
+                    bytes: Data(output.utf8),
+                    exitCode: exitCode,
+                    truncated: false
+                )
+            }
+        )
+    }
 }
