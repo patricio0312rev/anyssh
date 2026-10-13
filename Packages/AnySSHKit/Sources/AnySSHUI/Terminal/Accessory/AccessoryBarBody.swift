@@ -83,6 +83,10 @@ extension AccessoryBar {
             Button("Import File", systemImage: "doc.badge.plus", action: onImportFile)
                 .accessibilityIdentifier(FileImportIdentifier.open)
         }
+        if let onPastePhoto {
+            Button("Paste Photo", systemImage: "photo.badge.plus", action: onPastePhoto)
+                .accessibilityIdentifier(UIIdentifier.Terminal.Accessory.pastePhoto)
+        }
         if let onOpenMultiplexer {
             Button(
                 "Multiplexer Panels", systemImage: "rectangle.split.3x1",
