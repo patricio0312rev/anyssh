@@ -4,12 +4,6 @@ enum MuxHopDestination: Sendable {
     case session(MuxSessionID)
     case group(MuxGroupID, of: MuxSessionID)
 
-    var session: MuxSessionID {
-        switch self {
-        case .session(let session), .group(_, of: let session): session
-        }
-    }
-
     func jump(with navigator: MuxNavigator) async throws -> MuxJumpOutcome {
         switch self {
         case .session(let session):
