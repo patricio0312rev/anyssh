@@ -12,11 +12,12 @@ import Testing
     @Test func uploadsIntoThePasteDirectoryAndReturnsTheRemotePath() async throws {
         let image = try PastedImageFixtures.png(width: 8, height: 8)
         let transport = ScriptedUploadTransport(root: root, payload: image.data)
-        let uploader = ImagePasteUploader(connection: transport, now: { [moment] in moment })
+        let uploader = ImagePasteUploader(
+            connection: transport, now: { [moment] in moment }, token: { "a1b2c3d4" })
 
         let path = try await uploader.upload(image)
 
-        #expect(path == root + "/paste-20251013-140233-500.png")
+        #expect(path == root + "/paste-20251013-140233-500-a1b2c3d4.png")
         let commands = await transport.commands
         #expect(commands.first == LoginShellWrapper.wrap(ImagePasteDestination.prepareScript))
         let upload = await transport.uploadCommands
