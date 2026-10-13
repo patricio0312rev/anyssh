@@ -16,6 +16,7 @@ public struct SessionWorkspaceView: View {
     @State var isImportingFile = false
     @State var dictation = DictationEngine()
     @State var fileImport = FileImportModel()
+    @State var imagePaste = ImagePasteModel()
     @State var switchEdge = Edge.trailing
     @State var commandRegistry = AppCommandRegistry(commands: [])
     @State var keyboard = KeyboardVisibility()
@@ -164,7 +165,8 @@ public struct SessionWorkspaceView: View {
                 onOpenSwitcher: presentSwitcher,
                 onOpenPalette: { isPalettePresented = true },
                 onOpenChanges: { presentedBrowser = .changes },
-                onOpenJumpTo: { isJumpToPresented = true }
+                onOpenJumpTo: { isJumpToPresented = true },
+                onPaste: pasteFromClipboard
             )
         )
     }
