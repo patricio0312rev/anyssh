@@ -39,6 +39,7 @@ public final class TerminalInteractionCoordinator: NSObject,
     let focusHandler: FocusHandler
     let probe: TerminalSelectionProbe
     let arbitration: TerminalScrollArbitration
+    public var imagePasteHandler: (@MainActor @Sendable () -> Void)?
 
     private var editMenuInteraction: UIEditMenuInteraction?
     var oneFingerPan: UIPanGestureRecognizer?
