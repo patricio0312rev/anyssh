@@ -1,5 +1,7 @@
+import Foundation
+
 public protocol ClipboardContentSource: Sendable {
-    func contentKinds() -> ClipboardContentKinds
-    func readText() -> String?
-    func readImage() -> PastedImage?
+    @MainActor func contentKinds() -> ClipboardContentKinds
+    @MainActor func readText() -> String?
+    @MainActor func readImage() -> Data?
 }
