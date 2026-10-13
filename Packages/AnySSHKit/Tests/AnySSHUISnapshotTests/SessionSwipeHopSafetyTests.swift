@@ -52,6 +52,38 @@ import Testing
         try await waitInRealTime { !model.isHoppingMuxSession }
     }
 
+    @Test func aSwipeIsFreedOnlyOnceThePostHopTopologyLanded() async throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
+        let adapter = SwipeRingMuxAdapter(names: ["alpha", "beta"])
+        try await install(adapter, on: model, for: sessionID)
+        model.rememberMuxSession(Self.alpha, for: sessionID)
+        await model.refreshMuxTopology(for: sessionID, using: adapter)
+        #expect(model.muxTopologyCache.groups(for: sessionID).first?.sessionID == Self.alpha)
+
+        model.hop(toMuxSession: Self.beta)
+        try await waitUntil { !model.isHoppingMuxSession }
+
+        #expect(model.muxTopologyCache.groups(for: sessionID).first?.sessionID == Self.beta)
+    }
+
+    @Test func aHungPostHopRefreshStillFreesTheSwipe() async throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
+        let gate = MuxHopGate()
+        let adapter = SwipeRingMuxAdapter(names: ["alpha", "beta"], snapshotGate: gate)
+        try await install(adapter, on: model, for: sessionID)
+        model.rememberMuxSession(Self.alpha, for: sessionID)
+
+        model.hop(toMuxSession: Self.beta, within: Self.shortLimit)
+        try await waitInRealTime { !model.isHoppingMuxSession }
+
+        #expect(model.sessionMuxIDs[sessionID] == Self.beta)
+        await gate.open()
+    }
+
     @Test(
         arguments: [
             CancellationError(),
