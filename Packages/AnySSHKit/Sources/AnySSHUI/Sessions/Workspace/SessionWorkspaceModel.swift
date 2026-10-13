@@ -55,6 +55,7 @@ public final class SessionWorkspaceModel {
 
     let lastDirectories = LastDirectoryStore.applicationSupport()
     let muxTopologyCache = SessionMuxTopologyCache()
+    public let keyboardLock = TerminalKeyboardLock()
 
     var isHoppingMuxSession = false
     var scopes = [SessionID: SessionActivityScope]()
