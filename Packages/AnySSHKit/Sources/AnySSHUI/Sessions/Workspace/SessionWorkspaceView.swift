@@ -1,5 +1,6 @@
 #if canImport(UIKit)
 import AnySSHCore
+import PhotosUI
 import SwiftUI
 import TerminalEmulator
 
@@ -14,6 +15,8 @@ public struct SessionWorkspaceView: View {
     @State var isAgentsPresented = false
     @State var isJobAlertsPresented = false
     @State var isImportingFile = false
+    @State var isPickingPhoto = false
+    @State var pickedPhoto: PhotosPickerItem?
     @State var dictation = DictationEngine()
     @State var fileImport = FileImportModel()
     @State var imagePaste = ImagePasteModel()
@@ -103,6 +106,13 @@ public struct SessionWorkspaceView: View {
                 allowedContentTypes: [.item],
                 onCompletion: importPicked
             )
+            .photosPicker(
+                isPresented: $isPickingPhoto,
+                selection: $pickedPhoto,
+                matching: .images,
+                preferredItemEncoding: .compatible
+            )
+            .onChange(of: pickedPhoto) { _, item in pastePickedPhoto(item) }
             .background { Theme.surface.base.ignoresSafeArea() }
             .background { switchDurationProbe }
             .animation(Theme.Motion.sessionSwitch, value: model.activeSessionID)
