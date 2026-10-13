@@ -14,6 +14,7 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     private let groupTitles: [String]
     private let listFailure: (any Error)?
     private let switchGate: MuxHopGate?
+    private let snapshotGate: MuxHopGate?
 
     init(
         names: [String],
@@ -22,7 +23,8 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
         refusesFocus: Bool = false,
         groupTitles: [String] = ["window"],
         listFailure: (any Error)? = nil,
-        switchGate: MuxHopGate? = nil
+        switchGate: MuxHopGate? = nil,
+        snapshotGate: MuxHopGate? = nil
     ) {
         self.names = names
         self.kind = kind
@@ -31,6 +33,7 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
         self.groupTitles = groupTitles
         self.listFailure = listFailure
         self.switchGate = switchGate
+        self.snapshotGate = snapshotGate
         capabilities = kind == .herdr ? .herdr : .tmux
     }
 
@@ -44,6 +47,7 @@ struct SwipeRingMuxAdapter: MultiplexerAdapter {
     }
 
     func snapshot(_ session: MuxSession.ID) async throws -> MuxSnapshot {
+        await snapshotGate?.wait()
         let sessions = try await listSessions()
         guard let match = sessions.first(where: { $0.id == session }) else {
             throw ErrorState.mux(.attachTargetVanished)
