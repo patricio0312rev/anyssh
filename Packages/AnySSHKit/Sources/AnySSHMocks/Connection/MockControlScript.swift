@@ -24,6 +24,15 @@ public struct MockControlScript: Sendable {
 
     public static let neverFinishing = MockControlScript(duration: .seconds(3600))
 
+    public static func foreground(process: String) -> MockControlScript {
+        MockControlScript(
+            duration: .zero,
+            sections: [foregroundLabel: Data("P \(process)\n".utf8)]
+        )
+    }
+
+    private static let foregroundLabel = "foreground"
+
     public func response(to batch: RemoteBatch) throws -> BatchResponse {
         for command in batch.commands {
             if let failure = failures[command.label] { throw failure }

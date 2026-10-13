@@ -3,17 +3,30 @@ import CryptoKit
 import Foundation
 
 public actor SSHBlobUploader: BlobUploader {
-    private let connection: any BlobUploadTransport
+    public static let downloadsProbe =
+        #"d="$HOME/Downloads"; [ -d "$d" ] || d="$HOME/.anyssh/uploads"; "#
+        + #"mkdir -p -- "$d" && printf %s "$d""#
 
-    public init(connection: any BlobUploadTransport) {
+    private let connection: any BlobUploadTransport
+    private let rootProbe: String
+
+    public init(connection: any BlobUploadTransport, rootProbe: String = downloadsProbe) {
         self.connection = connection
+        self.rootProbe = rootProbe
+    }
+
+    public static func uploadCommand(temporary: String, destination: String) -> String {
+        let quotedTemporary = ShellQuoting.singleQuote(temporary)
+        let quotedDestination = ShellQuoting.singleQuote(destination)
+        let cleanup = ShellQuoting.singleQuote("rm -f -- \(quotedTemporary)")
+        return LoginShellWrapper.wrap(
+            "trap \(cleanup) EXIT; "
+                + "cat > \(quotedTemporary) && mv -- \(quotedTemporary) \(quotedDestination)"
+        )
     }
 
     private func destinationRoot() async throws -> String {
-        let probe =
-            #"d="$HOME/Downloads"; [ -d "$d" ] || d="$HOME/.anyssh/uploads"; "#
-            + #"mkdir -p -- "$d" && printf %s "$d""#
-        let answer = try await connection.execute(LoginShellWrapper.wrap(probe))
+        let answer = try await connection.execute(LoginShellWrapper.wrap(rootProbe))
         let root = String(decoding: answer, as: UTF8.self)
             .split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespaces) }
@@ -27,11 +40,11 @@ public actor SSHBlobUploader: BlobUploader {
         let destinationRoot = try await destinationRoot()
         let destination = destinationRoot + "/" + path
         let temporary = destination + ".anyssh-partial"
-        let quotedTemporary = ShellQuoting.singleQuote(temporary)
         let quotedDestination = ShellQuoting.singleQuote(destination)
-        let command =
-            "trap 'rm -f -- \(quotedTemporary)' EXIT; cat > \(quotedTemporary) && mv -- \(quotedTemporary) \(quotedDestination)"
-        try await connection.uploadFile(file, command: LoginShellWrapper.wrap(command))
+        try await connection.uploadFile(
+            file,
+            command: Self.uploadCommand(temporary: temporary, destination: destination)
+        )
         let verification = try await connection.execute(
             "wc -c < \(quotedDestination) 2>/dev/null; "
                 + "(sha256sum \(quotedDestination) 2>/dev/null "

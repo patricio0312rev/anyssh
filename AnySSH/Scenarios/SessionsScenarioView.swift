@@ -61,6 +61,13 @@ struct SessionsScenarioView: View {
                     onDismiss: dismiss
                 )
             }
+        case .agents:
+            ScenarioSheet { dismiss in
+                AgentsMenuSheet(
+                    model: jumpModel(.herdrDefault, layout: .list, writer: MockRemoteConnection()),
+                    onDismiss: dismiss
+                )
+            }
         case .panes:
             ScenarioSheet { dismiss in
                 MultiplexerPaneListView(

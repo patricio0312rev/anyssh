@@ -13,21 +13,14 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     private let detectError: ErrorState?
 
     public let focusLog = MuxFocusLog()
+    public let switchLog = MuxSwitchLog()
 
     public init(fixture: MuxFixture) {
         kind = fixture.kind
         capabilities = fixture.capabilities
         switch fixture {
-        case .tmuxMain:
-            let built = Self.tmuxFixture()
-            info = built.info
-            sessions = built.sessions
-            snapshots = built.snapshots
-            bindings = built.bindings
-            paneText = built.paneText
-            detectError = nil
-        case .herdrDefault:
-            let built = Self.herdrFixture()
+        case .tmuxMain, .tmuxCluster, .herdrDefault, .herdrCluster:
+            let built = Self.tree(for: fixture)
             info = built.info
             sessions = built.sessions
             snapshots = built.snapshots
@@ -78,7 +71,7 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
         guard let snapshot = snapshots[session] else {
             throw ErrorState.mux(.attachTargetVanished)
         }
-        return snapshot
+        return snapshot.focusing(await focusLog.focusedGroup(in: session))
     }
 
     public func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String {
@@ -96,6 +89,12 @@ public struct FixtureMultiplexerAdapter: MultiplexerAdapter {
     public func focus(_ target: MuxTarget) async throws {
         if let detectError { throw detectError }
         await focusLog.record(target)
+    }
+
+    public func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        if let detectError { throw detectError }
+        guard kind == .tmux else { throw ErrorState.mux(.sessionSwitchUnsupported) }
+        await switchLog.record(target: target, source: current)
     }
 
     public func attachCommand(_ target: MuxTarget) -> String {

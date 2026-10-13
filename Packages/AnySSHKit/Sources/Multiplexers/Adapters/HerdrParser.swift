@@ -20,6 +20,7 @@ public struct HerdrParser: Sendable {
         let workspaces = (payload["workspaces"] as? [[String: Any]]) ?? []
         let tabs = (payload["tabs"] as? [[String: Any]]) ?? []
         let panes = (payload["panes"] as? [[String: Any]]) ?? []
+        let agentNames = agentNames((payload["agents"] as? [[String: Any]]) ?? [])
         let focusedTab = payload["focused_tab_id"] as? String
         let focusedPane = payload["focused_pane_id"] as? String
         let repoByWorkspace = repositoryRoots(workspaces)
@@ -52,6 +53,10 @@ public struct HerdrParser: Sendable {
                     pane["terminal_title"] as? String
                 ) ?? id
             let workspaceID = pane["workspace_id"] as? String
+            let terminalTitle = firstNonEmpty(
+                pane["terminal_title_stripped"] as? String,
+                pane["terminal_title"] as? String
+            )
             return MuxPane(
                 id: MuxPaneID(rawValue: id),
                 groupID: MuxGroupID(rawValue: tabID),
@@ -59,7 +64,10 @@ public struct HerdrParser: Sendable {
                 workingDirectory: working,
                 isActive: HerdrJSON.bool(pane["focused"]) || focusedPane == id,
                 agentStatus: pane["agent_status"] as? String,
-                repositoryRoot: workspaceID.flatMap { repoByWorkspace[$0] }
+                repositoryRoot: workspaceID.flatMap { repoByWorkspace[$0] },
+                agent: firstNonEmpty(pane["agent"] as? String),
+                agentName: agentNames[id],
+                terminalTitle: terminalTitle
             )
         }
 
@@ -81,6 +89,18 @@ public struct HerdrParser: Sendable {
         }
         if let snapshot = root["snapshot"] as? [String: Any] { return snapshot }
         return root
+    }
+
+    private func agentNames(_ agents: [[String: Any]]) -> [String: String] {
+        Dictionary(
+            agents.compactMap { agent in
+                guard let pane = agent["pane_id"] as? String,
+                    let name = firstNonEmpty(agent["name"] as? String)
+                else { return nil }
+                return (pane, name)
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
     }
 
     private func repositoryRoots(_ workspaces: [[String: Any]]) -> [String: String] {

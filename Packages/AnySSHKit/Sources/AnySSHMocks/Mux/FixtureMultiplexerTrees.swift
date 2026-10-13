@@ -69,6 +69,122 @@ extension FixtureMultiplexerAdapter {
         )
     }
 
+    static func tree(for fixture: MuxFixture) -> FixtureMultiplexerTrees.Built {
+        switch fixture {
+        case .tmuxMain: tmuxFixture()
+        case .tmuxCluster: tmuxClusterFixture()
+        case .herdrCluster: herdrClusterFixture()
+        case .herdrDefault, .herdrProtocolMismatch, .absent: herdrFixture()
+        }
+    }
+
+    static func tmuxClusterFixture() -> FixtureMultiplexerTrees.Built {
+        var built = cluster(
+            around: tmuxFixture(),
+            adding: [
+                detached(id: "$2", name: "api", repository: "api"),
+                detached(id: "$3", name: "infra", repository: "infra"),
+            ]
+        )
+        let main = MuxSession(id: MuxSessionID(rawValue: "$1"), name: "main", isAttached: true)
+        let windows = [
+            window(in: main.id, id: "@1", title: "code", isActive: true),
+            window(in: main.id, id: "@2", title: "tests", isActive: false),
+            window(in: main.id, id: "@3", title: "logs", isActive: false),
+        ]
+        built.snapshots[main.id] = MuxSnapshot(
+            session: main,
+            groups: windows.map(\.group),
+            panes: windows.map(\.pane)
+        )
+        return built
+    }
+
+    static func herdrClusterFixture() -> FixtureMultiplexerTrees.Built {
+        cluster(
+            around: herdrFixture(),
+            adding: [
+                detached(id: "review", name: "review", repository: "web"),
+                detached(id: "ops", name: "ops", repository: "infra"),
+            ]
+        )
+    }
+
+    private struct Window {
+        var group: MuxGroup
+        var pane: MuxPane
+    }
+
+    private static func window(
+        in session: MuxSessionID,
+        id: String,
+        title: String,
+        isActive: Bool
+    ) -> Window {
+        let group = MuxGroup(
+            id: MuxGroupID(rawValue: id),
+            sessionID: session,
+            title: title,
+            isActive: isActive
+        )
+        return Window(
+            group: group,
+            pane: MuxPane(
+                id: MuxPaneID(rawValue: "%\(id.dropFirst())"),
+                groupID: group.id,
+                title: title,
+                workingDirectory: "\(FixtureMultiplexerTrees.source)/\(title)",
+                isActive: isActive,
+                agentStatus: nil,
+                repositoryRoot: nil
+            )
+        )
+    }
+
+    private struct DetachedSession {
+        var session: MuxSession
+        var snapshot: MuxSnapshot
+    }
+
+    private static func cluster(
+        around base: FixtureMultiplexerTrees.Built,
+        adding extras: [DetachedSession]
+    ) -> FixtureMultiplexerTrees.Built {
+        var built = base
+        built.sessions += extras.map(\.session)
+        for extra in extras {
+            built.snapshots[extra.session.id] = extra.snapshot
+        }
+        return built
+    }
+
+    private static func detached(
+        id: String,
+        name: String,
+        repository: String
+    ) -> DetachedSession {
+        let session = MuxSession(id: MuxSessionID(rawValue: id), name: name, isAttached: false)
+        let group = MuxGroup(
+            id: MuxGroupID(rawValue: "\(id):@1"),
+            sessionID: session.id,
+            title: repository,
+            isActive: true
+        )
+        let pane = MuxPane(
+            id: MuxPaneID(rawValue: "\(id):%1"),
+            groupID: group.id,
+            title: "shell",
+            workingDirectory: "\(FixtureMultiplexerTrees.source)/\(repository)",
+            isActive: true,
+            agentStatus: nil,
+            repositoryRoot: "\(FixtureMultiplexerTrees.source)/\(repository)"
+        )
+        return DetachedSession(
+            session: session,
+            snapshot: MuxSnapshot(session: session, groups: [group], panes: [pane])
+        )
+    }
+
     private struct HerdrTab {
         var group: MuxGroup
         var panes: [MuxPane]
@@ -125,13 +241,24 @@ extension FixtureMultiplexerAdapter {
             MuxPane(
                 id: MuxPaneID(rawValue: "w\(index):p\(position + 1)"),
                 groupID: group.id,
-                title: agent.0,
+                title: herdrLabels[agent.0] ?? herdrTaskTitles[agent.0] ?? agent.0,
                 workingDirectory: position == 0 ? root : "\(root)/tests",
                 isActive: position == 0,
                 agentStatus: agent.1,
-                repositoryRoot: root
+                repositoryRoot: root,
+                agent: herdrTaskTitles[agent.0] == nil ? nil : agent.0,
+                terminalTitle: herdrTaskTitles[agent.0]
             )
         }
         return HerdrTab(group: group, panes: panes)
     }
+
+    private static let herdrLabels = ["claude": "login fix"]
+
+    private static let herdrTaskTitles = [
+        "opencode": "Refactor the billing webhooks",
+        "claude": "Fix the flaky login test",
+        "codex": "Write the release notes",
+        "gemini": "Audit the Terraform modules",
+    ]
 }

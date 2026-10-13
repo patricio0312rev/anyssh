@@ -9,7 +9,7 @@ import Testing
 struct MuxLiveSmokeTests {
     @Test func detectBothAdaptersAndRecordFindings() async throws {
         let runner = MuxLiveBatchRunner()
-        let tmux = TmuxAdapter(runner: runner)
+        let tmux = TmuxAdapter(runner: runner, clientPort: { nil })
         let herdr = HerdrAdapter(runner: runner)
 
         let tmuxResult = await liveDetect {

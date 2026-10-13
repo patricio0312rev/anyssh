@@ -15,7 +15,9 @@ enum SessionWorkspaceAssembly {
         for record in records {
             connections[record.id] = MockRemoteConnection(
                 connectionID: record.connectionID,
-                displayScript: scenario.alertScript
+                script: scenario.controlScript,
+                displayScript: scenario.alertScript,
+                clientPort: scenario.clientPort
             )
         }
         let model = SessionWorkspaceModel(
@@ -29,6 +31,7 @@ enum SessionWorkspaceAssembly {
             multiplexerAdapter: mux.adapter,
             layoutDirectory: layoutDirectory(for: scenario),
             jobAlertScheduler: RecordingNotificationScheduler(),
+            isWorkspacePresented: { true },
             makeBrowserServices: { _, _ in mockBrowserServices }
         )
         seedTranscripts(in: model, records: records, for: scenario)
@@ -117,6 +120,12 @@ enum SessionWorkspaceAssembly {
                 .tmux,
                 MuxKeyBindings(prefix: "C-a", chords: [:]),
                 FixtureMultiplexerAdapter(fixture: .tmuxMain)
+            )
+        case .tmuxCluster:
+            (
+                .tmux,
+                MuxKeyBindings(prefix: "C-a", chords: [:]),
+                FixtureMultiplexerAdapter(fixture: .tmuxCluster)
             )
         case .herdr:
             (

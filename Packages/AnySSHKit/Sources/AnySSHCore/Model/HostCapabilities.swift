@@ -69,7 +69,7 @@ public struct ToolReport: Hashable, Sendable {
 }
 
 public struct HerdrReport: Hashable, Sendable {
-    public static let supportedProtocolVersion = 19
+    public static let supportedProtocolVersions = 19...22
 
     public let tool: ToolReport
     public let protocolVersion: Int?
@@ -81,7 +81,7 @@ public struct HerdrReport: Hashable, Sendable {
 
     public var isProtocolSupported: Bool {
         guard tool.isAvailable, let protocolVersion else { return false }
-        return protocolVersion == Self.supportedProtocolVersion
+        return Self.supportedProtocolVersions.contains(protocolVersion)
     }
 }
 

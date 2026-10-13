@@ -17,13 +17,19 @@ extension SessionWorkspaceModel {
     func replaceMultiplexer(for sessionID: SessionID, with adapter: (any MultiplexerAdapter)?) {
         stallWatchers.removeValue(forKey: sessionID)?.cancel()
         sessionAdapters[sessionID] = adapter
-        if adapter == nil {
+        muxTopologyCache.clear(for: sessionID)
+        sessionMuxGroupIDs.removeValue(forKey: sessionID)
+        guard let adapter else {
             sessionMuxIDs.removeValue(forKey: sessionID)
             if !publishedAgentTitleIDs.contains(sessionID) {
                 sessionAgentTitles.removeValue(forKey: sessionID)
             }
+            return
         }
-        guard let adapter, adapter.kind == .herdr else { return }
+        Task { [weak self] in
+            await self?.refreshMuxTopology(for: sessionID, using: adapter)
+        }
+        guard adapter.kind == .herdr else { return }
         startStallWatcher(for: sessionID, adapter: adapter)
     }
 
@@ -37,7 +43,8 @@ extension SessionWorkspaceModel {
         if capabilities.tmux.isAvailable {
             return TmuxAdapter(
                 runner: connection,
-                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath
+                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath,
+                clientPort: { await connection.clientPort }
             )
         }
         return nil
@@ -81,6 +88,7 @@ extension SessionWorkspaceModel {
         let detector = AgentKindDetector()
         let terminalTitle = sessionAgentTitles[sessionID] ?? registry[sessionID]?.title
         let probe = await probeSession(sessionID)
+        noteForeground(probe.processNames, for: sessionID)
         if sessionAdapters[sessionID] == nil, let directory = probe.directory {
             applyWorkspace(
                 WorkspaceLocation(path: directory, provenance: .process),
@@ -123,7 +131,9 @@ extension SessionWorkspaceModel {
         {
             applyWorkspace(location, to: sessionID)
         }
-        rememberAgentSessionTitle(pane?.title ?? group?.title, for: sessionID, replacing: true)
+        let paneTitle = pane.flatMap { $0.title == $0.id.rawValue ? nil : $0.title }
+        let groupTitle = group.flatMap { $0.title == $0.id.rawValue ? nil : $0.title }
+        rememberAgentSessionTitle(paneTitle ?? groupTitle, for: sessionID, replacing: true)
         if let kind = detector.detect(
             signals: [pane?.title, pane?.agentStatus, muxSession.name, terminalTitle].compactMap {
                 $0

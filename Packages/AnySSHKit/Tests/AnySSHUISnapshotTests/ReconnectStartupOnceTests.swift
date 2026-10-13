@@ -45,7 +45,8 @@ import Testing
                 return dial == 1
                     ? second
                     : MockRemoteConnection(connectionID: ConnectionID(rawValue: "c\(dial)"))
-            }
+            },
+            isWorkspacePresented: { true }
         )
 
         await model.reconnect(sessionID, forced: true)

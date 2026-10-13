@@ -8,6 +8,7 @@ extension SessionWorkspaceModel {
 
     func attachment(of sessionID: SessionID) async -> MuxAttachment {
         let probe = await probeSession(sessionID)
+        noteForeground(probe.processNames, for: sessionID)
         guard !probe.processNames.isEmpty else { return .unknown }
         guard AgentKindDetector().detectMultiplexer(processNames: probe.processNames) != nil
         else { return .detached }
@@ -15,5 +16,14 @@ extension SessionWorkspaceModel {
             let sessions = try? await adapter.listSessions()
         else { return .attached(nil) }
         return .attached(muxSession(in: sessions, for: sessionID)?.id)
+    }
+
+    func noteForeground(_ processNames: [String], for sessionID: SessionID) {
+        guard !processNames.isEmpty else { return }
+        if AgentKindDetector().detectMultiplexer(processNames: processNames) != nil {
+            sessionsInsideMux.insert(sessionID)
+        } else {
+            sessionsInsideMux.remove(sessionID)
+        }
     }
 }

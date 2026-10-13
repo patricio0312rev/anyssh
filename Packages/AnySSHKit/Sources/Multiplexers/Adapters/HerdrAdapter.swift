@@ -108,6 +108,10 @@ public final class HerdrAdapter: MultiplexerAdapter {
         try await focusTab(binary: binary, session: session, group: group.rawValue)
     }
 
+    public func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws {
+        throw ErrorState.mux(.sessionSwitchUnsupported)
+    }
+
     public func attachCommand(_ target: MuxTarget) -> String {
         let binary = cachedPath.withLock { $0 } ?? fixedBinaryPath ?? "herdr"
         return MuxAttachCommand.herdr(binary: binary, target: target)

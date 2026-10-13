@@ -33,6 +33,7 @@ extension TerminalInteractionCoordinator {
     @objc func handleOneFingerPan(_ gesture: UIPanGestureRecognizer) {
         let route = resolvedRoute(for: gesture)
         let selecting = isSelecting
+        if gesture.state == .began { focusGate.dragBegan() }
         if gesture.state == .began, !selecting {
             let velocity = gesture.velocity(in: nil)
             sidewaysDrag = SessionSwitchGesturePolicy.isSideways(
@@ -79,7 +80,7 @@ extension TerminalInteractionCoordinator {
         let route = resolvedRoute(for: gesture)
         if TerminalGesturePolicy.shouldReportClick(route: route, didTravel: wheelTravelled) {
             if clickArbiter.tapEnded() { emitClick(at: point) }
-        } else {
+        } else if focusGate.tapShouldFocus(keyboardLocked: isKeyboardLocked) {
             focusHandler()
         }
     }
@@ -88,7 +89,10 @@ extension TerminalInteractionCoordinator {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldReceive touch: UITouch
     ) -> Bool {
-        if gestureRecognizer === tap { clickArbiter.touchBegan() }
+        if gestureRecognizer === tap {
+            clickArbiter.touchBegan()
+            focusGate.touchBegan(scrollIsMoving: isScrollMoving)
+        }
         return true
     }
 

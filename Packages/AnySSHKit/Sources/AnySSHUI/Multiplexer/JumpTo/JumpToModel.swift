@@ -12,6 +12,7 @@ public final class JumpToModel {
     public private(set) var layout: JumpLayout
     public private(set) var expandedSessionIDs = Set<MuxSessionID>()
     public private(set) var jumpingRowID: MuxGroupID?
+    public private(set) var jumpingAgentID: MuxPaneID?
     public private(set) var jumpFailure: ErrorState?
     public private(set) var lastOutcome: MuxJumpOutcome?
     public private(set) var lastBytes = [UInt8]()
@@ -61,7 +62,9 @@ public final class JumpToModel {
 
     public var showsStatus: Bool { kind == .herdr }
 
-    public var isJumping: Bool { jumpingRowID != nil }
+    public var isJumping: Bool { jumpingRowID != nil || jumpingAgentID != nil }
+
+    public var agentSessions: [JumpSession] { sessions.filter { !$0.agents.isEmpty } }
 
     public var renderedLastBytes: String {
         lastBytes.isEmpty
@@ -103,23 +106,37 @@ public final class JumpToModel {
     }
 
     public func jump(to row: JumpRow) async -> Bool {
-        guard jumpingRowID == nil else { return false }
+        guard !isJumping else { return false }
         jumpingRowID = row.id
+        defer { jumpingRowID = nil }
+        return await navigate(to: MuxTarget(session: row.sessionID, group: row.group.id))
+    }
+
+    public func jump(to agent: MuxAgentEntry) async -> Bool {
+        guard !isJumping else { return false }
+        jumpingAgentID = agent.id
+        defer { jumpingAgentID = nil }
+        return await navigate(to: agent.target)
+    }
+
+    public func sessionName(of id: MuxSessionID) -> String {
+        sessions.first { $0.id == id }?.name ?? id.rawValue
+    }
+
+    private func navigate(to target: MuxTarget) async -> Bool {
         jumpFailure = nil
         lastOutcome = nil
-        defer { jumpingRowID = nil }
         guard let navigator else {
             jumpFailure = .mux(.attachTargetVanished)
             return false
         }
-        let target = MuxTarget(session: row.sessionID, group: row.group.id)
         do {
             let outcome = try await navigator.jump(to: target)
             lastOutcome = outcome
             lastBytes = outcome == .attached ? navigator.attachBytes(for: target) : []
             switch outcome {
-            case .focused, .attached: onBoundSession?(row.sessionID)
-            case .focusedElsewhere: break
+            case .focused, .attached: onBoundSession?(target.session)
+            case .focusedElsewhere, .skipped: break
             }
             return true
         } catch {

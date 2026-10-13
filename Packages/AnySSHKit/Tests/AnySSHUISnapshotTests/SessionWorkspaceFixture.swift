@@ -17,7 +17,18 @@ enum SessionWorkspaceFixture {
             remotes: RemoteFixtures.scenario("mixed"),
             activeSessionID: records.first?.id,
             connections: connections,
-            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) }
+            makeEngine: { size in SwiftTermEngine(size: size, renderer: .coreText) },
+            isWorkspacePresented: { true }
         )
     }
+
+    static func attachedConnection(running process: String) -> MockRemoteConnection {
+        MockRemoteConnection(
+            connectionID: ConnectionID(rawValue: "attached"),
+            script: .foreground(process: process),
+            clientPort: attachedClientPort
+        )
+    }
+
+    private static let attachedClientPort = 51234
 }

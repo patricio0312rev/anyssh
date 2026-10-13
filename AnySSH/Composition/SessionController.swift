@@ -92,6 +92,7 @@ final class SessionController {
         )
         let model = makeRestoredWorkspace(from: snapshot, remotes: remotes)
         workspace = model
+        isPresentingWorkspace = true
         restoreCoordinator.start(source: model)
         deliverPendingNotification(to: model)
         return model

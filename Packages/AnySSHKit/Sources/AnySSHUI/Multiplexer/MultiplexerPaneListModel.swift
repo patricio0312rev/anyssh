@@ -66,7 +66,7 @@ public final class MultiplexerPaneListModel {
             lastOutcome = outcome
             switch outcome {
             case .focused, .attached: onBoundSession?(session)
-            case .focusedElsewhere: break
+            case .focusedElsewhere, .skipped: break
             }
             return true
         } catch {

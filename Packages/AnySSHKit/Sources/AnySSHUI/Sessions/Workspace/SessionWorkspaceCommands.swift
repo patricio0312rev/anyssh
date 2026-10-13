@@ -62,13 +62,23 @@ extension SessionWorkspaceModel {
         guard let sessions = try? await adapter.listSessions(),
             let muxSession = muxSession(in: sessions, for: record.id)
         else { return nil }
-        return await MultiplexerPathResolver(adapter: adapter, sessionID: muxSession.id)
-            .resolve(record)
+        return await MultiplexerPathResolver(
+            adapter: adapter,
+            sessionID: muxSession.id,
+            runner: connection(for: record.id)
+        )
+        .resolve(record)
     }
 
     func rememberMuxSession(_ muxID: MuxSessionID, for sessionID: SessionID? = nil) {
         guard let sessionID = sessionID ?? activeSessionID else { return }
         sessionMuxIDs[sessionID] = muxID
+        sessionMuxGroupIDs.removeValue(forKey: sessionID)
+    }
+
+    func rememberMuxGroup(_ groupID: MuxGroupID, for sessionID: SessionID) {
+        sessionMuxGroupIDs[sessionID] = groupID
+        muxTopologyCache.markActive(groupID, for: sessionID)
     }
 
     func muxSession(in sessions: [MuxSession], for sessionID: SessionID) -> MuxSession? {
@@ -79,11 +89,11 @@ extension SessionWorkspaceModel {
         }
         let attached = sessions.filter(\.isAttached)
         if attached.count == 1 {
-            sessionMuxIDs[sessionID] = attached[0].id
+            rememberMuxSession(attached[0].id, for: sessionID)
             return attached[0]
         }
         if sessions.count == 1 {
-            sessionMuxIDs[sessionID] = sessions[0].id
+            rememberMuxSession(sessions[0].id, for: sessionID)
             return sessions[0]
         }
         return nil

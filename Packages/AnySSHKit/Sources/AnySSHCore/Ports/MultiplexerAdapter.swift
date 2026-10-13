@@ -8,5 +8,6 @@ public protocol MultiplexerAdapter: Sendable {
     func readPane(_ pane: MuxPane.ID, lines: Int) async throws -> String
     func keyBindings() async throws -> MuxKeyBindings
     func focus(_ target: MuxTarget) async throws
+    func switchSession(to target: MuxSession.ID, from current: MuxSession.ID) async throws
     func attachCommand(_ target: MuxTarget) -> String
 }

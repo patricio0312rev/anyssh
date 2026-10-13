@@ -1,4 +1,5 @@
 #if canImport(UIKit)
+import AnySSHCore
 import SwiftUI
 
 extension View {
@@ -6,6 +7,7 @@ extension View {
         model: SessionWorkspaceModel,
         isMultiplexerPresented: Binding<Bool>,
         isJumpToPresented: Binding<Bool>,
+        isAgentsPresented: Binding<Bool>,
         isJobAlertsPresented: Binding<Bool>
     ) -> some View {
         self
@@ -50,17 +52,41 @@ extension View {
                     let sessionID = model.activeSessionID
                 {
                     JumpToSheet(
-                        model: JumpToModel(
-                            adapter: adapter,
-                            directory: model.layoutDirectory,
-                            writer: model.connection(for: sessionID),
-                            probe: model.attachmentProbe(for: sessionID),
-                            onBoundSession: { [weak model] id in model?.rememberMuxSession(id) }
-                        ),
+                        model: jumpModel(model, adapter: adapter, sessionID: sessionID),
                         onDismiss: { isJumpToPresented.wrappedValue = false }
                     )
+                    .task { await model.refreshMuxTopology(for: sessionID, using: adapter) }
                 }
             }
+            .sheet(isPresented: isAgentsPresented) {
+                if let adapter = model.activeMultiplexerAdapter,
+                    let sessionID = model.activeSessionID
+                {
+                    AgentsMenuSheet(
+                        model: jumpModel(model, adapter: adapter, sessionID: sessionID),
+                        onDismiss: { isAgentsPresented.wrappedValue = false }
+                    )
+                    .presentationDetents([.medium, .large])
+                    .task { await model.refreshMuxTopology(for: sessionID, using: adapter) }
+                }
+            }
+    }
+
+    private func jumpModel(
+        _ model: SessionWorkspaceModel,
+        adapter: any MultiplexerAdapter,
+        sessionID: SessionID
+    ) -> JumpToModel {
+        JumpToModel(
+            adapter: adapter,
+            directory: model.layoutDirectory,
+            writer: model.connection(for: sessionID),
+            probe: model.attachmentProbe(for: sessionID),
+            onBoundSession: { [weak model] id in
+                model?.rememberMuxSession(id, for: sessionID)
+                model?.scheduleMuxTopologyRefresh(for: sessionID)
+            }
+        )
     }
 
     private func authPresented(_ model: SessionWorkspaceModel) -> Binding<Bool> {

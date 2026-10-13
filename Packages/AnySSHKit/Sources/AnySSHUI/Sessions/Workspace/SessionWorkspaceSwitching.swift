@@ -30,6 +30,7 @@ extension SessionWorkspaceModel {
         _ = await incomingSurface.pump.metrics
         incomingSurface.startDraining()
         attachPendingPane()
+        await resumeReconnect(for: target)
     }
 
     public func firstFramePresented(for id: SessionID) {
@@ -57,6 +58,7 @@ extension SessionWorkspaceModel {
             registry.touch(id, at: Date.now)
             store.surface(for: id)?.startDraining()
             attachPendingPane()
+            Task { await resumeReconnect(for: id) }
         }
     }
 }

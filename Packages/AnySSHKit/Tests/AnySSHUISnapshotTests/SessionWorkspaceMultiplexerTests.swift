@@ -113,7 +113,7 @@ import Testing
         """
     }
 
-    private static let supported = String(HerdrReport.supportedProtocolVersion)
+    private static let supported = String(HerdrReport.supportedProtocolVersions.lowerBound)
 
     private static let herdrAndTmux = answer(
         tmux: true,
@@ -128,6 +128,6 @@ import Testing
     private static let olderHerdrProtocol = answer(
         tmux: false,
         herdrVersion: "herdr 0.7.0",
-        herdrProtocol: String(HerdrReport.supportedProtocolVersion - 1)
+        herdrProtocol: String(HerdrReport.supportedProtocolVersions.lowerBound - 1)
     )
 }

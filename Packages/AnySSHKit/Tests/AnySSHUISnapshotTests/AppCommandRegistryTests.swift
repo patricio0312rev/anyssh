@@ -93,7 +93,8 @@ import Testing
             onNewConnection: {},
             onOpenSwitcher: {},
             onOpenPalette: {},
-            onOpenChanges: {}
+            onOpenChanges: {},
+            onPaste: {}
         )
     }
 }

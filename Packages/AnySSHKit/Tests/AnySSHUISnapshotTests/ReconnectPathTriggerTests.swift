@@ -51,6 +51,14 @@ final class ScriptedPathSignal: ReconnectPathSignaling, @unchecked Sendable {
         let triggered = LockedIDs()
         coordinator.start(
             candidates: { [record] },
+            attention: {
+                ReconnectAttention(
+                    isWorkspacePresented: false,
+                    activeSessionID: nil,
+                    engagedSessionIDs: [],
+                    silentSessionIDs: [record.id]
+                )
+            },
             onReconnect: { id in
                 triggered.append(id)
             }

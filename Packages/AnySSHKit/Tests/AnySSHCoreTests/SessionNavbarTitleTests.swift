@@ -68,6 +68,23 @@ import Testing
         #expect(SessionNavbarTitle.isUsableAgentSessionTitle("OC | Fixes for v0.1.2"))
     }
 
+    @Test func muxIdentifiersAreNotAgentSessionTitles() {
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("q1Q:p1"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w1:t2"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("%1"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("@3"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("$2"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("deploy: phase 1"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("api:v2"))
+    }
+
+    @Test func herdrBaseThirtySixIdentifiersAreNotAgentSessionTitles() {
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:p6C"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:t4W"))
+        #expect(!SessionNavbarTitle.isUsableAgentSessionTitle("w3:p8A"))
+        #expect(SessionNavbarTitle.isUsableAgentSessionTitle("db:p2p"))
+    }
+
     private static let full = SessionTitleContext(
         sessionName: "build-box",
         agentSessionTitle: "OC | Fixes for v0.1.2",
