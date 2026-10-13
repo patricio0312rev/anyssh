@@ -11,6 +11,7 @@ extension UIIdentifier.Terminal {
         public static let changes = "terminal.accessory.changes"
         public static let files = "terminal.accessory.files"
         public static let paste = "terminal.accessory.paste"
+        public static let pastePhoto = "terminal.accessory.pastePhoto"
         public static let compact = "terminal.accessory.compact"
     }
 }
