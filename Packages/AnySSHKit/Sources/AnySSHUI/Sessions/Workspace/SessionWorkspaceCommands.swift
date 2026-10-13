@@ -78,6 +78,7 @@ extension SessionWorkspaceModel {
 
     func rememberMuxGroup(_ groupID: MuxGroupID, for sessionID: SessionID) {
         sessionMuxGroupIDs[sessionID] = groupID
+        muxTopologyCache.markActive(groupID, for: sessionID)
     }
 
     func muxSession(in sessions: [MuxSession], for sessionID: SessionID) -> MuxSession? {
