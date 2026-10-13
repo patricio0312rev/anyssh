@@ -1,0 +1,90 @@
+#if canImport(UIKit)
+import AnySSHCore
+import SwiftUI
+import TerminalEmulator
+
+extension SessionWorkspaceView {
+    func pasteFromClipboard() {
+        guard let id = model.activeSessionID, let surface = model.surface(for: id) else { return }
+        switch PasteRoute.resolve(from: SystemClipboardPasteboard()) {
+        case .text(let text):
+            emitPaste(text, into: surface)
+        case .image(let image):
+            pasteImage(image, into: id)
+        case .empty:
+            toasts.present(
+                severity: .attention,
+                title: ImagePasteCopy.emptyTitle,
+                body: ImagePasteCopy.emptyBody,
+                accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.emptyToast
+            )
+        case .denied:
+            toasts.present(state: .app(.clipboardDenied))
+        }
+    }
+
+    private func emitPaste(_ text: String, into surface: TerminalSurface) {
+        let mode = TerminalInputMode(bracketedPaste: surface.engine.pastesBracketed)
+        surface.engine.emitInput(ArraySlice(PastePayload(text).bytes(mode: mode)))
+    }
+
+    private func pasteImage(_ image: PastedImage, into id: SessionID) {
+        guard let connection = model.connection(for: id) else {
+            toasts.present(state: .files(.fetchFailed))
+            return
+        }
+        let progress = toasts.present(
+            severity: .busy,
+            title: ImagePasteCopy.uploadingTitle,
+            body: ImagePasteCopy.uploadingBody,
+            accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageUploading
+        )
+        Task {
+            let path = await imagePaste.upload(image, over: connection)
+            toasts.retract(progress)
+            guard let path else {
+                if case .failed(let failure) = imagePaste.outcome {
+                    presentImagePasteFailure(failure)
+                }
+                return
+            }
+            guard let surface = model.surface(for: id) else {
+                presentImagePasteSuccess(title: ImagePasteCopy.uploadedTitle, path: path)
+                return
+            }
+            emitPaste(ShellQuoting.quotedIfNeeded(path), into: surface)
+            presentImagePasteSuccess(title: ImagePasteCopy.pastedTitle, path: path)
+        }
+    }
+
+    private func presentImagePasteSuccess(title: String, path: String) {
+        toasts.present(
+            severity: .success,
+            title: title,
+            body: path,
+            accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imagePasted
+        )
+    }
+
+    private func presentImagePasteFailure(_ failure: ImagePasteFailure) {
+        switch failure {
+        case .transfer(let state):
+            toasts.present(state: state)
+        case .unreadable:
+            toasts.present(
+                severity: .error,
+                title: ImagePasteCopy.unreadableTitle,
+                body: ImagePasteCopy.unreadableBody,
+                accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageFailed
+            )
+        case .tooLarge:
+            toasts.present(
+                severity: .error,
+                title: ImagePasteCopy.tooLargeTitle,
+                body: ImagePasteCopy.tooLargeBody,
+                accessibilityIdentifier: UIIdentifier.Terminal.Clipboard.imageFailed
+            )
+        }
+    }
+}
+#endif
