@@ -6,6 +6,7 @@ struct SessionWorkspaceToolbar: ToolbarContent {
     let title: String
     let transportState: TransportState
     let keyboardEngine: (any TerminalSurfaceEngine)?
+    let keyboardLock: TerminalKeyboardLock
     let showsBack: Bool
     let onBack: () -> Void
     let onToggleSwitcher: () -> Void
@@ -32,7 +33,7 @@ struct SessionWorkspaceToolbar: ToolbarContent {
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
             if let keyboardEngine {
-                TerminalKeyboardToggle(engine: keyboardEngine)
+                TerminalKeyboardToggle(engine: keyboardEngine, lock: keyboardLock)
             }
         }
     }
