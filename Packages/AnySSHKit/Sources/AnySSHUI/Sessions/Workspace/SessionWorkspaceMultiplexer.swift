@@ -43,7 +43,8 @@ extension SessionWorkspaceModel {
         if capabilities.tmux.isAvailable {
             return TmuxAdapter(
                 runner: connection,
-                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath
+                binaryPath: capabilities.tmux.path ?? Self.tmuxFallbackPath,
+                clientPort: { await connection.clientPort }
             )
         }
         return nil
