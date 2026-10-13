@@ -6,12 +6,12 @@ public final class MemoryClipboardPasteboard: ClipboardPasteboard, ClipboardCont
 {
     private let lock = NSLock()
     private var stored: String?
-    private var storedImage: PastedImage?
+    private var storedImage: Data?
     public private(set) var writeCount = 0
     public private(set) var readCount = 0
     public private(set) var imageReadCount = 0
 
-    public init(_ value: String? = nil, image: PastedImage? = nil) {
+    public init(_ value: String? = nil, image: Data? = nil) {
         stored = value
         storedImage = image
     }
@@ -44,7 +44,7 @@ public final class MemoryClipboardPasteboard: ClipboardPasteboard, ClipboardCont
         read()
     }
 
-    public func readImage() -> PastedImage? {
+    public func readImage() -> Data? {
         lock.withLock {
             imageReadCount += 1
             return storedImage
