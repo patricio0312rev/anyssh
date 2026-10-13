@@ -9,19 +9,7 @@ extension SessionWorkspaceModel {
         skippingMux: Bool = false
     ) -> SessionSwipeRing.Target? {
         guard let activeSessionID else { return nil }
-        let topology =
-            skippingMux
-            ? SessionMuxTopologyCache.Topology()
-            : muxTopologyCache.topology(for: activeSessionID)
-        let ring = SessionSwipeRing(
-            muxSessions: topology.sessions,
-            boundMuxSession: sessionMuxIDs[activeSessionID],
-            boundGroups: topology.groups,
-            focusedGroup: sessionMuxGroupIDs[activeSessionID],
-            appSessionIDs: registry.ids,
-            activeSessionID: activeSessionID
-        )
-        return ring.step(direction)
+        return swipeTarget(direction, from: activeSessionID, skippingMux: skippingMux)
     }
 
     func hop(
@@ -29,16 +17,15 @@ extension SessionWorkspaceModel {
         within limit: Duration = SessionWorkspaceModel.muxHopLimit,
         onSkip: @escaping @MainActor () -> Void = {}
     ) {
-        hop(to: .session(target), within: limit, onSkip: onSkip)
+        hop(.session(target), within: limit, onSkip: onSkip)
     }
 
     func hop(
-        toMuxGroup target: MuxGroupID,
+        tabToward direction: SessionSwipeRing.Direction,
         within limit: Duration = SessionWorkspaceModel.muxHopLimit,
         onSkip: @escaping @MainActor () -> Void = {}
     ) {
-        guard let sessionID = activeSessionID, let bound = sessionMuxIDs[sessionID] else { return }
-        hop(to: .group(target, of: bound), within: limit, onSkip: onSkip)
+        hop(.tab(direction), within: limit, onSkip: onSkip)
     }
 
     func primeMuxTopology() async {
@@ -96,43 +83,86 @@ extension SessionWorkspaceModel {
         )
     }
 
+    private func swipeTarget(
+        _ direction: SessionSwipeRing.Direction,
+        from sessionID: SessionID,
+        skippingMux: Bool = false
+    ) -> SessionSwipeRing.Target? {
+        let topology =
+            skippingMux
+            ? SessionMuxTopologyCache.Topology()
+            : muxTopologyCache.topology(for: sessionID)
+        let ring = SessionSwipeRing(
+            muxSessions: topology.sessions,
+            boundMuxSession: sessionMuxIDs[sessionID],
+            boundGroups: topology.groups,
+            focusedGroup: sessionMuxGroupIDs[sessionID],
+            appSessionIDs: registry.ids,
+            activeSessionID: sessionID
+        )
+        return ring.step(direction)
+    }
+
     private func hop(
-        to destination: MuxHopDestination,
+        _ plan: MuxHopPlan,
         within limit: Duration,
         onSkip: @escaping @MainActor () -> Void
     ) {
         guard let context = hopContext() else { return }
         isHoppingMuxSession = true
         Task { [weak self] in
-            await self?.hop(to: destination, in: context, within: limit, onSkip: onSkip)
+            await self?.hop(plan, in: context, within: limit, onSkip: onSkip)
         }
     }
 
     private func hop(
-        to destination: MuxHopDestination,
+        _ plan: MuxHopPlan,
         in context: HopContext,
         within limit: Duration,
         onSkip: @MainActor () -> Void
     ) async {
-        let outcome = await attempt(destination, with: context.navigator, within: limit)
-        let skipped = outcome.map { announce($0, for: destination, of: context.sessionID) } ?? false
+        let skipped = await land(plan, in: context, within: limit)
         await settle(skipped: skipped, in: context, within: limit, onSkip: onSkip)
     }
 
-    private func attempt(
-        _ destination: MuxHopDestination,
-        with navigator: MuxNavigator,
-        within limit: Duration
-    ) async -> MuxJumpOutcome? {
+    private func land(_ plan: MuxHopPlan, in context: HopContext, within limit: Duration) async -> Bool {
         do {
-            return try await MuxHopDeadline.run(within: limit) {
-                try await destination.jump(with: navigator)
+            let landing = try await MuxHopDeadline.run(within: limit) { [weak self] in
+                try await self?.jump(plan, in: context)
             }
+            guard let landing else { return true }
+            return announce(landing.outcome, for: landing.destination, of: context.sessionID)
         } catch is MuxHopDeadline.Expired {
-            return .skipped(destination.session, .timedOut)
+            announceSkip(.timedOut)
+            return true
         } catch {
             announceFailure(error)
-            return nil
+            return false
+        }
+    }
+
+    private func jump(
+        _ plan: MuxHopPlan,
+        in context: HopContext
+    ) async throws -> (destination: MuxHopDestination, outcome: MuxJumpOutcome)? {
+        guard let destination = await destination(for: plan, in: context) else { return nil }
+        return (destination, try await destination.jump(with: context.navigator))
+    }
+
+    private func destination(for plan: MuxHopPlan, in context: HopContext) async -> MuxHopDestination? {
+        switch plan {
+        case .session(let target):
+            return .session(target)
+        case .tab(let direction):
+            await refreshMuxTopology(for: context.sessionID, using: context.adapter)
+            switch swipeTarget(direction, from: context.sessionID) {
+            case .muxGroup(let group):
+                return sessionMuxIDs[context.sessionID].map { MuxHopDestination.group(group, of: $0) }
+            case .muxSession(let session):
+                return .session(session)
+            case .appSession, nil:
+                return nil
+            }
         }
     }
 
