@@ -95,6 +95,45 @@ struct SessionMuxTopologyCacheTests {
         #expect(cache.sessions(for: Self.session) == [Self.main])
     }
 
+    @Test func markingAGroupActiveClearsTheOthers() {
+        let cache = SessionMuxTopologyCache()
+        let tests = MuxGroup(
+            id: MuxGroupID(rawValue: "@2"), sessionID: Self.main.id, title: "tests", isActive: false)
+        cache.store(
+            SessionMuxTopologyCache.Topology(sessions: [Self.main], groups: [Self.code, tests]),
+            for: Self.session,
+            request: cache.beginRefresh(for: Self.session)
+        )
+
+        cache.markActive(tests.id, for: Self.session)
+
+        #expect(cache.groups(for: Self.session).filter(\.isActive).map(\.id) == [tests.id])
+        #expect(cache.groups(for: Self.session).map(\.id) == [Self.code.id, tests.id])
+    }
+
+    @Test func markingAnUnknownGroupLeavesTheTopologyAlone() {
+        let cache = SessionMuxTopologyCache()
+        cache.store(topology(), for: Self.session, request: cache.beginRefresh(for: Self.session))
+
+        cache.markActive(MuxGroupID(rawValue: "@9"), for: Self.session)
+
+        #expect(cache.topology(for: Self.session) == topology())
+    }
+
+    @Test func aRefreshStartedBeforeAMarkNeverUndoesIt() {
+        let cache = SessionMuxTopologyCache()
+        let tests = MuxGroup(
+            id: MuxGroupID(rawValue: "@2"), sessionID: Self.main.id, title: "tests", isActive: false)
+        let before = SessionMuxTopologyCache.Topology(sessions: [Self.main], groups: [Self.code, tests])
+        cache.store(before, for: Self.session, request: cache.beginRefresh(for: Self.session))
+        let inFlight = cache.beginRefresh(for: Self.session)
+
+        cache.markActive(tests.id, for: Self.session)
+        cache.store(before, for: Self.session, request: inFlight)
+
+        #expect(cache.groups(for: Self.session).filter(\.isActive).map(\.id) == [tests.id])
+    }
+
     private func topology() -> SessionMuxTopologyCache.Topology {
         SessionMuxTopologyCache.Topology(sessions: [Self.main], groups: [Self.code])
     }
