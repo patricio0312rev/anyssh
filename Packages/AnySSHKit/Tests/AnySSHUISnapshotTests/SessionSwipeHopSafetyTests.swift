@@ -141,7 +141,7 @@ import Testing
         throw GatedDisplayWriter.Failure.neverSatisfied
     }
 
-    static let plainReasons: [MuxSkipReason] = [
+    nonisolated static let plainReasons: [MuxSkipReason] = [
         .detached, .unidentified, .unreadable, .boundElsewhere, .timedOut,
     ]
     private static let alpha = MuxSessionID(rawValue: "alpha")
