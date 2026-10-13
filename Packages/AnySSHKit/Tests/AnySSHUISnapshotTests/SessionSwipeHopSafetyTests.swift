@@ -39,14 +39,14 @@ import Testing
         model.rememberMuxSession(Self.alpha, for: sessionID)
 
         let skips = SkipRecorder()
-        model.hop(toMuxSession: Self.beta, within: Self.shortLimit) { skips.record() }
+        model.hop(toMuxSession: Self.beta, within: Self.shortBudget) { skips.record() }
         try await waitInRealTime { !model.isHoppingMuxSession }
 
         #expect(skips.count == 1)
         #expect(model.sessionMuxIDs[sessionID] == Self.alpha)
         #expect(toasts.items.first?.title == MuxNavigationCopy.skipped(.timedOut).title)
 
-        model.hop(toMuxSession: Self.beta, within: Self.shortLimit) { skips.record() }
+        model.hop(toMuxSession: Self.beta, within: Self.shortBudget) { skips.record() }
         #expect(model.isHoppingMuxSession)
         await gate.open()
         try await waitInRealTime { !model.isHoppingMuxSession }
@@ -77,11 +77,37 @@ import Testing
         try await install(adapter, on: model, for: sessionID)
         model.rememberMuxSession(Self.alpha, for: sessionID)
 
-        model.hop(toMuxSession: Self.beta, within: Self.shortLimit)
+        model.hop(toMuxSession: Self.beta, within: Self.postHopBudget)
         try await waitInRealTime { !model.isHoppingMuxSession }
 
         #expect(model.sessionMuxIDs[sessionID] == Self.beta)
         await gate.open()
+    }
+
+    @Test func aSwitchLandingAfterTheDeadlineIsRememberedInsteadOfSkipped() async throws {
+        let model = SessionWorkspaceFixture.model("single")
+        let toasts = StatusToastCenter()
+        model.statusToasts = toasts
+        let sessionID = try #require(model.activeSessionID)
+        model.connections[sessionID] = SessionWorkspaceFixture.attachedConnection(running: "tmux")
+        let gate = MuxHopGate()
+        let adapter = SwipeRingMuxAdapter(names: ["alpha", "beta"], switchGate: gate)
+        try await install(adapter, on: model, for: sessionID)
+        model.rememberMuxSession(Self.alpha, for: sessionID)
+
+        let skips = SkipRecorder()
+        model.hop(toMuxSession: Self.beta, within: Self.drainingBudget) { skips.record() }
+        try await Task.sleep(for: Self.pastTheLimit)
+
+        #expect(model.isHoppingMuxSession)
+        #expect(skips.count == 0)
+
+        await gate.open()
+        try await waitInRealTime { !model.isHoppingMuxSession }
+
+        #expect(skips.count == 0)
+        #expect(model.sessionMuxIDs[sessionID] == Self.beta)
+        #expect(toasts.items.map(\.title) == ["Switched to beta"])
     }
 
     @Test func aHungTabRefreshStillFreesTheSwipe() async throws {
@@ -100,7 +126,7 @@ import Testing
         model.sessionAdapters[sessionID] = hung
 
         let skips = SkipRecorder()
-        model.hop(tabToward: .forward, within: Self.shortLimit) { skips.record() }
+        model.hop(tabToward: .forward, within: Self.shortBudget) { skips.record() }
         try await waitInRealTime { !model.isHoppingMuxSession }
 
         #expect(skips.count == 1)
@@ -171,7 +197,10 @@ import Testing
     ]
     private static let alpha = MuxSessionID(rawValue: "alpha")
     private static let beta = MuxSessionID(rawValue: "beta")
-    private static let shortLimit = Duration.milliseconds(50)
+    private static let shortBudget = MuxHopBudget(limit: .milliseconds(50), grace: .milliseconds(50))
+    private static let postHopBudget = MuxHopBudget(limit: .seconds(1), grace: .milliseconds(50))
+    private static let drainingBudget = MuxHopBudget(limit: .seconds(1), grace: .seconds(5))
+    private static let pastTheLimit = Duration.milliseconds(1500)
     private static let realTimeStep = Duration.milliseconds(10)
-    private static let realTimeAttempts = 300
+    private static let realTimeAttempts = 800
 }
