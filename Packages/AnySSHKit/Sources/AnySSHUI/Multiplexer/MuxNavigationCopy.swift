@@ -5,9 +5,27 @@ enum MuxNavigationCopy {
 
     static func jumped(to target: String) -> String { "Jumped to \(target)" }
 
-    static let detachToSwitch = "Detach to switch sessions."
+    static func skipped(_ reason: MuxSkipReason) -> (title: String, body: String) {
+        switch reason {
+        case .detached:
+            ("No multiplexer here", "This terminal is not inside tmux or herdr, so the swipe skipped it.")
+        case .unidentified:
+            (
+                "Session not identified",
+                "The app cannot tell which session this terminal shows, so it was left alone."
+            )
+        case .unreadable:
+            ("Terminal not readable", "The app could not read what this terminal runs, so it was left alone.")
+        case .boundElsewhere:
+            ("Terminal shows another session", "That tab belongs to a session this terminal no longer shows.")
+        case .timedOut:
+            ("Switch took too long", "The multiplexer did not answer in time, so the swipe skipped it.")
+        case .refused(let state):
+            (state.copy.title, state.copy.body)
+        }
+    }
 
-    static let currentSession = "this session"
+    static let detachToSwitch = "Detach to switch sessions."
 
     static let switchedSession = "Switched session"
 
