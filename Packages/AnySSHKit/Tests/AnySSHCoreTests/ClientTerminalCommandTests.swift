@@ -36,7 +36,11 @@ import Testing
             }
             pid=100
             """
-        let script = fakeProcessTable + "\n" + ClientTerminalCommand.interactiveShellLookup + "\nprintf %s \"$shell\""
+        let script = [
+            fakeProcessTable,
+            ClientTerminalCommand.interactiveShellLookup,
+            "printf %s \"$shell\"",
+        ].joined(separator: "\n")
         let outcome = try CommandsSubprocess.run("/bin/sh", ["-s"], stdin: Data(script.utf8))
         #expect(String(decoding: outcome.stdout, as: UTF8.self) == "300")
     }
