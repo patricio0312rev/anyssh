@@ -35,16 +35,7 @@ struct SessionSwitcherRow: View {
     @ViewBuilder
     private var tile: some View {
         if let agentKind {
-            if AgentMarkCatalog.hasMark(for: agentKind.id) {
-                RowIconTile(
-                    asset: AgentMarkCatalog.assetName(for: agentKind.id),
-                    label: agentKind.name,
-                    tint: Theme.text.primary,
-                    fillsTile: AgentMarkCatalog.fillsTile(agentKind.id)
-                )
-            } else {
-                RowIconTile(monogram: agentKind.monogram, label: agentKind.name)
-            }
+            AgentKindTile(kind: agentKind)
         } else {
             RowIconTile(systemImage: "terminal", label: "Shell")
         }
