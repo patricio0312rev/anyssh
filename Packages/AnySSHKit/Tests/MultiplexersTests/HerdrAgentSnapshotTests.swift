@@ -59,6 +59,16 @@ import Testing
         )
     }
 
+    @Test func aProtocolTwentyTwoWorkspaceWithoutAWorktreeLeavesTheRootUnknown() throws {
+        let snapshot = try HerdrParser().snapshot(
+            from: MuxFixtureData.text("herdr-api-snapshot-protocol-22.json"),
+            session: MuxSession(id: MuxSessionID(rawValue: "default"), name: "default", isAttached: true)
+        )
+        let pane = try #require(snapshot.panes.first)
+        #expect(pane.workingDirectory == "/home/dev/src/api/services")
+        #expect(pane.repositoryRoot == nil)
+    }
+
     private static func snapshot() throws -> MuxSnapshot {
         try HerdrParser().snapshot(
             from: MuxFixtureData.text("herdr-api-snapshot-agents.json"),
